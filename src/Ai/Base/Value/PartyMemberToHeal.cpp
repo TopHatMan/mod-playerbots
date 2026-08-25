@@ -27,6 +27,34 @@ public:
 
 inline bool compareByHealth(Unit const* u1, Unit const* u2) { return u1->GetHealthPct() < u2->GetHealthPct(); }
 
+namespace
+{
+constexpr float MAIN_TANK_HEAL_PRIORITY = 20.0f;
+constexpr float ASSIST_TANK_HEAL_PRIORITY = 10.0f;
+
+float GetHealTargetScore(PlayerbotAI* botAI, Player* bot, Unit* target)
+{
+    float score = target->GetHealthPct();
+    if (target->GetDistance2d(bot) > sPlayerbotAIConfig.healDistance)
+        score += 30.0f;
+    else
+        score += target->GetDistance2d(bot) / 10.0f;
+
+    // Lower scores are healed first. Raid roles break ties between similarly
+    // injured players without allowing a healthy tank to hide a critical
+    // non-tank target.
+    if (Player* player = target->ToPlayer())
+    {
+        if (botAI->IsMainTank(player))
+            score -= MAIN_TANK_HEAL_PRIORITY;
+        else if (botAI->IsAssistTank(player))
+            score -= ASSIST_TANK_HEAL_PRIORITY;
+    }
+
+    return score;
+}
+}
+
 Unit* PartyMemberToHeal::Calculate()
 {
     IsTargetOfHealingSpell predicate;
@@ -54,11 +82,7 @@ Unit* PartyMemberToHeal::Calculate()
             if (isRaid || health < sPlayerbotAIConfig.mediumHealth ||
                 !IsTargetOfSpellCast(player, predicate))
             {
-                float probeValue = 100.0f;
-                if (player->GetDistance2d(bot) > sPlayerbotAIConfig.healDistance)
-                    probeValue = health + 30.0f;
-                else
-                    probeValue = health + player->GetDistance2d(bot) / 10.0f;
+                float probeValue = GetHealTargetScore(botAI, bot, player);
 
                 if (probeValue < calc.minValue && Check(player))
                     calc.probe(probeValue, player);
@@ -71,22 +95,14 @@ Unit* PartyMemberToHeal::Calculate()
     for (GroupReference* gref = group->GetFirstMember(); gref; gref = gref->next())
     {
         Player* player = gref->GetSource();
-        if (player->IsGameMaster())
+        if (!player || player->IsGameMaster())
             continue;
-        if (player && player->IsAlive())
+        if (player->IsAlive())
         {
             float health = player->GetHealthPct();
             if (isRaid || health < sPlayerbotAIConfig.mediumHealth || !IsTargetOfSpellCast(player, predicate))
             {
-                float probeValue = 100.0f;
-                if (player->GetDistance2d(bot) > sPlayerbotAIConfig.healDistance)
-                {
-                    probeValue = health + 30.0f;
-                }
-                else
-                {
-                    probeValue = health + player->GetDistance2d(bot) / 10.0f;
-                }
+                float probeValue = GetHealTargetScore(botAI, bot, player);
                 // delay Check player to here for better performance
                 if (probeValue < calc.minValue && Check(player))
                 {
