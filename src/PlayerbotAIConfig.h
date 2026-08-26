@@ -378,6 +378,14 @@ public:
     std::string autoPickReward;
     bool autoEquipUpgradeLoot;
     float equipUpgradeThreshold;
+    bool companionPersonalLoot;
+    bool companionPersonalLootRandomBotsOnly;
+    float companionPersonalLootWorldTrashChance;
+    float companionPersonalLootDungeonTrashChance;
+    float companionPersonalLootRaidTrashChance;
+    float companionPersonalLootBossChance;
+    uint32 companionPersonalLootMinQuality;
+    uint32 companionPersonalLootMaxQuality;
     bool twoRoundsGearInit;
     bool syncQuestWithPlayer;
     bool syncQuestForPlayer;

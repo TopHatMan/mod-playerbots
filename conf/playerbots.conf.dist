@@ -290,6 +290,22 @@ AiPlayerbot.AutoEquipUpgradeLoot = 1
 # Default: 1.1 (Equip when the equipment score of the new item is 1.1 times higher than the currently equipped item)
 AiPlayerbot.EquipUpgradeThreshold = 1.1
 
+# Gives grouped companion bots a separate, soulbound equipment drop copied from creature loot.
+# The player's loot is not consumed or changed. A bot can receive at most one real upgrade per corpse.
+# RandomBotsOnly keeps player-owned altbots out of this secondary loot pool.
+# Defaults: enabled, random bots only, uncommon through epic equipment.
+AiPlayerbot.CompanionPersonalLoot.Enable = 1
+AiPlayerbot.CompanionPersonalLoot.RandomBotsOnly = 1
+AiPlayerbot.CompanionPersonalLoot.MinQuality = 2
+AiPlayerbot.CompanionPersonalLoot.MaxQuality = 4
+
+# Per-bot award chance after at least one suitable upgrade is found on the corpse.
+# BossChance applies to dungeon and world bosses. Values are percentages from 0 through 100.
+AiPlayerbot.CompanionPersonalLoot.WorldTrashChance = 5
+AiPlayerbot.CompanionPersonalLoot.DungeonTrashChance = 10
+AiPlayerbot.CompanionPersonalLoot.RaidTrashChance = 15
+AiPlayerbot.CompanionPersonalLoot.BossChance = 100
+
 # Two rounds of equipment initialization to create more suitable gear
 AiPlayerbot.TwoRoundsGearInit = 0
 

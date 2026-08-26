@@ -711,6 +711,21 @@ bool PlayerbotAIConfig::Initialize()
     autoPickReward = sConfigMgr->GetOption<std::string>("AiPlayerbot.AutoPickReward", "yes");
     autoEquipUpgradeLoot = sConfigMgr->GetOption<bool>("AiPlayerbot.AutoEquipUpgradeLoot", true);
     equipUpgradeThreshold = sConfigMgr->GetOption<float>("AiPlayerbot.EquipUpgradeThreshold", 1.1f);
+    companionPersonalLoot = sConfigMgr->GetOption<bool>("AiPlayerbot.CompanionPersonalLoot.Enable", true);
+    companionPersonalLootRandomBotsOnly =
+        sConfigMgr->GetOption<bool>("AiPlayerbot.CompanionPersonalLoot.RandomBotsOnly", true);
+    companionPersonalLootWorldTrashChance =
+        sConfigMgr->GetOption<float>("AiPlayerbot.CompanionPersonalLoot.WorldTrashChance", 5.0f);
+    companionPersonalLootDungeonTrashChance =
+        sConfigMgr->GetOption<float>("AiPlayerbot.CompanionPersonalLoot.DungeonTrashChance", 10.0f);
+    companionPersonalLootRaidTrashChance =
+        sConfigMgr->GetOption<float>("AiPlayerbot.CompanionPersonalLoot.RaidTrashChance", 15.0f);
+    companionPersonalLootBossChance =
+        sConfigMgr->GetOption<float>("AiPlayerbot.CompanionPersonalLoot.BossChance", 100.0f);
+    companionPersonalLootMinQuality =
+        sConfigMgr->GetOption<uint32>("AiPlayerbot.CompanionPersonalLoot.MinQuality", ITEM_QUALITY_UNCOMMON);
+    companionPersonalLootMaxQuality =
+        sConfigMgr->GetOption<uint32>("AiPlayerbot.CompanionPersonalLoot.MaxQuality", ITEM_QUALITY_EPIC);
     twoRoundsGearInit = sConfigMgr->GetOption<bool>("AiPlayerbot.TwoRoundsGearInit", false);
     syncQuestWithPlayer = sConfigMgr->GetOption<bool>("AiPlayerbot.SyncQuestWithPlayer", true);
     syncQuestForPlayer = sConfigMgr->GetOption<bool>("AiPlayerbot.SyncQuestForPlayer", false);
