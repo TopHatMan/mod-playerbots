@@ -5,7 +5,6 @@
  */
 
 #include "Playerbots.h"
-#include "ItemUsageValue.h"
 #include "BattleGroundTactics.h"
 #include "BattlefieldScript.h"
 #include "Channel.h"
@@ -17,8 +16,6 @@
 #include "PlayerbotsDatabase.h"
 #include <mysqld_error.h>
 #include "GuildTaskMgr.h"
-#include "LootMgr.h"
-#include "ObjectMgr.h"
 #include "PlayerScript.h"
 #include "PlayerbotAIConfig.h"
 #include "PlayerbotCommandScript.h"
@@ -27,32 +24,7 @@
 #include "PlayerbotWorldThreadProcessor.h"
 #include "RandomPlayerbotMgr.h"
 #include "ScriptMgr.h"
-#include <algorithm>
 #include "cmath"
-
-namespace
-{
-struct CompanionPersonalLootState : DataMap::Base
-{
-    bool awarded = false;
-};
-
-constexpr char CompanionPersonalLootDataKey[] = "mod-playerbots.companion-personal-loot";
-
-float GetCompanionPersonalLootChance(Creature const* creature)
-{
-    if (creature->IsDungeonBoss() || creature->isWorldBoss())
-        return sPlayerbotAIConfig.companionPersonalLootBossChance;
-
-    Map const* map = creature->GetMap();
-    if (map && map->IsRaid())
-        return sPlayerbotAIConfig.companionPersonalLootRaidTrashChance;
-    if (map && map->IsDungeon())
-        return sPlayerbotAIConfig.companionPersonalLootDungeonTrashChance;
-
-    return sPlayerbotAIConfig.companionPersonalLootWorldTrashChance;
-}
-}
 
 class PlayerbotsDatabaseScript : public DatabaseScript
 {
@@ -158,83 +130,8 @@ public:
         PLAYERHOOK_CAN_PLAYER_USE_GUILD_CHAT,
         PLAYERHOOK_CAN_PLAYER_USE_CHANNEL_CHAT,
         PLAYERHOOK_ON_GIVE_EXP,
-        PLAYERHOOK_ON_BEFORE_TELEPORT,
-        PLAYERHOOK_ON_BEFORE_SEND_LOOT
+        PLAYERHOOK_ON_BEFORE_TELEPORT
     }) {}
-
-    void OnPlayerBeforeSendLoot(Player* player, ObjectGuid lootGuid, Loot* loot) override
-    {
-        if (!sPlayerbotAIConfig.companionPersonalLoot || !player || !loot || loot->loot_type != LOOT_CORPSE ||
-            player->GetSession()->IsBot() || !lootGuid.IsCreature())
-            return;
-
-        Group* group = player->GetGroup();
-        Creature* creature = player->GetMap()->GetCreature(lootGuid);
-        if (!group || !creature)
-            return;
-
-        CompanionPersonalLootState* state =
-            creature->CustomData.GetDefault<CompanionPersonalLootState>(CompanionPersonalLootDataKey);
-        if (state->awarded)
-            return;
-        state->awarded = true;
-
-        float chance = std::clamp(GetCompanionPersonalLootChance(creature), 0.0f, 100.0f);
-        if (chance <= 0.0f)
-            return;
-
-        for (GroupReference* reference = group->GetFirstMember(); reference; reference = reference->next())
-        {
-            Player* bot = reference->GetSource();
-            if (!bot || !bot->GetSession()->IsBot() || bot->GetMap() != creature->GetMap() ||
-                !bot->IsAtGroupRewardDistance(creature))
-                continue;
-
-            if (sPlayerbotAIConfig.companionPersonalLootRandomBotsOnly &&
-                !sPlayerbotAIConfig.IsInRandomAccountList(bot->GetSession()->GetAccountId()))
-                continue;
-
-            PlayerbotAI* botAI = PlayerbotsMgr::instance().GetPlayerbotAI(bot);
-            if (!botAI)
-                continue;
-
-            std::vector<LootItem const*> upgrades;
-            for (LootItem const& lootItem : loot->items)
-            {
-                ItemTemplate const* itemTemplate = sObjectMgr->GetItemTemplate(lootItem.itemid);
-                if (lootItem.is_looted || lootItem.needs_quest || !itemTemplate ||
-                    (itemTemplate->Class != ITEM_CLASS_ARMOR && itemTemplate->Class != ITEM_CLASS_WEAPON) ||
-                    itemTemplate->InventoryType == INVTYPE_NON_EQUIP ||
-                    itemTemplate->Quality < sPlayerbotAIConfig.companionPersonalLootMinQuality ||
-                    itemTemplate->Quality > sPlayerbotAIConfig.companionPersonalLootMaxQuality ||
-                    !lootItem.AllowedForPlayer(bot, lootGuid))
-                    continue;
-
-                std::string qualifier = std::to_string(lootItem.itemid);
-                if (lootItem.randomPropertyId)
-                    qualifier += "," + std::to_string(lootItem.randomPropertyId);
-
-                ItemUsage usage = botAI->GetAiObjectContext()->GetValue<ItemUsage>("item upgrade", qualifier)->Get();
-                if (usage == ITEM_USAGE_EQUIP || usage == ITEM_USAGE_REPLACE)
-                    upgrades.push_back(&lootItem);
-            }
-
-            if (upgrades.empty() || !roll_chance_f(chance))
-                continue;
-
-            LootItem const* selected = upgrades[urand(0, static_cast<uint32>(upgrades.size() - 1))];
-            ItemPosCountVec destinations;
-            if (bot->CanStoreNewItem(NULL_BAG, NULL_SLOT, destinations, selected->itemid, 1) != EQUIP_ERR_OK)
-                continue;
-
-            if (Item* item = bot->StoreNewItem(destinations, selected->itemid, true, selected->randomPropertyId))
-            {
-                item->SetBinding(true);
-                bot->SendNewItem(item, 1, true, false);
-                botAI->DoSpecificAction("equip upgrade", Event(), true);
-            }
-        }
-    }
 
     void OnPlayerLogin(Player* player) override
     {
