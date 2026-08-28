@@ -87,6 +87,28 @@ bool McGolemaggIsHealerTrigger::IsActive()
     return PlayerbotAI::IsHeal(bot) && AI_VALUE2(Unit*, "find target", "golemagg the incinerator");
 }
 
+static bool IsMajordomoEncounterActive(PlayerbotAI* botAI)
+{
+    for (ObjectGuid const& guid : botAI->GetAiObjectContext()->GetValue<GuidVector>("possible targets no los")->Get())
+    {
+        Unit* unit = botAI->GetUnit(guid);
+        if (unit && unit->IsAlive() && (unit->GetEntry() == NPC_MAJORDOMO_EXECUTUS ||
+            unit->GetEntry() == NPC_FLAMEWAKER_HEALER || unit->GetEntry() == NPC_FLAMEWAKER_ELITE))
+            return true;
+    }
+    return false;
+}
+
+bool McMajordomoTankAddsTrigger::IsActive()
+{
+    return PlayerbotAI::IsTank(bot) && IsMajordomoEncounterActive(botAI);
+}
+
+bool McMajordomoFocusAddsTrigger::IsActive()
+{
+    return PlayerbotAI::IsDps(bot) && IsMajordomoEncounterActive(botAI);
+}
+
 bool McCoreHoundMarkTrigger::IsActive()
 {
     return PlayerbotAI::IsMainTank(bot) && AI_VALUE2(Unit*, "find target", "core hound");

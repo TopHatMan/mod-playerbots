@@ -66,10 +66,10 @@ void RaidMcStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
                         { NextAction("mc golemagg mark boss", ACTION_RAID) }));
     triggers.push_back(
         new TriggerNode("mc golemagg is main tank",
-                        { NextAction("mc golemagg main tank attack golemagg", ACTION_RAID) }));
+                        { NextAction("mc golemagg main tank attack golemagg", ACTION_RAID + 2) }));
     triggers.push_back(
         new TriggerNode("mc golemagg is assist tank",
-                        { NextAction("mc golemagg assist tank attack core rager", ACTION_RAID) }));
+                        { NextAction("mc golemagg assist tank attack core rager", ACTION_RAID + 2) }));
     triggers.push_back(
         new TriggerNode("mc golemagg magma splash",
                         { NextAction("mc golemagg back off", ACTION_RAID + 1) }));
@@ -81,6 +81,12 @@ void RaidMcStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(
         new TriggerNode("mc majordomo shadow resistance",
                         { NextAction("mc majordomo shadow resistance", ACTION_RAID) }));
+    triggers.push_back(
+        new TriggerNode("mc majordomo tank adds",
+                        { NextAction("mc majordomo tank adds", ACTION_RAID + 2) }));
+    triggers.push_back(
+        new TriggerNode("mc majordomo focus adds",
+                        { NextAction("mc majordomo focus adds", ACTION_RAID + 1) }));
 
     // Ragnaros
     triggers.push_back(

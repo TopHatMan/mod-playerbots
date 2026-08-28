@@ -35,6 +35,8 @@ public:
         creators["mc in lava"] = &RaidMcTriggerContext::in_lava;
         creators["mc golemagg magma splash"] = &RaidMcTriggerContext::golemagg_magma_splash;
         creators["mc golemagg is healer"] = &RaidMcTriggerContext::golemagg_is_healer;
+        creators["mc majordomo tank adds"] = &RaidMcTriggerContext::majordomo_tank_adds;
+        creators["mc majordomo focus adds"] = &RaidMcTriggerContext::majordomo_focus_adds;
     }
 
 private:
@@ -57,6 +59,8 @@ private:
     static Trigger* in_lava(PlayerbotAI* botAI) { return new McInLavaTrigger(botAI); }
     static Trigger* golemagg_magma_splash(PlayerbotAI* botAI) { return new McGolemaggMagmaSplashTrigger(botAI); }
     static Trigger* golemagg_is_healer(PlayerbotAI* botAI) { return new McGolemaggIsHealerTrigger(botAI); }
+    static Trigger* majordomo_tank_adds(PlayerbotAI* botAI) { return new McMajordomoTankAddsTrigger(botAI); }
+    static Trigger* majordomo_focus_adds(PlayerbotAI* botAI) { return new McMajordomoFocusAddsTrigger(botAI); }
 };
 
 #endif

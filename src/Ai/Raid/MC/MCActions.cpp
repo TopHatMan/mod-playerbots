@@ -299,6 +299,83 @@ bool McGolemaggAssistTankAttackCoreRagerAction::Execute(Event event)
     return false;
 }
 
+static std::vector<Unit*> FindMajordomoAdds(PlayerbotAI* botAI)
+{
+    std::vector<Unit*> adds;
+    for (ObjectGuid const& guid : botAI->GetAiObjectContext()->GetValue<GuidVector>("possible targets no los")->Get())
+    {
+        Unit* unit = botAI->GetUnit(guid);
+        if (unit && unit->IsAlive() &&
+            (unit->GetEntry() == NPC_FLAMEWAKER_HEALER || unit->GetEntry() == NPC_FLAMEWAKER_ELITE))
+            adds.push_back(unit);
+    }
+    std::sort(adds.begin(), adds.end(), [](Unit const* left, Unit const* right)
+    {
+        if (left->GetEntry() != right->GetEntry())
+            return left->GetEntry() == NPC_FLAMEWAKER_HEALER;
+        if (left->GetHealthPct() != right->GetHealthPct())
+            return left->GetHealthPct() < right->GetHealthPct();
+        return left->GetGUID() < right->GetGUID();
+    });
+    return adds;
+}
+
+bool McMajordomoTankAddsAction::Execute(Event event)
+{
+    std::vector<Unit*> adds = FindMajordomoAdds(botAI);
+    if (adds.empty())
+        return false;
+
+    // Threat resets and teleports regularly throw adds onto the raid. Rescue a
+    // non-tank victim first; otherwise keep a stable per-tank assignment.
+    Unit* target = nullptr;
+    for (Unit* add : adds)
+    {
+        Unit* victim = add->GetVictim();
+        if (!victim || (victim->IsPlayer() && !PlayerbotAI::IsTank(victim->ToPlayer())))
+        {
+            target = add;
+            break;
+        }
+    }
+
+    if (!target)
+    {
+        uint32 tankIndex = 0;
+        for (uint8 index = 0; index < 8; ++index)
+        {
+            if (PlayerbotAI::IsAssistTankOfIndex(bot, index, true))
+            {
+                tankIndex = index;
+                break;
+            }
+        }
+        target = adds[tankIndex % adds.size()];
+    }
+
+    if (bot->GetVictim() != target)
+        return Attack(target);
+    if (target->GetVictim() != bot)
+        return botAI->DoSpecificAction("taunt spell", event, true);
+    return false;
+}
+
+bool McMajordomoFocusAddsAction::Execute(Event /*event*/)
+{
+    std::vector<Unit*> adds = FindMajordomoAdds(botAI);
+    if (adds.empty())
+        return false;
+
+    // Never break a mage's polymorph. Among active adds, healers come first and
+    // lowest health wins so the entire raid burns the same target.
+    auto target = std::find_if(adds.begin(), adds.end(), [](Unit* add) { return !add->IsPolymorphed(); });
+    if (target == adds.end())
+        return false;
+    if (bot->GetVictim() == *target)
+        return false;
+    return Attack(*target);
+}
+
 Unit* McCoreHoundMarkAction::GetTarget()
 {
     Unit* highestHealthHound = nullptr;

@@ -16,6 +16,8 @@ enum MoltenCoreNPCs
 
     // Majordomo Executus
     NPC_MAJORDOMO_EXECUTUS = 12018,
+    NPC_FLAMEWAKER_HEALER = 11663,
+    NPC_FLAMEWAKER_ELITE = 11664,
 
     // Core Hound (trash)
     NPC_CORE_HOUND = 11671,

@@ -94,6 +94,22 @@ public:
     bool Execute(Event event) override;
 };
 
+class McMajordomoTankAddsAction : public AttackAction
+{
+public:
+    McMajordomoTankAddsAction(PlayerbotAI* botAI, std::string const name = "mc majordomo tank adds")
+        : AttackAction(botAI, name) {}
+    bool Execute(Event event) override;
+};
+
+class McMajordomoFocusAddsAction : public AttackAction
+{
+public:
+    McMajordomoFocusAddsAction(PlayerbotAI* botAI, std::string const name = "mc majordomo focus adds")
+        : AttackAction(botAI, name) {}
+    bool Execute(Event event) override;
+};
+
 class McCoreHoundMarkAction : public Action
 {
 public:

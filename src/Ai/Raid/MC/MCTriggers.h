@@ -60,6 +60,20 @@ public:
     bool IsActive() override;
 };
 
+class McMajordomoTankAddsTrigger : public Trigger
+{
+public:
+    McMajordomoTankAddsTrigger(PlayerbotAI* botAI) : Trigger(botAI, "mc majordomo tank adds") {}
+    bool IsActive() override;
+};
+
+class McMajordomoFocusAddsTrigger : public Trigger
+{
+public:
+    McMajordomoFocusAddsTrigger(PlayerbotAI* botAI) : Trigger(botAI, "mc majordomo focus adds") {}
+    bool IsActive() override;
+};
+
 class McCoreHoundMarkTrigger : public Trigger
 {
 public:
