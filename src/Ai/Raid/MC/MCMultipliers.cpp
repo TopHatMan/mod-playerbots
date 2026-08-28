@@ -23,6 +23,43 @@
 
 using namespace MoltenCoreHelpers;
 
+static bool HasRealPlayerEngaged(Player* bot)
+{
+    Group* group = bot ? bot->GetGroup() : nullptr;
+    if (!group)
+        return true;
+
+    bool hasRealPlayer = false;
+    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+    {
+        Player* member = ref->GetSource();
+        if (!member || !member->GetSession() || member->GetSession()->IsBot() ||
+            member->GetMapId() != bot->GetMapId())
+            continue;
+
+        hasRealPlayer = true;
+        if (member->IsInCombat() || member->GetVictim())
+            return true;
+    }
+
+    // Preserve autonomous behavior for a raid containing no real player.
+    return !hasRealPlayer;
+}
+
+float McPlayerLedPullMultiplier::GetValue(Action* action)
+{
+    if (HasRealPlayerEngaged(bot))
+        return 1.0f;
+
+    // Target selection, positioning, buffs, and healing remain available while
+    // staging. Anything that initiates an attack or creates hostile threat waits
+    // until the player actually engages the encounter.
+    if (dynamic_cast<AttackAction*>(action) || action->getThreatType() != Action::ActionThreatType::None)
+        return 0.0f;
+
+    return 1.0f;
+}
+
 static bool IsDpsBotWithAoeAction(Player* bot, Action* action)
 {
     if (PlayerbotAI::IsDps(bot))

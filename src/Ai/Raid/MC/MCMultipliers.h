@@ -30,4 +30,11 @@ public:
     float GetValue(Action* action) override;
 };
 
+class McPlayerLedPullMultiplier : public Multiplier
+{
+public:
+    McPlayerLedPullMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "mc player-led pull multiplier") {}
+    float GetValue(Action* action) override;
+};
+
 #endif
