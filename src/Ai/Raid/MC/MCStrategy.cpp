@@ -87,6 +87,9 @@ void RaidMcStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(
         new TriggerNode("mc majordomo focus adds",
                         { NextAction("mc majordomo focus adds", ACTION_RAID + 1) }));
+    triggers.push_back(
+        new TriggerNode("mc majordomo polymorph healer",
+                        { NextAction("mc majordomo polymorph healer", ACTION_RAID + 3) }));
 
     // Ragnaros
     triggers.push_back(

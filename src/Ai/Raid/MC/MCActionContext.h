@@ -38,6 +38,7 @@ public:
         creators["mc golemagg healer position"] = &RaidMcActionContext::golemagg_healer_position;
         creators["mc majordomo tank adds"] = &RaidMcActionContext::majordomo_tank_adds;
         creators["mc majordomo focus adds"] = &RaidMcActionContext::majordomo_focus_adds;
+        creators["mc majordomo polymorph healer"] = &RaidMcActionContext::majordomo_polymorph_healer;
     }
 
 private:
@@ -62,6 +63,7 @@ private:
     static Action* golemagg_healer_position(PlayerbotAI* botAI) { return new McGolemaggHealerPositionAction(botAI); }
     static Action* majordomo_tank_adds(PlayerbotAI* botAI) { return new McMajordomoTankAddsAction(botAI); }
     static Action* majordomo_focus_adds(PlayerbotAI* botAI) { return new McMajordomoFocusAddsAction(botAI); }
+    static Action* majordomo_polymorph_healer(PlayerbotAI* botAI) { return new McMajordomoPolymorphHealerAction(botAI); }
 };
 
 #endif

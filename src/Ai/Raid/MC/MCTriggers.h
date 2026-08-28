@@ -74,6 +74,13 @@ public:
     bool IsActive() override;
 };
 
+class McMajordomoPolymorphHealerTrigger : public Trigger
+{
+public:
+    McMajordomoPolymorphHealerTrigger(PlayerbotAI* botAI) : Trigger(botAI, "mc majordomo polymorph healer") {}
+    bool IsActive() override;
+};
+
 class McCoreHoundMarkTrigger : public Trigger
 {
 public:

@@ -110,6 +110,14 @@ public:
     bool Execute(Event event) override;
 };
 
+class McMajordomoPolymorphHealerAction : public Action
+{
+public:
+    McMajordomoPolymorphHealerAction(PlayerbotAI* botAI, std::string const name = "mc majordomo polymorph healer")
+        : Action(botAI, name) {}
+    bool Execute(Event event) override;
+};
+
 class McCoreHoundMarkAction : public Action
 {
 public:

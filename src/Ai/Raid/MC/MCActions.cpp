@@ -302,12 +302,14 @@ bool McGolemaggAssistTankAttackCoreRagerAction::Execute(Event event)
 static std::vector<Unit*> FindMajordomoAdds(PlayerbotAI* botAI)
 {
     std::vector<Unit*> adds;
-    for (ObjectGuid const& guid : botAI->GetAiObjectContext()->GetValue<GuidVector>("possible targets no los")->Get())
+    Player* bot = botAI->GetBot();
+    for (uint32 entry : { NPC_FLAMEWAKER_HEALER, NPC_FLAMEWAKER_ELITE })
     {
-        Unit* unit = botAI->GetUnit(guid);
-        if (unit && unit->IsAlive() &&
-            (unit->GetEntry() == NPC_FLAMEWAKER_HEALER || unit->GetEntry() == NPC_FLAMEWAKER_ELITE))
-            adds.push_back(unit);
+        std::list<Creature*> creatures;
+        bot->GetCreatureListWithEntryInGrid(creatures, entry, 150.0f);
+        for (Creature* creature : creatures)
+            if (creature && creature->IsAlive() && creature->IsInCombat())
+                adds.push_back(creature);
     }
     std::sort(adds.begin(), adds.end(), [](Unit const* left, Unit const* right)
     {
@@ -324,7 +326,10 @@ bool McMajordomoTankAddsAction::Execute(Event event)
 {
     std::vector<Unit*> adds = FindMajordomoAdds(botAI);
     if (adds.empty())
+    {
+        botAI->GetAiObjectContext()->GetValue<GuidVector>("prioritized targets")->Reset();
         return false;
+    }
 
     // Threat resets and teleports regularly throw adds onto the raid. Rescue a
     // non-tank victim first; otherwise keep a stable per-tank assignment.
@@ -354,7 +359,11 @@ bool McMajordomoTankAddsAction::Execute(Event event)
     }
 
     if (bot->GetVictim() != target)
+    {
+        botAI->GetAiObjectContext()->GetValue<GuidVector>("prioritized targets")->Set({ target->GetGUID() });
         return Attack(target);
+    }
+    botAI->GetAiObjectContext()->GetValue<GuidVector>("prioritized targets")->Set({ target->GetGUID() });
     if (target->GetVictim() != bot)
         return botAI->DoSpecificAction("taunt spell", event, true);
     return false;
@@ -364,16 +373,51 @@ bool McMajordomoFocusAddsAction::Execute(Event /*event*/)
 {
     std::vector<Unit*> adds = FindMajordomoAdds(botAI);
     if (adds.empty())
+    {
+        botAI->GetAiObjectContext()->GetValue<GuidVector>("prioritized targets")->Reset();
         return false;
+    }
 
     // Never break a mage's polymorph. Among active adds, healers come first and
     // lowest health wins so the entire raid burns the same target.
     auto target = std::find_if(adds.begin(), adds.end(), [](Unit* add) { return !add->IsPolymorphed(); });
     if (target == adds.end())
         return false;
+    botAI->GetAiObjectContext()->GetValue<GuidVector>("prioritized targets")->Set({ (*target)->GetGUID() });
     if (bot->GetVictim() == *target)
         return false;
     return Attack(*target);
+}
+
+bool McMajordomoPolymorphHealerAction::Execute(Event /*event*/)
+{
+    std::vector<Unit*> adds = FindMajordomoAdds(botAI);
+    std::vector<Unit*> healers;
+    std::copy_if(adds.begin(), adds.end(), std::back_inserter(healers), [](Unit* add)
+        { return add->GetEntry() == NPC_FLAMEWAKER_HEALER; });
+    if (healers.empty())
+        return false;
+    std::sort(healers.begin(), healers.end(), [](Unit const* left, Unit const* right)
+        { return left->GetGUID() < right->GetGUID(); });
+
+    uint32 mageIndex = 0;
+    if (Group* group = bot->GetGroup())
+    {
+        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+        {
+            Player* member = ref->GetSource();
+            if (!member || !member->IsAlive() || member->getClass() != CLASS_MAGE)
+                continue;
+            if (member == bot)
+                break;
+            ++mageIndex;
+        }
+    }
+
+    Unit* target = healers[mageIndex % healers.size()];
+    if (target->IsPolymorphed())
+        return false;
+    return botAI->CastSpell("polymorph", target);
 }
 
 Unit* McCoreHoundMarkAction::GetTarget()

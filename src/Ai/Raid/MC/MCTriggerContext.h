@@ -37,6 +37,7 @@ public:
         creators["mc golemagg is healer"] = &RaidMcTriggerContext::golemagg_is_healer;
         creators["mc majordomo tank adds"] = &RaidMcTriggerContext::majordomo_tank_adds;
         creators["mc majordomo focus adds"] = &RaidMcTriggerContext::majordomo_focus_adds;
+        creators["mc majordomo polymorph healer"] = &RaidMcTriggerContext::majordomo_polymorph_healer;
     }
 
 private:
@@ -61,6 +62,7 @@ private:
     static Trigger* golemagg_is_healer(PlayerbotAI* botAI) { return new McGolemaggIsHealerTrigger(botAI); }
     static Trigger* majordomo_tank_adds(PlayerbotAI* botAI) { return new McMajordomoTankAddsTrigger(botAI); }
     static Trigger* majordomo_focus_adds(PlayerbotAI* botAI) { return new McMajordomoFocusAddsTrigger(botAI); }
+    static Trigger* majordomo_polymorph_healer(PlayerbotAI* botAI) { return new McMajordomoPolymorphHealerTrigger(botAI); }
 };
 
 #endif

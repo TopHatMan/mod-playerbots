@@ -89,11 +89,14 @@ bool McGolemaggIsHealerTrigger::IsActive()
 
 static bool IsMajordomoEncounterActive(PlayerbotAI* botAI)
 {
-    for (ObjectGuid const& guid : botAI->GetAiObjectContext()->GetValue<GuidVector>("possible targets no los")->Get())
+    Player* bot = botAI->GetBot();
+    std::list<Creature*> creatures;
+    for (uint32 entry : { NPC_MAJORDOMO_EXECUTUS, NPC_FLAMEWAKER_HEALER, NPC_FLAMEWAKER_ELITE })
     {
-        Unit* unit = botAI->GetUnit(guid);
-        if (unit && unit->IsAlive() && (unit->GetEntry() == NPC_MAJORDOMO_EXECUTUS ||
-            unit->GetEntry() == NPC_FLAMEWAKER_HEALER || unit->GetEntry() == NPC_FLAMEWAKER_ELITE))
+        creatures.clear();
+        bot->GetCreatureListWithEntryInGrid(creatures, entry, 150.0f);
+        if (std::any_of(creatures.begin(), creatures.end(), [](Creature* creature)
+            { return creature && creature->IsAlive() && creature->IsInCombat(); }))
             return true;
     }
     return false;
@@ -107,6 +110,11 @@ bool McMajordomoTankAddsTrigger::IsActive()
 bool McMajordomoFocusAddsTrigger::IsActive()
 {
     return PlayerbotAI::IsDps(bot) && IsMajordomoEncounterActive(botAI);
+}
+
+bool McMajordomoPolymorphHealerTrigger::IsActive()
+{
+    return bot->getClass() == CLASS_MAGE && IsMajordomoEncounterActive(botAI);
 }
 
 bool McCoreHoundMarkTrigger::IsActive()
