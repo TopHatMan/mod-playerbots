@@ -533,6 +533,26 @@ void RandomPlayerbotMgr::AssignAccountTypes()
         } while (existingAssignments->NextRow());
     }
 
+    // Account IDs in this table outlive deleted/recreated auth accounts. They
+    // previously continued counting toward the RNDbot pool even though no
+    // matching account (and therefore no characters) existed, making increases
+    // to RandomBotAccountCount appear to have no effect.
+    std::unordered_set<uint32> actualAccountIds(allRandomBotAccounts.begin(), allRandomBotAccounts.end());
+    uint32 staleAssignments = 0;
+    for (auto itr = currentAssignments.begin(); itr != currentAssignments.end();)
+    {
+        if (!actualAccountIds.contains(itr->first))
+        {
+            PlayerbotsDatabase.Execute("DELETE FROM playerbots_account_type WHERE account_id = {}", itr->first);
+            itr = currentAssignments.erase(itr);
+            ++staleAssignments;
+        }
+        else
+            ++itr;
+    }
+    if (staleAssignments)
+        LOG_WARN("playerbots", "Removed {} stale randombot account-type assignments", staleAssignments);
+
     // Mark ALL randombot accounts as unassigned if not already assigned
     for (uint32 accountId : allRandomBotAccounts)
     {
@@ -630,6 +650,8 @@ void RandomPlayerbotMgr::AssignAccountTypes()
     // Populate filtered account lists with ALL accounts of each type
     for (auto const& [accountId, accountType] : currentAssignments)
     {
+        if (!actualAccountIds.contains(accountId))
+            continue;
         if (accountType == 1) rndBotTypeAccounts.push_back(accountId);
         else if (accountType == 2) addClassTypeAccounts.push_back(accountId);
     }
