@@ -19,6 +19,9 @@
 
 bool LootAction::Execute(Event /*event*/)
 {
+    if (AI_VALUE(uint8, "bag space") >= 100)
+        return false;
+
     if (!AI_VALUE(bool, "has available loot"))
         return false;
 
@@ -71,6 +74,9 @@ enum ProfessionSpells
 
 bool OpenLootAction::Execute(Event /*event*/)
 {
+    if (AI_VALUE(uint8, "bag space") >= 100)
+        return false;
+
     LootObject lootObject = AI_VALUE(LootObject, "loot target");
     bool result = DoLoot(lootObject);
     if (result)

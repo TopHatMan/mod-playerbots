@@ -6,15 +6,13 @@
 
 #include "InventoryChangeFailureAction.h"
 #include "Event.h"
+#include "LootObjectStack.h"
 #include "Playerbots.h"
 
 std::map<InventoryResult, std::string> InventoryChangeFailureAction::messages;
 
 bool InventoryChangeFailureAction::Execute(Event event)
 {
-    if (!botAI->GetMaster())
-        return false;
-
     if (messages.empty())
     {
         messages[EQUIP_ERR_CANT_EQUIP_LEVEL_I] = "My level is too low";
@@ -89,6 +87,27 @@ bool InventoryChangeFailureAction::Execute(Event event)
     uint8 err;
     p >> err;
     if (err == EQUIP_ERR_OK)
+        return false;
+
+    // Autostore failures arrive after the bot has already selected and opened
+    // a corpse.  Leaving that corpse (and nearby corpses) in the loot values
+    // makes the movement strategy select them forever when every bag is full.
+    if (err == EQUIP_ERR_INVENTORY_FULL || err == EQUIP_ERR_BAG_FULL || err == EQUIP_ERR_BAG_FULL3 ||
+        err == EQUIP_ERR_BAG_FULL4 || err == EQUIP_ERR_BAG_FULL6)
+    {
+        ObjectGuid lootGuid = bot->GetLootGUID();
+        if (!lootGuid.IsEmpty())
+        {
+            WorldPacket* packet = new WorldPacket(CMSG_LOOT_RELEASE, 8);
+            *packet << lootGuid;
+            bot->GetSession()->QueuePacket(packet);
+        }
+
+        AI_VALUE(LootObjectStack*, "available loot")->Clear();
+        context->GetValue<LootObject>("loot target")->Set(LootObject());
+    }
+
+    if (!botAI->GetMaster())
         return false;
 
     std::string const msg = messages[(InventoryResult)err];
