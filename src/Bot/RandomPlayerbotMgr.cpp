@@ -454,7 +454,10 @@ void RandomPlayerbotMgr::UpdateAIInternal(uint32 /*elapsed*/, bool /*minimal*/)
                     break;
             }
 
-            DelayLoginBotsTimer = 0;
+            // DisabledWithoutRealPlayerLoginDelay is an initial grace period
+            // after the first real player arrives, not a cooldown between every
+            // RandomBotsPerInterval batch. Keep the elapsed timestamp while a
+            // real player remains online; the no-player branch resets it.
         }
     }
 
