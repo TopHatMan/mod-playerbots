@@ -46,6 +46,8 @@
 #include <cstdlib>
 #include <ctime>
 #include <iomanip>
+#include <limits>
+#include <cmath>
 #include <random>
 #include <set>
 #include <utility>
@@ -653,6 +655,7 @@ bool RandomPlayerbotMgr::IsAccountType(uint32 accountId, uint8 accountType)
 uint32 RandomPlayerbotMgr::AddRandomBots()
 {
     uint32 maxAllowedBotCount = GetEventValue(0, "bot_count");
+    uint32 const targetOnlineBotCount = maxAllowedBotCount;
     static time_t missingBotsTimer = 0;
 
     if (currentBots.size() < maxAllowedBotCount)
@@ -706,16 +709,15 @@ uint32 RandomPlayerbotMgr::AddRandomBots()
             uint32 guid;
             uint8 rClass;
             uint8 rRace;
+            uint8 level;
             uint32 accountId;
         };
         std::vector<CharacterInfo> allCharacters;
 
         for (uint32 accountId : accountsToUse)
         {
-            CharacterDatabasePreparedStatement* stmt =
-                CharacterDatabase.GetPreparedStatement(CHAR_SEL_CHARS_BY_ACCOUNT_ID);
-            stmt->SetData(0, accountId);
-            PreparedQueryResult result = CharacterDatabase.Query(stmt);
+            QueryResult result = CharacterDatabase.Query(
+                "SELECT guid,class,race,level FROM characters WHERE account={}", accountId);
             if (!result)
                 continue;
 
@@ -726,7 +728,10 @@ uint32 RandomPlayerbotMgr::AddRandomBots()
                 info.guid = fields[0].Get<uint32>();
                 info.rClass = fields[1].Get<uint8>();
                 info.rRace = fields[2].Get<uint8>();
+                info.level = fields[3].Get<uint8>();
                 info.accountId = accountId;
+                if (info.level > sPlayerbotAIConfig.randomBotMaxLevel)
+                    continue;
                 allCharacters.push_back(info);
             } while (result->NextRow());
         }
@@ -745,6 +750,74 @@ uint32 RandomPlayerbotMgr::AddRandomBots()
 
             else
                 hordeChars.push_back(charInfo);
+        }
+
+        // Organic level brackets are login quotas, never level generators. Prefer
+        // persistent characters from ranges that are currently below their desired
+        // online share; no character level, gear, talents, or played time is changed.
+        if (sPlayerbotAIConfig.levelBracketsEnabled)
+        {
+            auto rangeIndex = [](uint8 level, bool alliance) -> int
+            {
+                auto const& ranges = alliance ? sPlayerbotAIConfig.levelBracketsAlliance :
+                    sPlayerbotAIConfig.levelBracketsHorde;
+                for (size_t i = 0; i < ranges.size(); ++i)
+                    if (level >= ranges[i].lower && level <= ranges[i].upper)
+                        return int(i);
+                return -1;
+            };
+            auto prioritize = [&](std::vector<CharacterInfo>& candidates, bool alliance)
+            {
+                auto const& ranges = alliance ? sPlayerbotAIConfig.levelBracketsAlliance :
+                    sPlayerbotAIConfig.levelBracketsHorde;
+                std::vector<int> online(ranges.size(), 0);
+                for (auto const& [guid, bot] : playerBots)
+                {
+                    if (!bot || IsAlliance(bot->getRace()) != alliance)
+                        continue;
+                    int index = rangeIndex(bot->GetLevel(), alliance);
+                    if (index >= 0)
+                        ++online[index];
+                }
+                std::vector<std::vector<CharacterInfo>> buckets(ranges.size());
+                std::vector<CharacterInfo> unmatched;
+                for (CharacterInfo const& candidate : candidates)
+                {
+                    int index = rangeIndex(candidate.level, alliance);
+                    if (index >= 0)
+                        buckets[index].push_back(candidate);
+                    else
+                        unmatched.push_back(candidate);
+                }
+                std::vector<CharacterInfo> ordered;
+                ordered.reserve(candidates.size());
+                while (ordered.size() + unmatched.size() < candidates.size())
+                {
+                    int bestRange = -1;
+                    int bestDeficit = std::numeric_limits<int>::min();
+                    for (size_t i = 0; i < ranges.size(); ++i)
+                    {
+                        if (buckets[i].empty())
+                            continue;
+                        int desired = int(std::round(targetOnlineBotCount * (ranges[i].pct / 100.0)));
+                        int deficit = desired - online[i];
+                        if (bestRange < 0 || deficit > bestDeficit)
+                        {
+                            bestRange = int(i);
+                            bestDeficit = deficit;
+                        }
+                    }
+                    if (bestRange < 0)
+                        break;
+                    ordered.push_back(buckets[bestRange].back());
+                    buckets[bestRange].pop_back();
+                    ++online[bestRange];
+                }
+                ordered.insert(ordered.end(), unmatched.begin(), unmatched.end());
+                candidates.swap(ordered);
+            };
+            prioritize(allianceChars, true);
+            prioritize(hordeChars, false);
         }
 
         // Lambda to handle bot login logic

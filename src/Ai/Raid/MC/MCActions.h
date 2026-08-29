@@ -118,11 +118,11 @@ public:
     bool Execute(Event event) override;
 };
 
-class McCoreHoundMarkAction : public Action
+class McCoreHoundMarkAction : public AttackAction
 {
 public:
     McCoreHoundMarkAction(PlayerbotAI* botAI, std::string const name = "mc core hound mark")
-        : Action(botAI, name) {};
+        : AttackAction(botAI, name) {};
     Unit* GetTarget() override;
     bool Execute(Event event) override;
 };

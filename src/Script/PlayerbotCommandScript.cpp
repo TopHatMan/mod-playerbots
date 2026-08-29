@@ -6,13 +6,103 @@
 
 #include "BattleGroundTactics.h"
 #include "Chat.h"
+#include "Config.h"
+#include "DatabaseEnv.h"
 #include "GuildTaskMgr.h"
 #include "PerfMonitor.h"
 #include "PlayerbotMgr.h"
 #include "RandomPlayerbotMgr.h"
 #include "ScriptMgr.h"
+#include "WorldSession.h"
+
+#include <algorithm>
+#include <cctype>
+#include <deque>
+#include <unordered_set>
 
 using namespace Acore::ChatCommands;
+
+namespace OrganicGuildPopulation
+{
+    static std::deque<ObjectGuid> loginQueue;
+    static std::unordered_set<ObjectGuid> raidTimeBots;
+    static uint32 updateTimer = 0;
+
+    static std::string Lower(std::string value)
+    {
+        std::transform(value.begin(), value.end(), value.begin(),
+            [](unsigned char c) { return std::tolower(c); });
+        return value;
+    }
+
+    static bool IsRandomBotAccount(uint32 accountId)
+    {
+        std::string prefix = Lower(sConfigMgr->GetOption<std::string>(
+            "AiPlayerbot.RandomBotAccountPrefix", "rndbot"));
+        if (prefix.empty())
+            return false;
+        QueryResult result = LoginDatabase.Query("SELECT username FROM account WHERE id = {} LIMIT 1", accountId);
+        return result && Lower(result->Fetch()[0].Get<std::string>()).rfind(prefix, 0) == 0;
+    }
+
+    static uint32 Begin(Player* caller)
+    {
+        loginQueue.clear();
+        if (!caller || !caller->GetGuildId())
+            return 0;
+
+        QueryResult result = CharacterDatabase.Query(
+            "SELECT c.guid,c.account FROM characters c INNER JOIN guild_member gm ON gm.guid=c.guid "
+            "WHERE gm.guildid={} AND c.level={}", caller->GetGuildId(), sPlayerbotAIConfig.randomBotMaxLevel);
+        if (!result)
+            return 0;
+
+        do
+        {
+            Field* fields = result->Fetch();
+            ObjectGuid guid = ObjectGuid::Create<HighGuid::Player>(fields[0].Get<uint32>());
+            if (IsRandomBotAccount(fields[1].Get<uint32>()) && !sRandomPlayerbotMgr.GetPlayerBot(guid))
+                loginQueue.push_back(guid);
+        } while (result->NextRow());
+        return loginQueue.size();
+    }
+
+    static uint32 End()
+    {
+        loginQueue.clear();
+        uint32 count = 0;
+        for (ObjectGuid guid : raidTimeBots)
+        {
+            Player* bot = sRandomPlayerbotMgr.GetPlayerBot(guid);
+            if (bot && !bot->GetGroup() && !bot->IsInCombat())
+            {
+                sRandomPlayerbotMgr.LogoutPlayerBot(guid);
+                ++count;
+            }
+        }
+        raidTimeBots.clear();
+        return count;
+    }
+}
+
+class organic_guild_population_worldscript : public WorldScript
+{
+public:
+    organic_guild_population_worldscript() : WorldScript("organic_guild_population_worldscript") { }
+
+    void OnUpdate(uint32 diff) override
+    {
+        using namespace OrganicGuildPopulation;
+        updateTimer += diff;
+        if (updateTimer < 5000 || loginQueue.empty())
+            return;
+        updateTimer = 0;
+        ObjectGuid guid = loginQueue.front();
+        loginQueue.pop_front();
+        sRandomPlayerbotMgr.AddPlayerBot(guid, 0);
+        raidTimeBots.insert(guid);
+    }
+};
 
 class playerbots_commandscript : public CommandScript
 {
@@ -37,6 +127,8 @@ public:
             {"gtask", HandleGuildTaskCommand, SEC_GAMEMASTER, Console::Yes},
             {"pmon", HandlePerfMonCommand, SEC_GAMEMASTER, Console::Yes},
             {"rndbot", HandleRandomPlayerbotCommand, SEC_GAMEMASTER, Console::Yes},
+            {"raidtime", HandleRaidTimeCommand, SEC_PLAYER, Console::No},
+            {"unraidtime", HandleUnraidTimeCommand, SEC_PLAYER, Console::No},
             {"debug", playerbotsDebugCommandTable},
             {"account", playerbotsAccountCommandTable},
         };
@@ -56,6 +148,20 @@ public:
     static bool HandleRandomPlayerbotCommand(ChatHandler* handler, char const* args)
     {
         return RandomPlayerbotMgr::HandlePlayerbotConsoleCommand(handler, args);
+    }
+
+    static bool HandleRaidTimeCommand(ChatHandler* handler, char const*)
+    {
+        uint32 queued = OrganicGuildPopulation::Begin(handler->GetPlayer());
+        handler->PSendSysMessage("Raid time: {} raid-ready random guild bots will log in gradually.", queued);
+        return true;
+    }
+
+    static bool HandleUnraidTimeCommand(ChatHandler* handler, char const*)
+    {
+        uint32 loggedOut = OrganicGuildPopulation::End();
+        handler->PSendSysMessage("Raid time ended: {} idle raid-time bots logged out; grouped or fighting bots were left alone.", loggedOut);
+        return true;
     }
 
     static bool HandleGuildTaskCommand(ChatHandler* handler, char const* args)
@@ -203,4 +309,8 @@ public:
     }
 };
 
-void AddPlayerbotsCommandscripts() { new playerbots_commandscript(); }
+void AddPlayerbotsCommandscripts()
+{
+    new playerbots_commandscript();
+    new organic_guild_population_worldscript();
+}

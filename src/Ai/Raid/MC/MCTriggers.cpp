@@ -119,5 +119,11 @@ bool McMajordomoPolymorphHealerTrigger::IsActive()
 
 bool McCoreHoundMarkTrigger::IsActive()
 {
-    return PlayerbotAI::IsMainTank(bot) && AI_VALUE2(Unit*, "find target", "core hound");
+    if (!PlayerbotAI::IsDps(bot))
+        return false;
+
+    std::list<Creature*> hounds;
+    bot->GetCreatureListWithEntryInGrid(hounds, NPC_CORE_HOUND, 100.0f);
+    return std::any_of(hounds.begin(), hounds.end(), [](Creature* hound)
+        { return hound && hound->IsAlive() && hound->IsInCombat(); });
 }

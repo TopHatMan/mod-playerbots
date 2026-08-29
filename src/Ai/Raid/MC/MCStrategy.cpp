@@ -111,6 +111,7 @@ void RaidMcStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
 {
     multipliers.push_back(new McPlayerLedPullMultiplier(botAI));
     multipliers.push_back(new GarrDisableDpsAoeMultiplier(botAI));
+    multipliers.push_back(new CoreHoundPackMultiplier(botAI));
     multipliers.push_back(new BaronGeddonAbilityMultiplier(botAI));
     multipliers.push_back(new GolemaggMultiplier(botAI));
 }

@@ -89,6 +89,19 @@ float GarrDisableDpsAoeMultiplier::GetValue(Action* action)
     return 1.0f;
 }
 
+float CoreHoundPackMultiplier::GetValue(Action* action)
+{
+    if (!IsDpsBotWithAoeAction(bot, action))
+        return 1.0f;
+
+    std::list<Creature*> hounds;
+    bot->GetCreatureListWithEntryInGrid(hounds, NPC_CORE_HOUND, 100.0f);
+    for (Creature* hound : hounds)
+        if (hound && hound->IsAlive() && hound->IsInCombat())
+            return 0.0f;
+    return 1.0f;
+}
+
 static bool IsAllowedGeddonMovementAction(Action* action)
 {
     if (dynamic_cast<MovementAction*>(action) &&

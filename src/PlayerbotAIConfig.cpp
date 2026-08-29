@@ -801,6 +801,13 @@ void PlayerbotAIConfig::LoadRandomBotLevelConfig()
 {
     // ---- Level brackets ----
     levelBracketsEnabled = sConfigMgr->GetOption<bool>("AiPlayerbot.LevelBrackets.Enabled", false);
+    if (levelBracketsEnabled)
+    {
+        // Organic brackets select which persistent characters come online.
+        // New random bots therefore always begin at level one and progress normally.
+        disableRandomLevels = true;
+        randombotStartingLevel = 1;
+    }
     levelBracketsIgnoreGuildWithRealPlayers =
         sConfigMgr->GetOption<bool>("AiPlayerbot.LevelBrackets.IgnoreGuildBotsWithRealPlayers", true);
     levelBracketsIgnoreArenaTeamBots =

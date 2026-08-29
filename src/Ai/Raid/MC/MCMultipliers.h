@@ -16,6 +16,13 @@ public:
     float GetValue(Action* action) override;
 };
 
+class CoreHoundPackMultiplier : public Multiplier
+{
+public:
+    CoreHoundPackMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "core hound pack multiplier") {}
+    float GetValue(Action* action) override;
+};
+
 class BaronGeddonAbilityMultiplier : public Multiplier
 {
 public:

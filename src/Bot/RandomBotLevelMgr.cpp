@@ -378,14 +378,9 @@ void RandomBotLevelMgr::LoadSocialFriendList()
     } while (result->NextRow());
 }
 
-// Returns the bracket index for a player, flagging it for a pending level reset (to the closest
-// bracket) if it currently falls outside every defined range for its faction.
-//
-// Only random bots are ever enqueued into _pendingLevelResets. This is also called for real
-// players during the dynamic-distribution real-player census; a real player outside all brackets
-// simply returns -1 (its census contribution is skipped) rather than being queued for a level
-// reset - queuing a real player here would eventually reset that player's level, which is a bug
-// inherited from the original module that this port fixes.
+// Returns the bracket index for a player. Characters outside every defined range for their
+// faction return -1 and are not queued for a level reset. Organic brackets never move a
+// character to another level; they simply do not contribute to a login quota.
 int RandomBotLevelMgr::GetOrFlagPlayerBracket(Player* player)
 {
     bool isRandomBot = sRandomPlayerbotMgr.IsRandomBot(player);
@@ -422,56 +417,8 @@ int RandomBotLevelMgr::GetOrFlagPlayerBracket(Player* player)
     if (team != TEAM_ALLIANCE && team != TEAM_HORDE)
         return -1;
 
-    // Only random bots may be queued for a level reset below. Real players (and non-random bots)
-    // outside every bracket simply fall through and return -1.
-    if (!isRandomBot)
-        return -1;
-
-    std::vector<LevelBracketConfig> const& factionRanges = GetFactionRanges(team);
-
-    int targetRange = -1;
-    int smallestDiff = std::numeric_limits<int>::max();
-    uint8 dkMinLevel = static_cast<uint8>(sWorld->getIntConfig(CONFIG_START_HEROIC_PLAYER_LEVEL));
-    for (int i = 0; i < _numRanges; ++i)
-    {
-        if (factionRanges[i].lower > factionRanges[i].upper)
-            continue;
-
-        if (factionRanges[i].pct == 0)
-            continue;
-
-        // Skip brackets that Death Knights cannot be assigned to.
-        if (player->getClass() == CLASS_DEATH_KNIGHT && factionRanges[i].upper < dkMinLevel)
-            continue;
-
-        int diff = 0;
-        if (player->GetLevel() < factionRanges[i].lower)
-            diff = factionRanges[i].lower - player->GetLevel();
-        else if (player->GetLevel() > factionRanges[i].upper)
-            diff = player->GetLevel() - factionRanges[i].upper;
-        if (diff < smallestDiff)
-        {
-            smallestDiff = diff;
-            targetRange = i;
-        }
-    }
-
-    if (targetRange >= 0)
-    {
-        bool alreadyFlagged = false;
-        ObjectGuid guid = player->GetGUID();
-        for (auto const& entry : _pendingLevelResets)
-        {
-            if (entry.botGuid == guid)
-            {
-                alreadyFlagged = true;
-                break;
-            }
-        }
-        if (!alreadyFlagged)
-            _pendingLevelResets.push_back({guid, targetRange, team});
-    }
-
+    // Organic brackets never move a character to another level. Characters
+    // outside configured ranges simply do not contribute to a login quota.
     return -1;
 }
 
@@ -699,11 +646,8 @@ void RandomBotLevelMgr::RunLevelBracketsDistribution()
     LOG_DEBUG("playerbots", "[RandomBotLevelMgr] Total Alliance Bots: {}. Total Horde Bots: {}.",
         totalAllianceBots, totalHordeBots);
 
-    ProcessFactionDistribution(TEAM_ALLIANCE, totalAllianceBots, allianceActualCounts, allianceBotsByRange);
-    ProcessFactionDistribution(TEAM_HORDE, totalHordeBots, hordeActualCounts, hordeBotsByRange);
-
     LOG_DEBUG("playerbots",
-        "[RandomBotLevelMgr] Distribution adjustment complete. Alliance bots: {}, Horde bots: {}.", totalAllianceBots,
+        "[RandomBotLevelMgr] Organic online census complete. Alliance bots: {}, Horde bots: {}.", totalAllianceBots,
         totalHordeBots);
 }
 
@@ -931,14 +875,6 @@ void RandomBotLevelMgr::Update(uint32 diff)
     if (sPlayerbotAIConfig.levelBracketsEnabled)
     {
         _bracketsTimer += diff;
-        _flaggedTimer += diff;
-
-        if (_flaggedTimer >= sPlayerbotAIConfig.levelBracketsFlaggedCheckFrequency * 1000)
-        {
-            ProcessPendingLevelResets();
-            _flaggedTimer = 0;
-        }
-
         if (_bracketsTimer >= sPlayerbotAIConfig.levelBracketsCheckFrequency * 1000)
         {
             _bracketsTimer = 0;
@@ -961,6 +897,8 @@ void RandomBotLevelMgr::Update(uint32 diff)
 void RandomBotLevelMgr::OnBotLogin(Player* player)
 {
     if (!sRandomPlayerbotMgr.IsRandomBot(player))
+        return;
+    if (!sPlayerbotAIConfig.resetBotLevelEnabled)
         return;
 
     if (IsNameInExcludeList(player, sPlayerbotAIConfig.resetBotLevelExcludeNames))
@@ -1014,6 +952,8 @@ void RandomBotLevelMgr::OnBotLogin(Player* player)
 void RandomBotLevelMgr::OnBotLevelChanged(Player* player, uint8 oldLevel)
 {
     if (!sRandomPlayerbotMgr.IsRandomBot(player))
+        return;
+    if (!sPlayerbotAIConfig.resetBotLevelEnabled)
         return;
 
     // Only react to a natural level up.

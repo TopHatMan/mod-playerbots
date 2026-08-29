@@ -423,12 +423,14 @@ bool McMajordomoPolymorphHealerAction::Execute(Event /*event*/)
 Unit* McCoreHoundMarkAction::GetTarget()
 {
     Unit* highestHealthHound = nullptr;
-    for (auto const& [guid, ref] : bot->GetThreatMgr().GetThreatenedByMeList())
+    std::list<Creature*> hounds;
+    bot->GetCreatureListWithEntryInGrid(hounds, NPC_CORE_HOUND, 100.0f);
+    for (Creature* unit : hounds)
     {
-        Unit* unit = ref->GetOwner();
-        if (unit && unit->IsAlive() && unit->GetEntry() == NPC_CORE_HOUND)
+        if (unit && unit->IsAlive() && unit->IsInCombat())
         {
-            if (!highestHealthHound || unit->GetHealth() > highestHealthHound->GetHealth())
+            if (!highestHealthHound || unit->GetHealth() > highestHealthHound->GetHealth() ||
+                (unit->GetHealth() == highestHealthHound->GetHealth() && unit->GetGUID() < highestHealthHound->GetGUID()))
                 highestHealthHound = unit;
         }
     }
@@ -436,20 +438,7 @@ Unit* McCoreHoundMarkAction::GetTarget()
     if (!highestHealthHound)
         return nullptr;
 
-    Group* group = bot->GetGroup();
-    ObjectGuid currentSkullGuid = group ? group->GetTargetIcon(RtiTargetValue::skullIndex) : ObjectGuid::Empty;
-    if (!currentSkullGuid.IsEmpty() && currentSkullGuid != highestHealthHound->GetGUID())
-    {
-        // Only switch skull if the new target has meaningfully more health (10% buffer) to prevent rapid re-marking
-        if (Unit* currentSkullUnit = botAI->GetUnit(currentSkullGuid))
-            if (currentSkullUnit->IsAlive() && highestHealthHound->GetHealth() <= currentSkullUnit->GetHealth() * 1.10f)
-                return nullptr;
-    }
-
-    if (currentSkullGuid.IsEmpty() || currentSkullGuid != highestHealthHound->GetGUID())
-        return highestHealthHound;
-
-    return nullptr;
+    return highestHealthHound;
 }
 
 bool McCoreHoundMarkAction::Execute(Event /*event*/)
@@ -458,6 +447,11 @@ bool McCoreHoundMarkAction::Execute(Event /*event*/)
     if (!target)
         return false;
 
-    bot->GetGroup()->SetTargetIcon(RtiTargetValue::skullIndex, bot->GetGUID(), target->GetGUID());
-    return true;
+    if (Group* group = bot->GetGroup())
+        if (group->GetTargetIcon(RtiTargetValue::skullIndex) != target->GetGUID())
+            group->SetTargetIcon(RtiTargetValue::skullIndex, bot->GetGUID(), target->GetGUID());
+
+    // Every DPS independently computes the same deterministic highest-health
+    // hound. This keeps the pack level until the synchronized kill window.
+    return bot->GetVictim() == target || Attack(target);
 }
