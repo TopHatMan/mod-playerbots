@@ -739,12 +739,12 @@ uint32 RandomPlayerbotMgr::AddRandomBots()
         };
         std::vector<CharacterInfo> allCharacters;
 
-        for (uint32 accountId : accountsToUse)
+        auto appendAccountCharacters = [&](uint32 accountId)
         {
             QueryResult result = CharacterDatabase.Query(
                 "SELECT guid,class,race,level FROM characters WHERE account={}", accountId);
             if (!result)
-                continue;
+                return;
 
             do
             {
@@ -755,10 +755,44 @@ uint32 RandomPlayerbotMgr::AddRandomBots()
                 info.rRace = fields[2].Get<uint8>();
                 info.level = fields[3].Get<uint8>();
                 info.accountId = accountId;
-                if (info.level > sPlayerbotAIConfig.randomBotMaxLevel)
-                    continue;
-                allCharacters.push_back(info);
+                if (info.level <= sPlayerbotAIConfig.randomBotMaxLevel)
+                    allCharacters.push_back(info);
             } while (result->NextRow());
+        };
+
+        for (uint32 accountId : accountsToUse)
+            appendAccountCharacters(accountId);
+
+        auto schedulableCount = [&]()
+        {
+            return std::count_if(allCharacters.begin(), allCharacters.end(), [&](CharacterInfo const& info)
+            {
+                return !GetEventValue(info.guid, "add") && !GetEventValue(info.guid, "logout") &&
+                    !GetPlayerBot(info.guid) && !currentBots.contains(info.guid) &&
+                    !(sPlayerbotAIConfig.disableDeathKnightLogin && info.rClass == CLASS_DEATH_KNIGHT);
+            });
+        };
+
+        // Account-type bookkeeping is advisory. If its RNDbot slice contains
+        // empty accounts or too few eligible characters, expand through every
+        // real generated account while preserving the reserved AddClass pool.
+        if (schedulableCount() < maxAllowedBotCount)
+        {
+            std::unordered_set<uint32> usedAccounts(accountsToUse.begin(), accountsToUse.end());
+            std::unordered_set<uint32> reservedAccounts(addClassTypeAccounts.begin(), addClassTypeAccounts.end());
+            uint32 fallbackAccounts = 0;
+            for (uint32 accountId : sPlayerbotAIConfig.randomBotAccounts)
+            {
+                if (usedAccounts.contains(accountId) || reservedAccounts.contains(accountId))
+                    continue;
+                usedAccounts.insert(accountId);
+                appendAccountCharacters(accountId);
+                ++fallbackAccounts;
+                if (schedulableCount() >= maxAllowedBotCount)
+                    break;
+            }
+            if (fallbackAccounts)
+                LOG_WARN("playerbots", "Expanded RNDbot login search by {} fallback account(s) to bypass an underfilled assigned pool", fallbackAccounts);
         }
 
         // Shuffle for class balance
@@ -913,8 +947,9 @@ uint32 RandomPlayerbotMgr::AddRandomBots()
                 int divisor = RandomPlayerbotFactory::CalculateAvailableCharsPerAccount();
                 uint32 moreAccountsNeeded = (maxAllowedBotCount + divisor - 1) / divisor;
                 LOG_ERROR("playerbots",
-                          "Can't log-in all the requested bots. Try increasing RandomBotAccountCount in your conf file.\n"
-                          "{} more accounts needed.", moreAccountsNeeded);
+                          "Can't schedule all requested bots: {} eligible character(s) are still missing "
+                          "(roughly {} populated accounts). Increasing RandomBotAccountCount will not help if accounts are empty, reserved, above RandomBotMaxLevel, or already scheduled.",
+                          maxAllowedBotCount, moreAccountsNeeded);
                 missingBotsTimer = 0;    // Reset timer so error is not spammed every tick
             }
         }
