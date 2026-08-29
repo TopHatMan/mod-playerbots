@@ -33,4 +33,5 @@ void GenericPaladinNonCombatStrategy::InitTriggers(std::vector<TriggerNode*>& tr
 
     triggers.push_back(new TriggerNode("greater blessing needed",
         { NextAction("cast greater blessing assignment", ACTION_NORMAL) }));
+    triggers.push_back(new TriggerNode("di", { NextAction("raid wipe divine intervention", ACTION_EMERGENCY + 20) }));
 }

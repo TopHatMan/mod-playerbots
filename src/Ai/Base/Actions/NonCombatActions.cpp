@@ -5,6 +5,7 @@
  */
 
 #include "NonCombatActions.h"
+#include "PlayerbotAI.h"
 #include "Event.h"
 #include "Playerbots.h"
 
@@ -145,4 +146,10 @@ bool EatAction::isPossible()
     }
 
     return botAI->HasCheat(BotCheatMask::food) || UseItemAction::isPossible();
+}
+bool EndDivineInterventionAction::Execute(Event /*event*/)
+{
+    bot->RemoveAurasDueToSpell(19753);
+    bot->RemoveAurasDueToSpell(19752);
+    return true;
 }

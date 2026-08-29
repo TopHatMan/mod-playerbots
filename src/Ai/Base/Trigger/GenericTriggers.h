@@ -964,6 +964,13 @@ public:
     bool IsActive() override { return !bot->IsAlive() && bot->GetUInt32Value(PLAYER_SELF_RES_SPELL); }
 };
 
+class DivineInterventionRecoveryTrigger : public Trigger
+{
+public:
+    DivineInterventionRecoveryTrigger(PlayerbotAI* botAI) : Trigger(botAI, "divine intervention recovery") {}
+    bool IsActive() override;
+};
+
 class NewPetTrigger : public Trigger
 {
 public:

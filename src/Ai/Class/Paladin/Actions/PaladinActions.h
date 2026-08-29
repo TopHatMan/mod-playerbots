@@ -426,4 +426,11 @@ public:
     bool isUseful() override;
 };
 
+class CastRaidWipeDivineInterventionAction : public Action
+{
+public:
+    CastRaidWipeDivineInterventionAction(PlayerbotAI* botAI) : Action(botAI, "raid wipe divine intervention") {}
+    bool Execute(Event event) override;
+};
+
 #endif

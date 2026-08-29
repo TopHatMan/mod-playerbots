@@ -549,6 +549,19 @@ bool TankAssistTrigger::IsActive()
     return AI_VALUE2(bool, "has aggro", "current target");
 }
 
+bool DivineInterventionRecoveryTrigger::IsActive()
+{
+    if (bot->IsInCombat() || (!bot->HasAura(19753) && !bot->HasAura(19752)))
+        return false;
+
+    if (Group* group = bot->GetGroup())
+        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+            if (Player* member = ref->GetSource())
+                if (member->isDead())
+                    return true;
+    return false;
+}
+
 bool IsBehindTargetTrigger::IsActive()
 {
     Unit* target = AI_VALUE(Unit*, "current target");

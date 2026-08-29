@@ -17,6 +17,7 @@
 #include "PaladinTriggers.h"
 #include "Playerbots.h"
 #include "TankPaladinStrategy.h"
+#include "ChatCommandTrigger.h"
 
 class PaladinStrategyFactoryInternal : public NamedObjectContext<Strategy>
 {
@@ -156,6 +157,7 @@ public:
 
         creators["avenging wrath"] = &PaladinTriggerFactoryInternal::avenging_wrath;
         creators["greater blessing needed"] = &PaladinTriggerFactoryInternal::greater_blessing_needed;
+        creators["di"] = &PaladinTriggerFactoryInternal::di;
     }
 
 private:
@@ -233,6 +235,7 @@ private:
     {
         return new GreaterBlessingNeededTrigger(botAI);
     }
+    static Trigger* di(PlayerbotAI* botAI) { return new ChatCommandTrigger(botAI, "di"); }
 };
 
 class PaladinAiObjectContextInternal : public NamedObjectContext<Action>
@@ -324,9 +327,11 @@ public:
         creators["hand of freedom on party"] = &PaladinAiObjectContextInternal::hand_of_freedom_on_party;
         creators["cast greater blessing assignment"] =
             &PaladinAiObjectContextInternal::cast_greater_blessing_assignment;
+        creators["raid wipe divine intervention"] = &PaladinAiObjectContextInternal::raid_wipe_divine_intervention;
     }
 
 private:
+    static Action* raid_wipe_divine_intervention(PlayerbotAI* botAI) { return new CastRaidWipeDivineInterventionAction(botAI); }
     static Action* blessing_of_protection_on_party(PlayerbotAI* botAI)
     {
         return new CastBlessingOfProtectionProtectAction(botAI);

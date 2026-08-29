@@ -31,4 +31,11 @@ public:
     bool isPossible() override;
 };
 
+class EndDivineInterventionAction : public Action
+{
+public:
+    EndDivineInterventionAction(PlayerbotAI* botAI) : Action(botAI, "end divine intervention") {}
+    bool Execute(Event event) override;
+};
+
 #endif

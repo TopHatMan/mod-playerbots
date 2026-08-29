@@ -26,6 +26,58 @@ static bool IsBlessingTargetCandidate(Player* bot, Player* player)
                             player->GetPositionZ());
 }
 
+bool CastRaidWipeDivineInterventionAction::Execute(Event event)
+{
+    Player* leader = event.getOwner();
+    Group* group = bot->GetGroup();
+    if (!leader || !group || !group->isRaidGroup() || !group->IsLeader(leader->GetGUID()) ||
+        leader->GetGroup() != group || !bot->IsAlive())
+        return false;
+
+    uint32 spellId = AI_VALUE2(uint32, "spell id", "divine intervention");
+    if (!spellId)
+        return false;
+
+    // Only the first eligible paladin responds, preventing several paladins
+    // from sacrificing themselves on several different healers.
+    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+    {
+        Player* member = ref->GetSource();
+        if (!member || !member->IsAlive() || member->getClass() != CLASS_PALADIN)
+            continue;
+        PlayerbotAI* ai = GET_PLAYERBOT_AI(member);
+        uint32 memberSpellId = ai ? ai->GetAiObjectContext()->GetValue<uint32>("spell id", "divine intervention")->Get() : 0;
+        if (memberSpellId && member->GetGUID() < bot->GetGUID())
+            return false;
+    }
+
+    std::vector<Player*> healers;
+    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+    {
+        Player* member = ref->GetSource();
+        if (member && member != bot && member->IsAlive() && member->GetMapId() == bot->GetMapId() &&
+            PlayerbotAI::IsHeal(member))
+            healers.push_back(member);
+    }
+    std::sort(healers.begin(), healers.end(), [](Player const* left, Player const* right)
+    {
+        bool leftPaladin = left->getClass() == CLASS_PALADIN;
+        bool rightPaladin = right->getClass() == CLASS_PALADIN;
+        if (leftPaladin != rightPaladin)
+            return !leftPaladin;
+        return left->GetGUID() < right->GetGUID();
+    });
+    if (healers.empty())
+        return false;
+
+    if (botAI->CastSpell("divine intervention", healers.front()))
+    {
+        botAI->TellMaster("DI on " + healers.front()->GetName() + ". They will recover the raid after combat.");
+        return true;
+    }
+    return false;
+}
+
 static bool HasBlessingAura(
     PlayerbotAI* botAI, Unit* target, std::initializer_list<char const*> auraNames)
 {
