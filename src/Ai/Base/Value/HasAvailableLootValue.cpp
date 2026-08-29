@@ -10,6 +10,6 @@
 
 bool HasAvailableLootValue::Calculate()
 {
-    return AI_VALUE(uint8, "bag space") < 100 && !AI_VALUE(bool, "can loot") &&
+    return !AI_VALUE(bool, "can loot") &&
            AI_VALUE(LootObjectStack*, "available loot")->CanLoot(sPlayerbotAIConfig.lootDistance);
 }

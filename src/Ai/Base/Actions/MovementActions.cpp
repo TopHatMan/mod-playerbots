@@ -2601,9 +2601,6 @@ bool RunAwayAction::Execute(Event /*event*/) { return Flee(AI_VALUE(Unit*, "grou
 
 bool MoveToLootAction::Execute(Event /*event*/)
 {
-    if (AI_VALUE(uint8, "bag space") >= 100)
-        return false;
-
     LootObject loot = AI_VALUE(LootObject, "loot target");
     if (!loot.IsLootPossible(bot))
         return false;

@@ -36,14 +36,13 @@ public:
     bool IsLootPossible(Player* bot);
     void Refresh(Player* bot, ObjectGuid guid);
     WorldObject* GetWorldObject(Player* bot);
+    static bool IsNeededForQuest(Player* bot, uint32 itemId);
     ObjectGuid guid;
 
     uint32 skillId;
     uint32 reqSkillValue;
     uint32 reqItem;
 
-private:
-    static bool IsNeededForQuest(Player* bot, uint32 itemId);
 };
 
 class LootTarget

@@ -19,9 +19,6 @@
 
 bool LootAction::Execute(Event /*event*/)
 {
-    if (AI_VALUE(uint8, "bag space") >= 100)
-        return false;
-
     if (!AI_VALUE(bool, "has available loot"))
         return false;
 
@@ -74,9 +71,6 @@ enum ProfessionSpells
 
 bool OpenLootAction::Execute(Event /*event*/)
 {
-    if (AI_VALUE(uint8, "bag space") >= 100)
-        return false;
-
     LootObject lootObject = AI_VALUE(LootObject, "loot target");
     bool result = DoLoot(lootObject);
     if (result)
@@ -415,28 +409,62 @@ bool StoreLootAction::Execute(Event event)
         if (!proto)
             continue;
 
-        if (!IsRealPlayer(botAI->GetMaster()) && AI_VALUE(uint8, "bag space") > 80)
+        bool const questItem = proto->Class == ITEM_CLASS_QUEST || LootObject::IsNeededForQuest(bot, itemid);
+        if (proto->Quality < ITEM_QUALITY_UNCOMMON && !questItem)
+            continue;
+
+        ItemPosCountVec dest;
+        InventoryResult storeResult = bot->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, itemid, itemcount);
+        if (storeResult != EQUIP_ERR_OK)
         {
-            uint32 maxStack = proto->GetMaxStackSize();
-            if (maxStack == 1)
-                continue;
-
-            std::vector<Item*> found = parseItems(chat->FormatItem(proto));
-
-            bool hasFreeStack = false;
-
-            for (auto stack : found)
+            std::vector<Item*> expendableItems;
+            auto addExpendable = [&](Item* item)
             {
-                if (stack->GetCount() + itemcount < maxStack)
-                {
-                    hasFreeStack = true;
-                    break;
-                }
+                if (!item)
+                    return;
+
+                ItemTemplate const* itemProto = item->GetTemplate();
+                if (!itemProto || itemProto->Quality >= ITEM_QUALITY_UNCOMMON || itemProto->Class == ITEM_CLASS_QUEST ||
+                    LootObject::IsNeededForQuest(bot, itemProto->ItemId))
+                    return;
+
+                expendableItems.push_back(item);
+            };
+
+            for (uint8 slot = INVENTORY_SLOT_ITEM_START; slot < INVENTORY_SLOT_ITEM_END; ++slot)
+                addExpendable(bot->GetItemByPos(INVENTORY_SLOT_BAG_0, slot));
+
+            for (uint8 bag = INVENTORY_SLOT_BAG_START; bag < INVENTORY_SLOT_BAG_END; ++bag)
+            {
+                Bag* container = bot->GetBagByPos(bag);
+                if (!container)
+                    continue;
+
+                for (uint32 slot = 0; slot < container->GetBagSize(); ++slot)
+                    addExpendable(container->GetItemByPos(slot));
             }
 
-            if (!hasFreeStack)
-                continue;
+            std::sort(expendableItems.begin(), expendableItems.end(), [](Item const* left, Item const* right)
+            {
+                ItemTemplate const* leftProto = left->GetTemplate();
+                ItemTemplate const* rightProto = right->GetTemplate();
+                if (leftProto->Quality != rightProto->Quality)
+                    return leftProto->Quality < rightProto->Quality;
+                return leftProto->SellPrice < rightProto->SellPrice;
+            });
+
+            for (Item* item : expendableItems)
+            {
+                bot->DestroyItem(item->GetBagSlot(), item->GetSlot(), true);
+                dest.clear();
+                storeResult = bot->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, itemid, itemcount);
+                if (storeResult == EQUIP_ERR_OK)
+                    break;
+            }
         }
+
+        if (storeResult != EQUIP_ERR_OK)
+            continue;
 
         Player* master = botAI->GetMaster();
         if (sRandomPlayerbotMgr.IsRandomBot(bot) && master)
