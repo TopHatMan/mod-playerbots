@@ -130,6 +130,47 @@ Unit* TankTargetValue::Calculate()
         }
     }
 
+    Group* group = bot->GetGroup();
+    if (group && group->IsAssistant(bot->GetGUID()) && PlayerbotAI::IsAssistTank(bot))
+    {
+        // A raid assistant assigned to a real tank is an explicit off-tank. Keep
+        // anything already secured instead of bouncing between targets.
+        if (Unit* current = botAI->GetAiObjectContext()->GetValue<Unit*>("current target")->Get())
+            if (current->IsAlive() && current->GetVictim() == bot)
+                return current;
+
+        std::vector<Unit*> looseAttackers;
+        for (ObjectGuid const& guid : AI_VALUE(GuidVector, "attackers"))
+        {
+            Unit* attacker = botAI->GetUnit(guid);
+            if (!attacker || !attacker->IsAlive())
+                continue;
+
+            // Never peel the encounter's main target away from the main tank,
+            // and do not fight another tank for a mob they already secured.
+            if (Player* victim = attacker->GetVictim() ? attacker->GetVictim()->ToPlayer() : nullptr)
+                if (PlayerbotAI::IsTank(victim))
+                    continue;
+
+            looseAttackers.push_back(attacker);
+        }
+
+        std::sort(looseAttackers.begin(), looseAttackers.end(), [](Unit const* left, Unit const* right)
+        {
+            bool leftThreatensPlayer = left->GetVictim() && left->GetVictim()->ToPlayer();
+            bool rightThreatensPlayer = right->GetVictim() && right->GetVictim()->ToPlayer();
+            if (leftThreatensPlayer != rightThreatensPlayer)
+                return leftThreatensPlayer;
+            return left->GetGUID() < right->GetGUID();
+        });
+
+        if (!looseAttackers.empty())
+        {
+            uint32 index = std::max<int32>(0, botAI->GetAssistTankIndex(bot));
+            return looseAttackers[index % looseAttackers.size()];
+        }
+    }
+
     // FindTargetForTankStrategy strategy(botAI);
     FindTankTargetSmartStrategy strategy(botAI);
     return FindTarget(&strategy);
