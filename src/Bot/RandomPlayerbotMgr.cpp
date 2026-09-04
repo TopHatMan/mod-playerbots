@@ -682,6 +682,7 @@ uint32 RandomPlayerbotMgr::AddRandomBots()
     uint32 maxAllowedBotCount = GetEventValue(0, "bot_count");
     uint32 const targetOnlineBotCount = maxAllowedBotCount;
     static time_t missingBotsTimer = 0;
+    static uint32 lastFallbackAccountCount = 0;
 
     if (currentBots.size() < maxAllowedBotCount)
     {
@@ -767,7 +768,9 @@ uint32 RandomPlayerbotMgr::AddRandomBots()
         {
             return std::count_if(allCharacters.begin(), allCharacters.end(), [&](CharacterInfo const& info)
             {
-                return !GetEventValue(info.guid, "add") && !GetEventValue(info.guid, "logout") &&
+                bool const logoutCooldown = sPlayerbotAIConfig.enablePeriodicOnlineOffline &&
+                    GetEventValue(info.guid, "logout");
+                return !GetEventValue(info.guid, "add") && !logoutCooldown &&
                     !GetPlayerBot(info.guid) && !currentBots.contains(info.guid) &&
                     !(sPlayerbotAIConfig.disableDeathKnightLogin && info.rClass == CLASS_DEATH_KNIGHT);
             });
@@ -791,9 +794,12 @@ uint32 RandomPlayerbotMgr::AddRandomBots()
                 if (schedulableCount() >= maxAllowedBotCount)
                     break;
             }
-            if (fallbackAccounts)
+            if (fallbackAccounts && fallbackAccounts != lastFallbackAccountCount)
                 LOG_WARN("playerbots", "Expanded RNDbot login search by {} fallback account(s) to bypass an underfilled assigned pool", fallbackAccounts);
+            lastFallbackAccountCount = fallbackAccounts;
         }
+        else
+            lastFallbackAccountCount = 0;
 
         // Shuffle for class balance
         std::shuffle(allCharacters.begin(), allCharacters.end(), rng);
@@ -882,8 +888,10 @@ uint32 RandomPlayerbotMgr::AddRandomBots()
         // Lambda to handle bot login logic
         auto tryLoginBot = [&](CharacterInfo const& charInfo) -> bool
         {
+            bool const logoutCooldown = sPlayerbotAIConfig.enablePeriodicOnlineOffline &&
+                GetEventValue(charInfo.guid, "logout");
             if (GetEventValue(charInfo.guid, "add") ||
-                GetEventValue(charInfo.guid, "logout") ||
+                logoutCooldown ||
                 GetPlayerBot(charInfo.guid) ||
                 currentBots.contains(charInfo.guid) ||
                 (sPlayerbotAIConfig.disableDeathKnightLogin && charInfo.rClass == CLASS_DEATH_KNIGHT))
