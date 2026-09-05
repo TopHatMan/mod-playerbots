@@ -480,6 +480,9 @@ public:
 
     void SpellInterrupted(uint32 spellid);
     int32 CalculateGlobalCooldown(uint32 spellid);
+    // Backward-compatible entry point for external modules. Upstream now
+    // interrupts individual current spell containers directly.
+    void InterruptSpell();
     void RequestSpellInterrupt();
     void RemoveAura(std::string const name);
     void RemoveShapeshift();

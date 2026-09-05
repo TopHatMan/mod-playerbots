@@ -1425,6 +1425,11 @@ int32 PlayerbotAI::CalculateGlobalCooldown(uint32 spellid)
     return sPlayerbotAIConfig.reactDelay;
 }
 
+void PlayerbotAI::InterruptSpell()
+{
+    bot->CastStop();
+}
+
 void PlayerbotAI::HandleMasterIncomingPacket(WorldPacket const& packet)
 {
     masterIncomingPacketHandlers.AddPacket(packet);
