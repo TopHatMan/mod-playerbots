@@ -137,3 +137,24 @@ bool McCoreHoundMarkTrigger::IsActive()
     // target balancing and let the AoE burn phase take over.
     return false;
 }
+
+bool McCoreHoundBurnTrigger::IsActive()
+{
+    if (!PlayerbotAI::IsDps(bot))
+        return false;
+
+    uint32 activeHounds = 0;
+    std::list<Creature*> hounds;
+    bot->GetCreatureListWithEntryInGrid(hounds, NPC_CORE_HOUND, 100.0f);
+    for (Creature* hound : hounds)
+    {
+        if (!hound || !hound->IsAlive() || !hound->IsInCombat())
+            continue;
+
+        ++activeHounds;
+        if (hound->GetHealthPct() > CORE_HOUND_BURN_HEALTH_PCT)
+            return false;
+    }
+
+    return activeHounds >= 2;
+}

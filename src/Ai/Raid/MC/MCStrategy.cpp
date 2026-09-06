@@ -99,7 +99,10 @@ void RaidMcStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     // Trash
     triggers.push_back(
         new TriggerNode("mc core hound mark",
-                        { NextAction("mc core hound mark", ACTION_RAID) }));
+                        { NextAction("mc core hound mark", ACTION_RAID + 2) }));
+    triggers.push_back(
+        new TriggerNode("mc core hound burn",
+                        { NextAction("mc core hound burn", ACTION_RAID + 3) }));
 
     // Anywhere in MC: escaping a lava pool outranks everything else.
     triggers.push_back(

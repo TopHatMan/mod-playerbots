@@ -473,7 +473,44 @@ bool McCoreHoundMarkAction::Execute(Event /*event*/)
     if (!target)
         return false;
 
+    // Changing the AI target alone does not interrupt the old swing or cast.
+    // Stop both before redirecting damage away from a hound that has reached
+    // the balancing floor.
+    if (bot->GetVictim() != target)
+    {
+        bot->CastStop();
+        bot->AttackStop();
+    }
+
     // Spread DPS deterministically across the healthiest hounds instead of
-    // making an entire 40-player raid overkill one skull between AI ticks.
+    // making an entire 40-player raid overkill one target between AI ticks.
     return bot->GetVictim() == target || Attack(target);
+}
+
+bool McCoreHoundBurnAction::Execute(Event event)
+{
+    // Generic AoE triggers count attackers on this bot. Raid DPS usually have
+    // no attackers because the hounds are on tanks, so explicitly invoke a
+    // registered class AoE once every living hound is inside the burn window.
+    std::vector<std::string> actions;
+    switch (bot->getClass())
+    {
+        case CLASS_MAGE:        actions = {"flamestrike", "blizzard"}; break;
+        case CLASS_WARLOCK:     actions = {"rain of fire", "seed of corruption", "hellfire"}; break;
+        case CLASS_WARRIOR:     actions = {"whirlwind", "thunder clap", "cleave"}; break;
+        case CLASS_PALADIN:     actions = {"consecration", "divine storm"}; break;
+        case CLASS_PRIEST:      actions = {"mind sear", "holy nova"}; break;
+        case CLASS_ROGUE:       actions = {"fan of knives", "blade flurry"}; break;
+        case CLASS_SHAMAN:      actions = {"fire nova", "chain lightning", "magma totem"}; break;
+        case CLASS_DRUID:       actions = {"starfall", "hurricane", "swipe"}; break;
+        case CLASS_HUNTER:      actions = {"volley", "multi-shot", "explosive trap"}; break;
+        case CLASS_DEATH_KNIGHT: actions = {"death and decay", "howling blast", "blood boil", "pestilence"}; break;
+        default: break;
+    }
+
+    for (std::string const& action : actions)
+        if (botAI->DoSpecificAction(action, event, true))
+            return true;
+
+    return false;
 }

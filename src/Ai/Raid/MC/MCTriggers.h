@@ -88,6 +88,13 @@ public:
     bool IsActive() override;
 };
 
+class McCoreHoundBurnTrigger : public Trigger
+{
+public:
+    McCoreHoundBurnTrigger(PlayerbotAI* botAI) : Trigger(botAI, "mc core hound burn") {}
+    bool IsActive() override;
+};
+
 // Standing/swimming in magma (knocked into a lava pool by Ragnaros' Wrath or an Eruption)
 class McInLavaTrigger : public Trigger
 {
