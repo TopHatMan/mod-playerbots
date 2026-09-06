@@ -96,10 +96,20 @@ float CoreHoundPackMultiplier::GetValue(Action* action)
 
     std::list<Creature*> hounds;
     bot->GetCreatureListWithEntryInGrid(hounds, NPC_CORE_HOUND, 100.0f);
+    bool foundActiveHound = false;
     for (Creature* hound : hounds)
-        if (hound && hound->IsAlive() && hound->IsInCombat())
+    {
+        if (!hound || !hound->IsAlive() || !hound->IsInCombat())
+            continue;
+
+        foundActiveHound = true;
+        if (hound->GetHealthPct() > CORE_HOUND_BURN_HEALTH_PCT)
             return 0.0f;
-    return 1.0f;
+    }
+
+    // All active pack members are inside the execute window. Strongly favor
+    // AoE so they enter Play Dead together before any aura expires.
+    return foundActiveHound ? 3.0f : 1.0f;
 }
 
 static bool IsAllowedGeddonMovementAction(Action* action)

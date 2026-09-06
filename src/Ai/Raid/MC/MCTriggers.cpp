@@ -124,6 +124,16 @@ bool McCoreHoundMarkTrigger::IsActive()
 
     std::list<Creature*> hounds;
     bot->GetCreatureListWithEntryInGrid(hounds, NPC_CORE_HOUND, 100.0f);
-    return std::any_of(hounds.begin(), hounds.end(), [](Creature* hound)
-        { return hound && hound->IsAlive() && hound->IsInCombat(); });
+    for (Creature* hound : hounds)
+    {
+        if (!hound || !hound->IsAlive() || !hound->IsInCombat())
+            continue;
+
+        if (hound->GetHealthPct() > CORE_HOUND_BURN_HEALTH_PCT)
+            return true;
+    }
+
+    // Once the entire engaged pack is low, stop spending the raid action on
+    // target balancing and let the AoE burn phase take over.
+    return false;
 }

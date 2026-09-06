@@ -36,6 +36,11 @@ enum MoltenCoreSpells
 constexpr uint32 MAGMA_SPLASH_BACK_OFF_STACKS = 20;
 constexpr float MAGMA_SPLASH_BACK_OFF_DISTANCE = 12.0f;
 
+// Core Hound packs only stay dead when the whole nearby pack is down during
+// the Play Dead window. Balance them first, then switch the raid to AoE.
+constexpr float CORE_HOUND_BURN_HEALTH_PCT = 25.0f;
+constexpr float CORE_HOUND_BALANCE_BAND_PCT = 4.0f;
+
 // Shazzrah's Arcane Explosion radius
 constexpr float ARCANE_EXPLOSION_DISTANCE = 26.0f;
 }

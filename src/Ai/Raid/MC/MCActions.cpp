@@ -422,23 +422,49 @@ bool McMajordomoPolymorphHealerAction::Execute(Event /*event*/)
 
 Unit* McCoreHoundMarkAction::GetTarget()
 {
-    Unit* highestHealthHound = nullptr;
+    std::vector<Creature*> activeHounds;
     std::list<Creature*> hounds;
     bot->GetCreatureListWithEntryInGrid(hounds, NPC_CORE_HOUND, 100.0f);
     for (Creature* unit : hounds)
     {
         if (unit && unit->IsAlive() && unit->IsInCombat())
+            activeHounds.push_back(unit);
+    }
+
+    if (activeHounds.empty())
+        return nullptr;
+
+    std::sort(activeHounds.begin(), activeHounds.end(), [](Creature const* left, Creature const* right)
+    {
+        if (left->GetHealthPct() != right->GetHealthPct())
+            return left->GetHealthPct() > right->GetHealthPct();
+        return left->GetGUID() < right->GetGUID();
+    });
+
+    float const highestHealthPct = activeHounds.front()->GetHealthPct();
+    std::vector<Creature*> healthiestBand;
+    for (Creature* hound : activeHounds)
+    {
+        if (hound->GetHealthPct() + CORE_HOUND_BALANCE_BAND_PCT < highestHealthPct)
+            break;
+        healthiestBand.push_back(hound);
+    }
+
+    uint32 dpsIndex = 0;
+    if (Group* group = bot->GetGroup())
+    {
+        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
         {
-            if (!highestHealthHound || unit->GetHealth() > highestHealthHound->GetHealth() ||
-                (unit->GetHealth() == highestHealthHound->GetHealth() && unit->GetGUID() < highestHealthHound->GetGUID()))
-                highestHealthHound = unit;
+            Player* member = ref->GetSource();
+            if (!member || !member->IsAlive() || !PlayerbotAI::IsDps(member))
+                continue;
+            if (member == bot)
+                break;
+            ++dpsIndex;
         }
     }
 
-    if (!highestHealthHound)
-        return nullptr;
-
-    return highestHealthHound;
+    return healthiestBand[dpsIndex % healthiestBand.size()];
 }
 
 bool McCoreHoundMarkAction::Execute(Event /*event*/)
@@ -447,11 +473,7 @@ bool McCoreHoundMarkAction::Execute(Event /*event*/)
     if (!target)
         return false;
 
-    if (Group* group = bot->GetGroup())
-        if (group->GetTargetIcon(RtiTargetValue::skullIndex) != target->GetGUID())
-            group->SetTargetIcon(RtiTargetValue::skullIndex, bot->GetGUID(), target->GetGUID());
-
-    // Every DPS independently computes the same deterministic highest-health
-    // hound. This keeps the pack level until the synchronized kill window.
+    // Spread DPS deterministically across the healthiest hounds instead of
+    // making an entire 40-player raid overkill one skull between AI ticks.
     return bot->GetVictim() == target || Attack(target);
 }
