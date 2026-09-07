@@ -122,39 +122,31 @@ bool McCoreHoundMarkTrigger::IsActive()
     if (!PlayerbotAI::IsDps(bot))
         return false;
 
-    std::list<Creature*> hounds;
-    bot->GetCreatureListWithEntryInGrid(hounds, NPC_CORE_HOUND, 100.0f);
-    for (Creature* hound : hounds)
-    {
-        if (!hound || !hound->IsAlive() || !hound->IsInCombat())
-            continue;
+    CoreHoundPackState const pack = GetCoreHoundPackState(bot);
+    if (!pack.HasPack() || pack.IsBurnPhase())
+        return false;
 
-        if (hound->GetHealthPct() > CORE_HOUND_BURN_HEALTH_PCT)
-            return true;
-    }
-
-    // Once the entire engaged pack is low, stop spending the raid action on
-    // target balancing and let the AoE burn phase take over.
-    return false;
+    return SelectCoreHoundBalanceTarget(bot) != nullptr;
 }
 
-bool McCoreHoundBurnTrigger::IsActive()
+bool McCoreHoundHoldTrigger::IsActive()
 {
     if (!PlayerbotAI::IsDps(bot))
         return false;
 
-    uint32 activeHounds = 0;
-    std::list<Creature*> hounds;
-    bot->GetCreatureListWithEntryInGrid(hounds, NPC_CORE_HOUND, 100.0f);
-    for (Creature* hound : hounds)
-    {
-        if (!hound || !hound->IsAlive() || !hound->IsInCombat())
-            continue;
+    CoreHoundPackState const pack = GetCoreHoundPackState(bot);
+    if (!pack.HasPack() || pack.IsBurnPhase())
+        return false;
 
-        ++activeHounds;
-        if (hound->GetHealthPct() > CORE_HOUND_BURN_HEALTH_PCT)
-            return false;
-    }
+    // Unassigned DPS: this hound is already at the execute floor, or the
+    // healthiest band already has its DPS cap. Stop hitting it.
+    return SelectCoreHoundBalanceTarget(bot) == nullptr;
+}
 
-    return activeHounds >= 2;
+bool McCoreHoundBurnTrigger::IsActive()
+{
+    if (PlayerbotAI::IsHeal(bot))
+        return false;
+
+    return GetCoreHoundPackState(bot).IsBurnPhase();
 }

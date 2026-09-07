@@ -9,6 +9,7 @@
 #include "ChooseTargetActions.h"
 #include "DKActions.h"
 #include "DruidActions.h"
+#include "EncounterHelpers.h"
 #include "GenericSpellActions.h"
 #include "HunterActions.h"
 #include "MCActions.h"
@@ -91,25 +92,49 @@ float GarrDisableDpsAoeMultiplier::GetValue(Action* action)
 
 float CoreHoundPackMultiplier::GetValue(Action* action)
 {
-    if (!IsDpsBotWithAoeAction(bot, action))
+    if (dynamic_cast<McCoreHoundMarkAction*>(action) ||
+        dynamic_cast<McCoreHoundHoldAction*>(action) ||
+        dynamic_cast<McCoreHoundBurnAction*>(action) ||
+        dynamic_cast<McMoveFromLavaAction*>(action))
         return 1.0f;
 
-    std::list<Creature*> hounds;
-    bot->GetCreatureListWithEntryInGrid(hounds, NPC_CORE_HOUND, 100.0f);
-    bool foundActiveHound = false;
-    for (Creature* hound : hounds)
-    {
-        if (!hound || !hound->IsAlive() || !hound->IsInCombat())
-            continue;
+    CoreHoundPackState const pack = GetCoreHoundPackState(bot);
+    if (!pack.HasPack())
+        return 1.0f;
 
-        foundActiveHound = true;
-        if (hound->GetHealthPct() > CORE_HOUND_BURN_HEALTH_PCT)
+    bool const burn = pack.IsBurnPhase();
+    bool const isAoe = IsDpsBotWithAoeAction(bot, action) || EncounterHelpers::IsAoeThreatAction(bot, action);
+
+    if (burn)
+        return isAoe ? 3.0f : 1.0f;
+
+    // Balance phase: no AoE until every fighting hound is at the execute floor.
+    if (isAoe)
+        return 0.0f;
+
+    if (!PlayerbotAI::IsDps(bot))
+        return 1.0f;
+
+    Creature* assigned = SelectCoreHoundBalanceTarget(bot);
+    if (!assigned)
+    {
+        // Extra DPS hold while the remaining hounds drip to 10%.
+        if (dynamic_cast<AttackAction*>(action))
             return 0.0f;
+
+        if (auto* spell = dynamic_cast<CastSpellAction*>(action))
+            if (spell->GetTargetName() == "current target")
+                return 0.0f;
+
+        return 1.0f;
     }
 
-    // All active pack members are inside the execute window. Strongly favor
-    // AoE so they enter Play Dead together before any aura expires.
-    return foundActiveHound ? 3.0f : 1.0f;
+    // DoTs on a near-floor hound will Play Dead it before the pack is ready.
+    if (assigned->GetHealthPct() <= CORE_HOUND_LOW_HEALTH_PCT &&
+        dynamic_cast<CastDebuffSpellAction*>(action))
+        return 0.0f;
+
+    return 1.0f;
 }
 
 static bool IsAllowedGeddonMovementAction(Action* action)

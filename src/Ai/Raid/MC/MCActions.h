@@ -127,6 +127,14 @@ public:
     bool Execute(Event event) override;
 };
 
+class McCoreHoundHoldAction : public Action
+{
+public:
+    McCoreHoundHoldAction(PlayerbotAI* botAI, std::string const name = "mc core hound hold")
+        : Action(botAI, name) {}
+    bool Execute(Event event) override;
+};
+
 class McCoreHoundBurnAction : public Action
 {
 public:

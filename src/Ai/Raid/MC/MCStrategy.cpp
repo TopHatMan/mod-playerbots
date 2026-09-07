@@ -5,6 +5,7 @@
  */
 
 #include "MCStrategy.h"
+#include "Creature.h"
 #include "MCHelpers.h"
 #include "MCMultipliers.h"
 #include "Playerbots.h"
@@ -96,18 +97,21 @@ void RaidMcStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode("mc ragnaros fire resistance",
                         { NextAction("mc ragnaros fire resistance", ACTION_RAID) }));
 
-    // Trash
+    // Trash: drip each Core Hound to ~10%, hold, then AoE so Play Dead lands together.
     triggers.push_back(
         new TriggerNode("mc core hound mark",
                         { NextAction("mc core hound mark", ACTION_RAID + 2) }));
     triggers.push_back(
+        new TriggerNode("mc core hound hold",
+                        { NextAction("mc core hound hold", ACTION_RAID + 2) }));
+    triggers.push_back(
         new TriggerNode("mc core hound burn",
                         { NextAction("mc core hound burn", ACTION_RAID + 3) }));
 
-    // Anywhere in MC: escaping a lava pool outranks everything else.
+    // Anywhere in MC: escaping a lava pool outranks pack targeting.
     triggers.push_back(
         new TriggerNode("mc in lava",
-                        { NextAction("mc move from lava", ACTION_RAID + 1) }));
+                        { NextAction("mc move from lava", ACTION_RAID + 4) }));
 }
 
 void RaidMcStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
@@ -139,4 +143,29 @@ void RaidMcStrategy::AppendTargetExclusions(GuidSet& exclusions, TargetValueExcl
         if ((golemaggAlive && unit->GetEntry() == NPC_CORE_RAGER) || unit->GetEntry() == NPC_MAJORDOMO_EXECUTUS)
             exclusions.insert(guid);
     }
+
+    if (type != TargetValueExclusionType::Dps)
+        return;
+
+    // During the balance phase, DPS may only see their assigned hound. Play Dead
+    // hounds take no damage; leave them out of targeting in every phase.
+    Player* bot = botAI->GetBot();
+    CoreHoundPackState const pack = GetCoreHoundPackState(bot);
+    if (!pack.HasPack())
+        return;
+
+    Creature* assigned = nullptr;
+    if (!pack.IsBurnPhase())
+        assigned = SelectCoreHoundBalanceTarget(bot);
+
+    for (Creature* hound : pack.smoldering)
+        if (hound)
+            exclusions.insert(hound->GetGUID());
+
+    if (pack.IsBurnPhase())
+        return;
+
+    for (Creature* hound : pack.fighting)
+        if (hound && hound != assigned)
+            exclusions.insert(hound->GetGUID());
 }

@@ -6,8 +6,10 @@
 
 #include "MCActions.h"
 #include "MCHelpers.h"
+#include "Pet.h"
 #include "Playerbots.h"
 #include "RtiTargetValue.h"
+#include "Spell.h"
 #include <algorithm>
 
 static constexpr float LIVING_BOMB_DISTANCE = 20.0f;
@@ -25,6 +27,134 @@ static constexpr float GOLEMAGGS_TRUST_DISTANCE = 30.0f;
 static constexpr float CORE_RAGER_STEP_DISTANCE = 5.0f;
 
 using namespace MoltenCoreHelpers;
+
+bool CoreHoundPackState::IsBurnPhase() const
+{
+    if (fighting.empty())
+        return false;
+    if (!smoldering.empty())
+        return true;
+    if (fighting.size() < 2)
+        return false;
+    for (Creature const* hound : fighting)
+        if (hound && hound->GetHealthPct() > CORE_HOUND_EXECUTE_HEALTH_PCT)
+            return false;
+    return true;
+}
+
+CoreHoundPackState GetCoreHoundPackState(Player* bot)
+{
+    CoreHoundPackState state;
+    if (!bot)
+        return state;
+
+    std::list<Creature*> hounds;
+    bot->GetCreatureListWithEntryInGrid(hounds, NPC_CORE_HOUND, CORE_HOUND_PACK_RANGE);
+    for (Creature* hound : hounds)
+    {
+        if (!hound || !hound->IsAlive() || !hound->IsInCombat())
+            continue;
+
+        if (hound->HasAura(SPELL_PLAY_DEAD))
+            state.smoldering.push_back(hound);
+        else
+            state.fighting.push_back(hound);
+    }
+
+    return state;
+}
+
+bool IsFightingCoreHound(Unit const* unit)
+{
+    return unit && unit->GetEntry() == NPC_CORE_HOUND && unit->IsAlive() && !unit->HasAura(SPELL_PLAY_DEAD);
+}
+
+static uint32 GetAliveDpsIndex(Player* bot, float packRange)
+{
+    uint32 dpsIndex = 0;
+    Group* group = bot ? bot->GetGroup() : nullptr;
+    if (!group)
+        return 0;
+
+    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+    {
+        Player* member = ref->GetSource();
+        if (!member || !member->IsAlive() || !PlayerbotAI::IsDps(member))
+            continue;
+        if (member->GetMapId() != bot->GetMapId())
+            continue;
+        if (bot->GetDistance(member) > packRange)
+            continue;
+        if (member == bot)
+            return dpsIndex;
+        ++dpsIndex;
+    }
+
+    return 0;
+}
+
+Creature* SelectCoreHoundBalanceTarget(Player* bot)
+{
+    if (!bot || !PlayerbotAI::IsDps(bot))
+        return nullptr;
+
+    CoreHoundPackState const pack = GetCoreHoundPackState(bot);
+    if (!pack.HasPack() || pack.IsBurnPhase())
+        return nullptr;
+
+    std::vector<Creature*> candidates = pack.fighting;
+    std::sort(candidates.begin(), candidates.end(), [](Creature const* left, Creature const* right)
+    {
+        if (left->GetHealthPct() != right->GetHealthPct())
+            return left->GetHealthPct() > right->GetHealthPct();
+        return left->GetGUID() < right->GetGUID();
+    });
+
+    float const highestHealthPct = candidates.front()->GetHealthPct();
+    if (highestHealthPct <= CORE_HOUND_EXECUTE_HEALTH_PCT)
+        return nullptr;
+
+    std::vector<Creature*> healthiestBand;
+    for (Creature* hound : candidates)
+    {
+        if (hound->GetHealthPct() <= CORE_HOUND_EXECUTE_HEALTH_PCT)
+            break;
+        if (hound->GetHealthPct() + CORE_HOUND_BALANCE_BAND_PCT < highestHealthPct)
+            break;
+        healthiestBand.push_back(hound);
+    }
+
+    if (healthiestBand.empty())
+        return nullptr;
+
+    uint32 const maxDpsPerHound = highestHealthPct <= CORE_HOUND_LOW_HEALTH_PCT
+                                      ? CORE_HOUND_MAX_DPS_PER_HOUND_LOW
+                                      : CORE_HOUND_MAX_DPS_PER_HOUND_HIGH;
+    uint32 const dpsIndex = GetAliveDpsIndex(bot, CORE_HOUND_PACK_RANGE);
+    if (dpsIndex >= healthiestBand.size() * maxDpsPerHound)
+        return nullptr;
+
+    return healthiestBand[dpsIndex % healthiestBand.size()];
+}
+
+static void StopCoreHoundDamage(PlayerbotAI* botAI, Player* bot)
+{
+    bot->CastStop();
+    bot->AttackStop();
+    if (Pet* pet = bot->GetPet())
+        pet->AttackStop();
+
+    if (bot->getClass() == CLASS_HUNTER)
+    {
+        if (Spell const* spell = bot->GetCurrentSpell(CURRENT_AUTOREPEAT_SPELL))
+            if (spell->m_spellInfo->Id == 75)
+                bot->InterruptSpell(CURRENT_AUTOREPEAT_SPELL);
+    }
+
+    Unit* current = botAI->GetAiObjectContext()->GetValue<Unit*>("current target")->Get();
+    if (current && current->GetEntry() == NPC_CORE_HOUND)
+        botAI->GetAiObjectContext()->GetValue<Unit*>("current target")->Set(nullptr);
+}
 
 bool McMoveFromGroupAction::Execute(Event /*event*/)
 {
@@ -422,49 +552,7 @@ bool McMajordomoPolymorphHealerAction::Execute(Event /*event*/)
 
 Unit* McCoreHoundMarkAction::GetTarget()
 {
-    std::vector<Creature*> activeHounds;
-    std::list<Creature*> hounds;
-    bot->GetCreatureListWithEntryInGrid(hounds, NPC_CORE_HOUND, 100.0f);
-    for (Creature* unit : hounds)
-    {
-        if (unit && unit->IsAlive() && unit->IsInCombat())
-            activeHounds.push_back(unit);
-    }
-
-    if (activeHounds.empty())
-        return nullptr;
-
-    std::sort(activeHounds.begin(), activeHounds.end(), [](Creature const* left, Creature const* right)
-    {
-        if (left->GetHealthPct() != right->GetHealthPct())
-            return left->GetHealthPct() > right->GetHealthPct();
-        return left->GetGUID() < right->GetGUID();
-    });
-
-    float const highestHealthPct = activeHounds.front()->GetHealthPct();
-    std::vector<Creature*> healthiestBand;
-    for (Creature* hound : activeHounds)
-    {
-        if (hound->GetHealthPct() + CORE_HOUND_BALANCE_BAND_PCT < highestHealthPct)
-            break;
-        healthiestBand.push_back(hound);
-    }
-
-    uint32 dpsIndex = 0;
-    if (Group* group = bot->GetGroup())
-    {
-        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
-        {
-            Player* member = ref->GetSource();
-            if (!member || !member->IsAlive() || !PlayerbotAI::IsDps(member))
-                continue;
-            if (member == bot)
-                break;
-            ++dpsIndex;
-        }
-    }
-
-    return healthiestBand[dpsIndex % healthiestBand.size()];
+    return SelectCoreHoundBalanceTarget(bot);
 }
 
 bool McCoreHoundMarkAction::Execute(Event /*event*/)
@@ -473,29 +561,68 @@ bool McCoreHoundMarkAction::Execute(Event /*event*/)
     if (!target)
         return false;
 
-    // Changing the AI target alone does not interrupt the old swing or cast.
-    // Stop both before redirecting damage away from a hound that has reached
-    // the balancing floor.
-    if (bot->GetVictim() != target)
-    {
-        bot->CastStop();
-        bot->AttackStop();
-    }
+    botAI->GetAiObjectContext()->GetValue<GuidVector>("prioritized targets")->Set({ target->GetGUID() });
 
-    // Spread DPS deterministically across the healthiest hounds instead of
-    // making an entire 40-player raid overkill one target between AI ticks.
-    return bot->GetVictim() == target || Attack(target);
+    // Already on the assigned hound: return false so the GCD is spent on the
+    // class rotation instead of this raid action eating every tick.
+    Unit* current = AI_VALUE(Unit*, "current target");
+    if (IsFightingCoreHound(target) && current == target &&
+        (!bot->GetVictim() || bot->GetVictim() == target))
+        return false;
+
+    // Changing the AI target alone does not interrupt the old swing or cast.
+    StopCoreHoundDamage(botAI, bot);
+    return Attack(target);
+}
+
+bool McCoreHoundHoldAction::Execute(Event /*event*/)
+{
+    Unit* current = AI_VALUE(Unit*, "current target");
+    Unit* victim = bot->GetVictim();
+    bool const onHound = (current && current->GetEntry() == NPC_CORE_HOUND) ||
+                         (victim && victim->GetEntry() == NPC_CORE_HOUND);
+    if (!onHound)
+        return false;
+
+    StopCoreHoundDamage(botAI, bot);
+    botAI->GetAiObjectContext()->GetValue<GuidVector>("prioritized targets")->Reset();
+    return true;
 }
 
 bool McCoreHoundBurnAction::Execute(Event event)
 {
+    CoreHoundPackState const pack = GetCoreHoundPackState(bot);
+    if (pack.fighting.empty())
+        return false;
+
+    Creature* closest = nullptr;
+    float bestDistance = 0.0f;
+    for (Creature* hound : pack.fighting)
+    {
+        float const distance = bot->GetDistance(hound);
+        if (!closest || distance < bestDistance)
+        {
+            closest = hound;
+            bestDistance = distance;
+        }
+    }
+
+    if (closest)
+    {
+        botAI->GetAiObjectContext()->GetValue<GuidVector>("prioritized targets")->Set({ closest->GetGUID() });
+        context->GetValue<Unit*>("current target")->Set(closest);
+        bot->SetSelection(closest->GetGUID());
+        if (bot->GetVictim() != closest)
+            bot->Attack(closest, bot->IsWithinMeleeRange(closest) || botAI->IsMelee(bot));
+    }
+
     // Generic AoE triggers count attackers on this bot. Raid DPS usually have
     // no attackers because the hounds are on tanks, so explicitly invoke a
     // registered class AoE once every living hound is inside the burn window.
     std::vector<std::string> actions;
     switch (bot->getClass())
     {
-        case CLASS_MAGE:        actions = {"flamestrike", "blizzard"}; break;
+        case CLASS_MAGE:        actions = {"arcane explosion", "flamestrike", "blizzard"}; break;
         case CLASS_WARLOCK:     actions = {"rain of fire", "seed of corruption", "hellfire"}; break;
         case CLASS_WARRIOR:     actions = {"whirlwind", "thunder clap", "cleave"}; break;
         case CLASS_PALADIN:     actions = {"consecration", "divine storm"}; break;
@@ -512,5 +639,7 @@ bool McCoreHoundBurnAction::Execute(Event event)
         if (botAI->DoSpecificAction(action, event, true))
             return true;
 
+    // AoE was on cooldown or out of range: let the class rotation dump into
+    // the closest fighting hound rather than stalling the execute.
     return false;
 }

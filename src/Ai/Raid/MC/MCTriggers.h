@@ -88,6 +88,13 @@ public:
     bool IsActive() override;
 };
 
+class McCoreHoundHoldTrigger : public Trigger
+{
+public:
+    McCoreHoundHoldTrigger(PlayerbotAI* botAI) : Trigger(botAI, "mc core hound hold") {}
+    bool IsActive() override;
+};
+
 class McCoreHoundBurnTrigger : public Trigger
 {
 public:
