@@ -380,6 +380,52 @@ bool BwlNefarianFearWardTrigger::IsActive()
     return !botAI->HasAura("fear ward", victim);
 }
 
+bool BwlNefarianAddsTrigger::IsActive()
+{
+    return SelectNefarianAddTarget(bot) != nullptr;
+}
+
+bool BwlNefarianVeilTrigger::IsActive()
+{
+    if (bot->getClass() != CLASS_MAGE && bot->getClass() != CLASS_DRUID)
+        return false;
+
+    Unit* nefarian = AI_VALUE2(Unit*, "find target", "nefarian");
+    if (!nefarian)
+        return false;
+
+    Unit* victim = nefarian->GetVictim();
+    return victim && victim->HasAura(static_cast<uint32>(BlackwingLairSpells::SPELL_NEF_VEIL_OF_SHADOW));
+}
+
+bool BwlNefarianBellowingRoarTrigger::IsActive()
+{
+    Unit* nefarian = AI_VALUE2(Unit*, "find target", "nefarian");
+    if (!nefarian || !nefarian->IsInCombat())
+        return false;
+
+    if (bot->getClass() != CLASS_WARRIOR && bot->getClass() != CLASS_PRIEST && bot->getClass() != CLASS_SHAMAN)
+        return false;
+
+    if (nefarian->HasUnitState(UNIT_STATE_CASTING))
+    {
+        Spell* currentSpell = nefarian->GetCurrentSpell(CURRENT_GENERIC_SPELL);
+        if (currentSpell && currentSpell->m_spellInfo &&
+            currentSpell->m_spellInfo->Id == static_cast<uint32>(BlackwingLairSpells::SPELL_NEF_BELLOWING_ROAR))
+            return true;
+    }
+
+    return bot->HasAuraType(SPELL_AURA_MOD_FEAR);
+}
+
+bool BwlNefarianPositioningTrigger::IsActive()
+{
+    Unit* nefarian = AI_VALUE2(Unit*, "find target", "nefarian");
+    if (!nefarian || nefarian->GetVictim() == bot)
+        return false;
+    return !PlayerbotAI::IsTank(bot);
+}
+
 // Trash
 
 bool BwlDeathTalonWyrmguardTankTrigger::IsActive()

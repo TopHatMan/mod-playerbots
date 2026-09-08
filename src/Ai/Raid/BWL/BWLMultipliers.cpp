@@ -196,3 +196,34 @@ float ChromaggusTimeLapseMultiplier::GetValue(Action* action)
 
     return 1.0f;
 }
+
+float NefarianClassCallMultiplier::GetValue(Action* action)
+{
+    if (dynamic_cast<BwlNefarianKillAddsAction*>(action) ||
+        dynamic_cast<BwlNefarianAntiFearAction*>(action) ||
+        dynamic_cast<BwlNefarianDispelVeilAction*>(action))
+        return 1.0f;
+
+    // Priest call: direct heals apply a stacking dot. HoTs/shields still ok.
+    if (bot->HasAura(static_cast<uint32>(BlackwingLairSpells::SPELL_NEF_PRIEST)) &&
+        dynamic_cast<CastHealingSpellAction*>(action))
+        return 0.0f;
+
+    // Mage call: stop casting into the raid. Ice block is handled by its own trigger.
+    if (bot->HasAura(static_cast<uint32>(BlackwingLairSpells::SPELL_WILD_MAGIC)))
+    {
+        if (auto* spell = dynamic_cast<CastSpellAction*>(action))
+            if (spell->getName() != "ice block")
+                return 0.0f;
+    }
+
+    // Paladin call: Nefarian is BoP'd. Melee can still swing; stop holy damage.
+    if (bot->HasAura(static_cast<uint32>(BlackwingLairSpells::SPELL_NEF_PALADIN)))
+    {
+        if (auto* spell = dynamic_cast<CastSpellAction*>(action))
+            if (spell->getThreatType() != Action::ActionThreatType::None)
+                return 0.0f;
+    }
+
+    return 1.0f;
+}

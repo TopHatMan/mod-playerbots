@@ -50,6 +50,10 @@ public:
         creators["bwl chromaggus time lapse"] = &RaidBwlTriggerContext::bwl_chromaggus_time_lapse;
         creators["bwl wild magic"] = &RaidBwlTriggerContext::bwl_wild_magic;
         creators["bwl nefarian fear ward"] = &RaidBwlTriggerContext::bwl_nefarian_fear_ward;
+        creators["bwl nefarian adds"] = &RaidBwlTriggerContext::bwl_nefarian_adds;
+        creators["bwl nefarian veil"] = &RaidBwlTriggerContext::bwl_nefarian_veil;
+        creators["bwl nefarian bellowing roar"] = &RaidBwlTriggerContext::bwl_nefarian_bellowing_roar;
+        creators["bwl nefarian positioning"] = &RaidBwlTriggerContext::bwl_nefarian_positioning;
         creators["bwl death talon wyrmguard tank"] = &RaidBwlTriggerContext::bwl_death_talon_wyrmguard_tank;
         creators["bwl death talon wyrmguard ranged"] = &RaidBwlTriggerContext::bwl_death_talon_wyrmguard_ranged;
     }
@@ -84,6 +88,10 @@ private:
     static Trigger* bwl_chromaggus_time_lapse(PlayerbotAI* ai) { return new BwlChromaggusTimeLapseTrigger(ai); }
     static Trigger* bwl_wild_magic(PlayerbotAI* ai) { return new BwlWildMagicTrigger(ai); }
     static Trigger* bwl_nefarian_fear_ward(PlayerbotAI* ai) { return new BwlNefarianFearWardTrigger(ai); }
+    static Trigger* bwl_nefarian_adds(PlayerbotAI* ai) { return new BwlNefarianAddsTrigger(ai); }
+    static Trigger* bwl_nefarian_veil(PlayerbotAI* ai) { return new BwlNefarianVeilTrigger(ai); }
+    static Trigger* bwl_nefarian_bellowing_roar(PlayerbotAI* ai) { return new BwlNefarianBellowingRoarTrigger(ai); }
+    static Trigger* bwl_nefarian_positioning(PlayerbotAI* ai) { return new BwlNefarianPositioningTrigger(ai); }
     static Trigger* bwl_death_talon_wyrmguard_tank(PlayerbotAI* ai) { return new BwlDeathTalonWyrmguardTankTrigger(ai); }
     static Trigger* bwl_death_talon_wyrmguard_ranged(PlayerbotAI* ai) { return new BwlDeathTalonWyrmguardRangedTrigger(ai); }
 };

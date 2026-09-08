@@ -180,6 +180,27 @@ public:
     bool Execute(Event event) override;
 };
 
+class BwlNefarianKillAddsAction : public AttackAction
+{
+public:
+    BwlNefarianKillAddsAction(PlayerbotAI* botAI) : AttackAction(botAI, "bwl nefarian kill adds") {}
+    bool Execute(Event event) override;
+};
+
+class BwlNefarianDispelVeilAction : public Action
+{
+public:
+    BwlNefarianDispelVeilAction(PlayerbotAI* botAI) : Action(botAI, "bwl nefarian dispel veil") {}
+    bool Execute(Event event) override;
+};
+
+class BwlNefarianAntiFearAction : public Action
+{
+public:
+    BwlNefarianAntiFearAction(PlayerbotAI* botAI) : Action(botAI, "bwl nefarian anti fear") {}
+    bool Execute(Event event) override;
+};
+
 // Trash
 
 class BwlDeathTalonWyrmguardTankMoveAwayAction : public MovementAction

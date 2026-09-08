@@ -187,6 +187,34 @@ public:
     bool IsActive() override;
 };
 
+class BwlNefarianAddsTrigger : public Trigger
+{
+public:
+    BwlNefarianAddsTrigger(PlayerbotAI* botAI) : Trigger(botAI, "bwl nefarian adds") {}
+    bool IsActive() override;
+};
+
+class BwlNefarianVeilTrigger : public Trigger
+{
+public:
+    BwlNefarianVeilTrigger(PlayerbotAI* botAI) : Trigger(botAI, "bwl nefarian veil") {}
+    bool IsActive() override;
+};
+
+class BwlNefarianBellowingRoarTrigger : public Trigger
+{
+public:
+    BwlNefarianBellowingRoarTrigger(PlayerbotAI* botAI) : Trigger(botAI, "bwl nefarian bellowing roar") {}
+    bool IsActive() override;
+};
+
+class BwlNefarianPositioningTrigger : public Trigger
+{
+public:
+    BwlNefarianPositioningTrigger(PlayerbotAI* botAI) : Trigger(botAI, "bwl nefarian positioning") {}
+    bool IsActive() override;
+};
+
 // Trash
 
 class BwlDeathTalonWyrmguardTankTrigger : public Trigger

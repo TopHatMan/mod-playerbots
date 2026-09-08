@@ -356,4 +356,96 @@ namespace BlackwingLairHelpers
                spellId == static_cast<uint32>(BlackwingLairSpells::SPELL_IGNITEFLESH) ||
                spellId == static_cast<uint32>(BlackwingLairSpells::SPELL_FROSTBURN);
     }
+
+    bool IsNefarianClassCallAura(Player const* bot)
+    {
+        if (!bot)
+            return false;
+        return bot->HasAura(static_cast<uint32>(BlackwingLairSpells::SPELL_WILD_MAGIC)) ||
+               bot->HasAura(static_cast<uint32>(BlackwingLairSpells::SPELL_NEF_WARRIOR)) ||
+               bot->HasAura(static_cast<uint32>(BlackwingLairSpells::SPELL_NEF_DRUID)) ||
+               bot->HasAura(static_cast<uint32>(BlackwingLairSpells::SPELL_NEF_PRIEST)) ||
+               bot->HasAura(static_cast<uint32>(BlackwingLairSpells::SPELL_NEF_PALADIN)) ||
+               bot->HasAura(static_cast<uint32>(BlackwingLairSpells::SPELL_NEF_SHAMAN)) ||
+               bot->HasAura(static_cast<uint32>(BlackwingLairSpells::SPELL_NEF_WARLOCK)) ||
+               bot->HasAura(static_cast<uint32>(BlackwingLairSpells::SPELL_NEF_HUNTER)) ||
+               bot->HasAura(static_cast<uint32>(BlackwingLairSpells::SPELL_NEF_ROGUE));
+    }
+
+    bool IsNefarianTotem(Unit const* unit)
+    {
+        if (!unit)
+            return false;
+        uint32 const entry = unit->GetEntry();
+        return entry == static_cast<uint32>(BlackwingLairNPCs::NPC_TOTEM_C_FIRE_NOVA) ||
+               entry == static_cast<uint32>(BlackwingLairNPCs::NPC_TOTEM_C_STONESKIN) ||
+               entry == static_cast<uint32>(BlackwingLairNPCs::NPC_TOTEM_C_HEALING) ||
+               entry == static_cast<uint32>(BlackwingLairNPCs::NPC_TOTEM_C_WINDFURY);
+    }
+
+    bool IsNefarianDrakonid(Unit const* unit)
+    {
+        if (!unit)
+            return false;
+        uint32 const entry = unit->GetEntry();
+        return entry == static_cast<uint32>(BlackwingLairNPCs::NPC_BRONZE_DRAKONID) ||
+               entry == static_cast<uint32>(BlackwingLairNPCs::NPC_BLUE_DRAKONID) ||
+               entry == static_cast<uint32>(BlackwingLairNPCs::NPC_RED_DRAKONID) ||
+               entry == static_cast<uint32>(BlackwingLairNPCs::NPC_GREEN_DRAKONID) ||
+               entry == static_cast<uint32>(BlackwingLairNPCs::NPC_BLACK_DRAKONID) ||
+               entry == static_cast<uint32>(BlackwingLairNPCs::NPC_CHROMATIC_DRAKONID);
+    }
+
+    Unit* SelectNefarianAddTarget(Player* bot)
+    {
+        if (!bot)
+            return nullptr;
+
+        Unit* best = nullptr;
+        uint32 bestPriority = 0;
+        float bestDist = 80.0f;
+
+        std::list<Creature*> creatures;
+        std::vector<uint32> const entries = {
+            static_cast<uint32>(BlackwingLairNPCs::NPC_INFERNAL),
+            static_cast<uint32>(BlackwingLairNPCs::NPC_TOTEM_C_FIRE_NOVA),
+            static_cast<uint32>(BlackwingLairNPCs::NPC_TOTEM_C_STONESKIN),
+            static_cast<uint32>(BlackwingLairNPCs::NPC_TOTEM_C_HEALING),
+            static_cast<uint32>(BlackwingLairNPCs::NPC_TOTEM_C_WINDFURY),
+            static_cast<uint32>(BlackwingLairNPCs::NPC_BONE_CONSTRUCT),
+            static_cast<uint32>(BlackwingLairNPCs::NPC_BRONZE_DRAKONID),
+            static_cast<uint32>(BlackwingLairNPCs::NPC_BLUE_DRAKONID),
+            static_cast<uint32>(BlackwingLairNPCs::NPC_RED_DRAKONID),
+            static_cast<uint32>(BlackwingLairNPCs::NPC_GREEN_DRAKONID),
+            static_cast<uint32>(BlackwingLairNPCs::NPC_BLACK_DRAKONID),
+            static_cast<uint32>(BlackwingLairNPCs::NPC_CHROMATIC_DRAKONID)
+        };
+        bot->GetCreatureListWithEntryInGrid(creatures, entries, 80.0f);
+
+        for (Creature* unit : creatures)
+        {
+            if (!unit || !unit->IsAlive())
+                continue;
+
+            uint32 priority = 0;
+            if (unit->GetEntry() == static_cast<uint32>(BlackwingLairNPCs::NPC_INFERNAL) || IsNefarianTotem(unit))
+                priority = 4;
+            else if (unit->GetEntry() == static_cast<uint32>(BlackwingLairNPCs::NPC_BONE_CONSTRUCT))
+                priority = 3;
+            else if (IsNefarianDrakonid(unit))
+                priority = 2;
+            if (!priority)
+                continue;
+
+            float const dist = bot->GetDistance(unit);
+            if (priority > bestPriority || (priority == bestPriority && dist < bestDist))
+            {
+                bestPriority = priority;
+                bestDist = dist;
+                best = unit;
+            }
+        }
+
+        return best;
+    }
 }

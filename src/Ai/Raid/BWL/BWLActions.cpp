@@ -566,6 +566,78 @@ bool BwlNefarianFearWardAction::Execute(Event /*event*/)
     return botAI->CastSpell("fear ward", victim);
 }
 
+bool BwlNefarianKillAddsAction::Execute(Event event)
+{
+    Unit* add = SelectNefarianAddTarget(bot);
+    if (!add)
+        return false;
+
+    botAI->GetAiObjectContext()->GetValue<GuidVector>("prioritized targets")->Set({ add->GetGUID() });
+    if (bot->GetVictim() != add)
+        return Attack(add);
+
+    if (add->GetEntry() == static_cast<uint32>(BlackwingLairNPCs::NPC_BONE_CONSTRUCT) ||
+        add->GetEntry() == static_cast<uint32>(BlackwingLairNPCs::NPC_INFERNAL))
+    {
+        std::vector<std::string> actions;
+        switch (bot->getClass())
+        {
+            case CLASS_MAGE:        actions = {"arcane explosion", "flamestrike", "blizzard"}; break;
+            case CLASS_WARLOCK:     actions = {"rain of fire", "seed of corruption", "hellfire"}; break;
+            case CLASS_WARRIOR:     actions = {"whirlwind", "thunder clap", "cleave"}; break;
+            case CLASS_PALADIN:     actions = {"consecration", "divine storm"}; break;
+            case CLASS_PRIEST:      actions = {"mind sear", "holy nova"}; break;
+            case CLASS_ROGUE:       actions = {"fan of knives", "blade flurry"}; break;
+            case CLASS_SHAMAN:      actions = {"fire nova", "chain lightning", "magma totem"}; break;
+            case CLASS_DRUID:       actions = {"starfall", "hurricane", "swipe"}; break;
+            case CLASS_HUNTER:      actions = {"volley", "multi-shot", "explosive trap"}; break;
+            default: break;
+        }
+        for (std::string const& action : actions)
+            if (botAI->DoSpecificAction(action, event, true))
+                return true;
+    }
+
+    return false;
+}
+
+bool BwlNefarianDispelVeilAction::Execute(Event event)
+{
+    switch (bot->getClass())
+    {
+        case CLASS_MAGE:
+            return botAI->DoSpecificAction("remove curse on party", event, true) ||
+                   botAI->DoSpecificAction("remove curse", event, true);
+        case CLASS_DRUID:
+            return botAI->DoSpecificAction("remove curse on party", event, true);
+        default:
+            return false;
+    }
+}
+
+bool BwlNefarianAntiFearAction::Execute(Event event)
+{
+    switch (bot->getClass())
+    {
+        case CLASS_WARRIOR:
+            return botAI->DoSpecificAction("berserker rage", event, true);
+        case CLASS_PRIEST:
+        {
+            Unit* nefarian = AI_VALUE2(Unit*, "find target", "nefarian");
+            Unit* tank = nefarian ? nefarian->GetVictim() : nullptr;
+            if (!tank)
+                tank = bot;
+            if (botAI->HasAura("fear ward", tank))
+                return false;
+            return botAI->CastSpell("fear ward", tank);
+        }
+        case CLASS_SHAMAN:
+            return botAI->DoSpecificAction("tremor totem", event, true);
+        default:
+            return false;
+    }
+}
+
 // Trash
 
 static constexpr float WYRMGUARD_SAFE_DISTANCE = 16.0f;

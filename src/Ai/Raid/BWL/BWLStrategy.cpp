@@ -81,6 +81,14 @@ void RaidBwlStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         NextAction("ice block", ACTION_RAID) }));
     triggers.push_back(new TriggerNode("bwl nefarian fear ward", {
         NextAction("bwl nefarian fear ward", ACTION_RAID) }));
+    triggers.push_back(new TriggerNode("bwl nefarian adds", {
+        NextAction("bwl nefarian kill adds", ACTION_RAID + 3) }));
+    triggers.push_back(new TriggerNode("bwl nefarian veil", {
+        NextAction("bwl nefarian dispel veil", ACTION_RAID + 3) }));
+    triggers.push_back(new TriggerNode("bwl nefarian bellowing roar", {
+        NextAction("bwl nefarian anti fear", ACTION_EMERGENCY + 3) }));
+    triggers.push_back(new TriggerNode("bwl nefarian positioning", {
+        NextAction("rear flank", ACTION_MOVE + 4) }));
 
     triggers.push_back(new TriggerNode("bwl death talon wyrmguard tank", {
         NextAction("bwl death talon wyrmguard tank move away", ACTION_RAID) }));
@@ -96,6 +104,7 @@ void RaidBwlStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
     multipliers.push_back(new BroodlordSharedThreatMultiplier(botAI));
     multipliers.push_back(new FiremawFlameBuffetMultiplier(botAI));
     multipliers.push_back(new ChromaggusTimeLapseMultiplier(botAI));
+    multipliers.push_back(new NefarianClassCallMultiplier(botAI));
 }
 
 void RaidBwlStrategy::AppendTargetExclusions(GuidSet& exclusions, TargetValueExclusionType type)

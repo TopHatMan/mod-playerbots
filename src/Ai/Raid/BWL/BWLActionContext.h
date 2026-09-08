@@ -49,6 +49,9 @@ public:
         creators["bwl chromaggus dispel"] = &RaidBwlActionContext::bwl_chromaggus_dispel;
         creators["bwl chromaggus time lapse tank"] = &RaidBwlActionContext::bwl_chromaggus_time_lapse_tank;
         creators["bwl nefarian fear ward"] = &RaidBwlActionContext::bwl_nefarian_fear_ward;
+        creators["bwl nefarian kill adds"] = &RaidBwlActionContext::bwl_nefarian_kill_adds;
+        creators["bwl nefarian dispel veil"] = &RaidBwlActionContext::bwl_nefarian_dispel_veil;
+        creators["bwl nefarian anti fear"] = &RaidBwlActionContext::bwl_nefarian_anti_fear;
         creators["bwl death talon wyrmguard tank move away"] = &RaidBwlActionContext::bwl_death_talon_wyrmguard_tank_move_away;
         creators["bwl death talon wyrmguard ranged move away"] = &RaidBwlActionContext::bwl_death_talon_wyrmguard_ranged_move_away;
     }
@@ -81,6 +84,9 @@ private:
     static Action* bwl_chromaggus_dispel(PlayerbotAI* ai) { return new BwlChromaggusDispelAction(ai); }
     static Action* bwl_chromaggus_time_lapse_tank(PlayerbotAI* ai) { return new BwlChromaggusTimeLapseTankAction(ai); }
     static Action* bwl_nefarian_fear_ward(PlayerbotAI* ai) { return new BwlNefarianFearWardAction(ai); }
+    static Action* bwl_nefarian_kill_adds(PlayerbotAI* ai) { return new BwlNefarianKillAddsAction(ai); }
+    static Action* bwl_nefarian_dispel_veil(PlayerbotAI* ai) { return new BwlNefarianDispelVeilAction(ai); }
+    static Action* bwl_nefarian_anti_fear(PlayerbotAI* ai) { return new BwlNefarianAntiFearAction(ai); }
     static Action* bwl_death_talon_wyrmguard_tank_move_away(PlayerbotAI* ai) { return new BwlDeathTalonWyrmguardTankMoveAwayAction(ai); }
     static Action* bwl_death_talon_wyrmguard_ranged_move_away(PlayerbotAI* ai) { return new BwlDeathTalonWyrmguardRangedMoveAwayAction(ai); }
 };

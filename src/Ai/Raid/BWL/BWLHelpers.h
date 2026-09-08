@@ -95,7 +95,14 @@ namespace BlackwingLairHelpers
         NPC_TOTEM_C_STONESKIN = 14663,
         NPC_TOTEM_C_HEALING = 14664,
         NPC_TOTEM_C_WINDFURY = 14666,
-        NPC_DEATH_TALON_WYRMGUARD = 12460
+        NPC_DEATH_TALON_WYRMGUARD = 12460,
+        NPC_INFERNAL = 89,
+        NPC_BRONZE_DRAKONID = 14263,
+        NPC_BLUE_DRAKONID = 14261,
+        NPC_RED_DRAKONID = 14264,
+        NPC_GREEN_DRAKONID = 14262,
+        NPC_BLACK_DRAKONID = 14265,
+        NPC_CHROMATIC_DRAKONID = 14302
     };
 
     constexpr float RAZORGORE_ADD_RANGE = 80.0f;
@@ -121,6 +128,10 @@ namespace BlackwingLairHelpers
     uint32 GetFlameBuffetStacks(Unit const* unit);
     uint32 GetAliveHunterIndex(Player* bot);
     bool IsChromaggusBreathSpell(uint32 spellId);
+    bool IsNefarianClassCallAura(Player const* bot);
+    Unit* SelectNefarianAddTarget(Player* bot);
+    bool IsNefarianTotem(Unit const* unit);
+    bool IsNefarianDrakonid(Unit const* unit);
 }
 
 #endif

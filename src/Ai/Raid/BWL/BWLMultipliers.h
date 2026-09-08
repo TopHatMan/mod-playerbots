@@ -57,4 +57,12 @@ public:
     float GetValue(Action* action) override;
 };
 
+class NefarianClassCallMultiplier : public Multiplier
+{
+public:
+    NefarianClassCallMultiplier(
+        PlayerbotAI* botAI) : Multiplier(botAI, "nefarian class call multiplier") {}
+    float GetValue(Action* action) override;
+};
+
 #endif
