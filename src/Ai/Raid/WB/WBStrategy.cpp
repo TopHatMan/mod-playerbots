@@ -21,9 +21,21 @@ void RaidWorldBossStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         NextAction("wb azuregos move to flank", ACTION_RAID + 2) }));
     triggers.push_back(new TriggerNode("wb azuregos spread", {
         NextAction("wb azuregos spread", ACTION_RAID + 1) }));
+
+    triggers.push_back(new TriggerNode("wb kazzak shadow resistance", {
+        NextAction("wb kazzak shadow resistance", ACTION_RAID) }));
+    triggers.push_back(new TriggerNode("wb kazzak twisted", {
+        NextAction("wb kazzak dispel", ACTION_EMERGENCY + 4) }));
+    triggers.push_back(new TriggerNode("wb kazzak decurse", {
+        NextAction("wb kazzak dispel", ACTION_RAID + 4) }));
+    triggers.push_back(new TriggerNode("wb kazzak mark", {
+        NextAction("wb kazzak isolate", ACTION_RAID + 5) }));
+    triggers.push_back(new TriggerNode("wb kazzak spread", {
+        NextAction("wb kazzak spread", ACTION_RAID + 1) }));
 }
 
 void RaidWorldBossStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
 {
     multipliers.push_back(new AzuregosMultiplier(botAI));
+    multipliers.push_back(new KazzakMultiplier(botAI));
 }

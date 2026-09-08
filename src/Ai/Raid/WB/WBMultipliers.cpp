@@ -7,7 +7,9 @@
 #include "WBMultipliers.h"
 #include "AttackAction.h"
 #include "GenericSpellActions.h"
+#include "MovementActions.h"
 #include "Playerbots.h"
+#include "ReachTargetActions.h"
 #include "WBActions.h"
 #include "WBHelpers.h"
 
@@ -67,6 +69,26 @@ float AzuregosMultiplier::GetValue(Action* action)
         if (auto* spell = dynamic_cast<CastSpellAction*>(action))
             if (spell->getThreatType() != Action::ActionThreatType::None)
                 return 0.0f;
+    }
+
+    return 1.0f;
+}
+
+float KazzakMultiplier::GetValue(Action* action)
+{
+    if (!FindKazzak(bot))
+        return 1.0f;
+
+    if (dynamic_cast<WbKazzakIsolateAction*>(action) || dynamic_cast<WbKazzakDispelAction*>(action))
+        return 1.0f;
+
+    // Mark carrier runs out; don't cancel that with rotation or charge.
+    if (HasMarkOfKazzak(bot))
+    {
+        if (dynamic_cast<MovementAction*>(action) && !dynamic_cast<WbKazzakIsolateAction*>(action))
+            return 0.0f;
+        if (dynamic_cast<CastReachTargetSpellAction*>(action))
+            return 0.0f;
     }
 
     return 1.0f;

@@ -8,6 +8,7 @@
 #include "EncounterHelpers.h"
 #include "Playerbots.h"
 #include "WBHelpers.h"
+#include <initializer_list>
 
 using namespace WorldBossHelpers;
 
@@ -71,4 +72,73 @@ bool WbAzuregosMoveToFlankAction::Execute(Event /*event*/)
         return false;
     return MoveTo(boss->GetMapId(), x, y, boss->GetPositionZ(), false, false, false, false,
                   MovementPriority::MOVEMENT_COMBAT);
+}
+
+bool WbKazzakIsolateAction::Execute(Event /*event*/)
+{
+    if (!HasMarkOfKazzak(bot))
+        return false;
+
+    float fleeX = 0.0f;
+    float fleeY = 0.0f;
+    if (Group* group = bot->GetGroup())
+    {
+        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+        {
+            Player* member = ref->GetSource();
+            if (!member || member == bot || !member->IsAlive() || member->GetMapId() != bot->GetMapId())
+                continue;
+            float dist = bot->GetDistance2d(member);
+            if (dist < KAZZAK_MARK_ISOLATE_DISTANCE && dist > 0.1f)
+            {
+                float weight = 1.0f - dist / KAZZAK_MARK_ISOLATE_DISTANCE;
+                fleeX += (bot->GetPositionX() - member->GetPositionX()) / dist * weight;
+                fleeY += (bot->GetPositionY() - member->GetPositionY()) / dist * weight;
+            }
+        }
+    }
+
+    float len = sqrt(fleeX * fleeX + fleeY * fleeY);
+    if (len < 0.1f)
+        return true;
+
+    fleeX /= len;
+    fleeY /= len;
+    bot->CastStop();
+    return MoveTo(bot->GetMapId(), bot->GetPositionX() + 8.0f * fleeX, bot->GetPositionY() + 8.0f * fleeY,
+                  bot->GetPositionZ(), false, false, false, false, MovementPriority::MOVEMENT_FORCED);
+}
+
+bool WbKazzakSpreadAction::Execute(Event /*event*/)
+{
+    if (!FindKazzak(bot))
+        return false;
+    return MoveFromGroup(KAZZAK_SPREAD_DISTANCE + 1.0f);
+}
+
+bool WbKazzakDispelAction::Execute(Event event)
+{
+    auto tryDispel = [&](std::initializer_list<std::string> names) -> bool
+    {
+        for (std::string const& name : names)
+            if (botAI->DoSpecificAction(name, event, true))
+                return true;
+        return false;
+    };
+
+    switch (bot->getClass())
+    {
+        case CLASS_PRIEST:
+            return tryDispel({"dispel magic", "dispel magic on party"});
+        case CLASS_PALADIN:
+            return tryDispel({"cleanse magic", "cleanse magic on party"});
+        case CLASS_SHAMAN:
+            return tryDispel({"purge"});
+        case CLASS_MAGE:
+            return tryDispel({"remove curse", "remove curse on party"});
+        case CLASS_DRUID:
+            return tryDispel({"remove curse on party"});
+        default:
+            return false;
+    }
 }

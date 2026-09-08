@@ -22,6 +22,12 @@ public:
         creators["wb azuregos reflect"] = &RaidWorldBossTriggerContext::azuregos_reflect;
         creators["wb azuregos teleport"] = &RaidWorldBossTriggerContext::azuregos_teleport;
         creators["wb azuregos flank"] = &RaidWorldBossTriggerContext::azuregos_flank;
+
+        creators["wb kazzak shadow resistance"] = &RaidWorldBossTriggerContext::kazzak_shadow;
+        creators["wb kazzak mark"] = &RaidWorldBossTriggerContext::kazzak_mark;
+        creators["wb kazzak spread"] = &RaidWorldBossTriggerContext::kazzak_spread;
+        creators["wb kazzak twisted"] = &RaidWorldBossTriggerContext::kazzak_twisted;
+        creators["wb kazzak decurse"] = &RaidWorldBossTriggerContext::kazzak_decurse;
     }
 
 private:
@@ -31,6 +37,11 @@ private:
     static Trigger* azuregos_reflect(PlayerbotAI* ai) { return new WbAzuregosReflectTrigger(ai); }
     static Trigger* azuregos_teleport(PlayerbotAI* ai) { return new WbAzuregosTeleportTrigger(ai); }
     static Trigger* azuregos_flank(PlayerbotAI* ai) { return new WbAzuregosFlankTrigger(ai); }
+    static Trigger* kazzak_shadow(PlayerbotAI* ai) { return new BossShadowResistanceTrigger(ai, "lord kazzak"); }
+    static Trigger* kazzak_mark(PlayerbotAI* ai) { return new WbKazzakMarkTrigger(ai); }
+    static Trigger* kazzak_spread(PlayerbotAI* ai) { return new WbKazzakSpreadTrigger(ai); }
+    static Trigger* kazzak_twisted(PlayerbotAI* ai) { return new WbKazzakTwistedTrigger(ai); }
+    static Trigger* kazzak_decurse(PlayerbotAI* ai) { return new WbKazzakDecurseTrigger(ai); }
 };
 
 #endif

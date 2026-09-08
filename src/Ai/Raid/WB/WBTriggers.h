@@ -44,4 +44,32 @@ public:
     bool IsActive() override;
 };
 
+class WbKazzakMarkTrigger : public Trigger
+{
+public:
+    WbKazzakMarkTrigger(PlayerbotAI* botAI) : Trigger(botAI, "wb kazzak mark") {}
+    bool IsActive() override;
+};
+
+class WbKazzakSpreadTrigger : public Trigger
+{
+public:
+    WbKazzakSpreadTrigger(PlayerbotAI* botAI) : Trigger(botAI, "wb kazzak spread") {}
+    bool IsActive() override;
+};
+
+class WbKazzakTwistedTrigger : public Trigger
+{
+public:
+    WbKazzakTwistedTrigger(PlayerbotAI* botAI) : Trigger(botAI, "wb kazzak twisted") {}
+    bool IsActive() override;
+};
+
+class WbKazzakDecurseTrigger : public Trigger
+{
+public:
+    WbKazzakDecurseTrigger(PlayerbotAI* botAI) : Trigger(botAI, "wb kazzak decurse") {}
+    bool IsActive() override;
+};
+
 #endif

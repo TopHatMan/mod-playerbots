@@ -16,4 +16,11 @@ public:
     float GetValue(Action* action) override;
 };
 
+class KazzakMultiplier : public Multiplier
+{
+public:
+    KazzakMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "kazzak multiplier") {}
+    float GetValue(Action* action) override;
+};
+
 #endif

@@ -45,4 +45,25 @@ public:
     bool Execute(Event event) override;
 };
 
+class WbKazzakIsolateAction : public MovementAction
+{
+public:
+    WbKazzakIsolateAction(PlayerbotAI* botAI) : MovementAction(botAI, "wb kazzak isolate") {}
+    bool Execute(Event event) override;
+};
+
+class WbKazzakSpreadAction : public MovementAction
+{
+public:
+    WbKazzakSpreadAction(PlayerbotAI* botAI) : MovementAction(botAI, "wb kazzak spread") {}
+    bool Execute(Event event) override;
+};
+
+class WbKazzakDispelAction : public Action
+{
+public:
+    WbKazzakDispelAction(PlayerbotAI* botAI) : Action(botAI, "wb kazzak dispel") {}
+    bool Execute(Event event) override;
+};
+
 #endif

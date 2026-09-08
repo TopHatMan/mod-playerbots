@@ -23,6 +23,11 @@ public:
         creators["wb azuregos stop for reflect"] = &RaidWorldBossActionContext::azuregos_reflect;
         creators["wb azuregos tank taunt"] = &RaidWorldBossActionContext::azuregos_taunt;
         creators["wb azuregos move to flank"] = &RaidWorldBossActionContext::azuregos_flank;
+
+        creators["wb kazzak shadow resistance"] = &RaidWorldBossActionContext::kazzak_shadow;
+        creators["wb kazzak isolate"] = &RaidWorldBossActionContext::kazzak_isolate;
+        creators["wb kazzak spread"] = &RaidWorldBossActionContext::kazzak_spread;
+        creators["wb kazzak dispel"] = &RaidWorldBossActionContext::kazzak_dispel;
     }
 
 private:
@@ -32,6 +37,10 @@ private:
     static Action* azuregos_reflect(PlayerbotAI* ai) { return new WbAzuregosStopForReflectAction(ai); }
     static Action* azuregos_taunt(PlayerbotAI* ai) { return new WbAzuregosTankTauntAction(ai); }
     static Action* azuregos_flank(PlayerbotAI* ai) { return new WbAzuregosMoveToFlankAction(ai); }
+    static Action* kazzak_shadow(PlayerbotAI* ai) { return new BossShadowResistanceAction(ai, "lord kazzak"); }
+    static Action* kazzak_isolate(PlayerbotAI* ai) { return new WbKazzakIsolateAction(ai); }
+    static Action* kazzak_spread(PlayerbotAI* ai) { return new WbKazzakSpreadAction(ai); }
+    static Action* kazzak_dispel(PlayerbotAI* ai) { return new WbKazzakDispelAction(ai); }
 };
 
 #endif

@@ -81,3 +81,72 @@ bool WbAzuregosFlankTrigger::IsActive()
         diff = 2.0f * static_cast<float>(M_PI) - diff;
     return diff < static_cast<float>(M_PI) / 4.0f || diff > 3.0f * static_cast<float>(M_PI) / 4.0f;
 }
+
+bool WbKazzakMarkTrigger::IsActive()
+{
+    return FindKazzak(bot) && HasMarkOfKazzak(bot);
+}
+
+bool WbKazzakSpreadTrigger::IsActive()
+{
+    Unit* boss = FindKazzak(bot);
+    if (!boss || !boss->IsInCombat() || HasMarkOfKazzak(bot))
+        return false;
+
+    GuidVector nearby = AI_VALUE(GuidVector, "nearest friendly players");
+    for (ObjectGuid guid : nearby)
+    {
+        Unit* unit = botAI->GetUnit(guid);
+        if (unit && unit != bot && unit->IsAlive() && bot->GetDistance(unit) < KAZZAK_SPREAD_DISTANCE)
+            return true;
+    }
+    return false;
+}
+
+bool WbKazzakTwistedTrigger::IsActive()
+{
+    if (bot->getClass() != CLASS_PRIEST && bot->getClass() != CLASS_PALADIN && bot->getClass() != CLASS_SHAMAN)
+        return false;
+    if (!FindKazzak(bot))
+        return false;
+
+    if (bot->HasAura(SPELL_TWISTED_REFLECTION))
+        return true;
+
+    if (Group* group = bot->GetGroup())
+    {
+        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+        {
+            Player* member = ref->GetSource();
+            if (!member || !member->IsAlive() || member->GetMapId() != bot->GetMapId())
+                continue;
+            if (member->HasAura(SPELL_TWISTED_REFLECTION) && bot->GetDistance(member) < 40.0f)
+                return true;
+        }
+    }
+    return false;
+}
+
+bool WbKazzakDecurseTrigger::IsActive()
+{
+    if (bot->getClass() != CLASS_MAGE && bot->getClass() != CLASS_DRUID)
+        return false;
+    if (!FindKazzak(bot))
+        return false;
+
+    if (HasMarkOfKazzak(bot))
+        return true;
+
+    if (Group* group = bot->GetGroup())
+    {
+        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+        {
+            Player* member = ref->GetSource();
+            if (!member || !member->IsAlive() || member->GetMapId() != bot->GetMapId())
+                continue;
+            if (HasMarkOfKazzak(member) && bot->GetDistance(member) < 40.0f)
+                return true;
+        }
+    }
+    return false;
+}
