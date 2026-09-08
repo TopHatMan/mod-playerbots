@@ -49,4 +49,12 @@ public:
     float GetValue(Action* action) override;
 };
 
+class ChromaggusTimeLapseMultiplier : public Multiplier
+{
+public:
+    ChromaggusTimeLapseMultiplier(
+        PlayerbotAI* botAI) : Multiplier(botAI, "chromaggus time lapse multiplier") {}
+    float GetValue(Action* action) override;
+};
+
 #endif

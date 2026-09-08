@@ -160,3 +160,39 @@ float FiremawFlameBuffetMultiplier::GetValue(Action* action)
 
     return 1.0f;
 }
+
+float ChromaggusTimeLapseMultiplier::GetValue(Action* action)
+{
+    Unit* boss = AI_VALUE2(Unit*, "find target", "chromaggus");
+    if (!boss)
+        return 1.0f;
+
+    if (dynamic_cast<BwlChromaggusBreakLosAction*>(action) ||
+        dynamic_cast<BwlChromaggusTimeLapseTankAction*>(action) ||
+        dynamic_cast<BwlChromaggusDispelAction*>(action) ||
+        dynamic_cast<BwlUseHourglassSandAction*>(action))
+        return 1.0f;
+
+    bool timeLapse = bot->HasAura(static_cast<uint32>(BlackwingLairSpells::SPELL_TIMELAPSE));
+    if (!timeLapse && boss->HasUnitState(UNIT_STATE_CASTING))
+    {
+        Spell* current = boss->GetCurrentSpell(CURRENT_GENERIC_SPELL);
+        if (current && current->m_spellInfo &&
+            current->m_spellInfo->Id == static_cast<uint32>(BlackwingLairSpells::SPELL_TIMELAPSE))
+            timeLapse = true;
+    }
+
+    if (!timeLapse)
+        return 1.0f;
+
+    if (PlayerbotAI::IsDps(bot))
+    {
+        if (dynamic_cast<AttackAction*>(action))
+            return 0.0f;
+        if (auto* spell = dynamic_cast<CastSpellAction*>(action))
+            if (spell->getThreatType() != Action::ActionThreatType::None)
+                return 0.0f;
+    }
+
+    return 1.0f;
+}

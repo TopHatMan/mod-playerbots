@@ -43,6 +43,11 @@ public:
         creators["bwl flamegor frenzy"] = &RaidBwlTriggerContext::bwl_flamegor_frenzy;
 
         creators["bwl affliction bronze"] = &RaidBwlTriggerContext::bwl_affliction_bronze;
+        creators["bwl chromaggus breath"] = &RaidBwlTriggerContext::bwl_chromaggus_breath;
+        creators["bwl chromaggus frenzy"] = &RaidBwlTriggerContext::bwl_chromaggus_frenzy;
+        creators["bwl chromaggus mutation"] = &RaidBwlTriggerContext::bwl_chromaggus_mutation;
+        creators["bwl chromaggus dispel"] = &RaidBwlTriggerContext::bwl_chromaggus_dispel;
+        creators["bwl chromaggus time lapse"] = &RaidBwlTriggerContext::bwl_chromaggus_time_lapse;
         creators["bwl wild magic"] = &RaidBwlTriggerContext::bwl_wild_magic;
         creators["bwl nefarian fear ward"] = &RaidBwlTriggerContext::bwl_nefarian_fear_ward;
         creators["bwl death talon wyrmguard tank"] = &RaidBwlTriggerContext::bwl_death_talon_wyrmguard_tank;
@@ -72,6 +77,11 @@ private:
     static Trigger* bwl_ebonroc_shadow(PlayerbotAI* ai) { return new BwlEbonrocShadowTrigger(ai); }
     static Trigger* bwl_flamegor_frenzy(PlayerbotAI* ai) { return new BwlFlamegorFrenzyTrigger(ai); }
     static Trigger* bwl_affliction_bronze(PlayerbotAI* ai) { return new BwlAfflictionBronzeTrigger(ai); }
+    static Trigger* bwl_chromaggus_breath(PlayerbotAI* ai) { return new BwlChromaggusBreathTrigger(ai); }
+    static Trigger* bwl_chromaggus_frenzy(PlayerbotAI* ai) { return new BwlChromaggusFrenzyTrigger(ai); }
+    static Trigger* bwl_chromaggus_mutation(PlayerbotAI* ai) { return new BwlChromaggusMutationTrigger(ai); }
+    static Trigger* bwl_chromaggus_dispel(PlayerbotAI* ai) { return new BwlChromaggusDispelTrigger(ai); }
+    static Trigger* bwl_chromaggus_time_lapse(PlayerbotAI* ai) { return new BwlChromaggusTimeLapseTrigger(ai); }
     static Trigger* bwl_wild_magic(PlayerbotAI* ai) { return new BwlWildMagicTrigger(ai); }
     static Trigger* bwl_nefarian_fear_ward(PlayerbotAI* ai) { return new BwlNefarianFearWardTrigger(ai); }
     static Trigger* bwl_death_talon_wyrmguard_tank(PlayerbotAI* ai) { return new BwlDeathTalonWyrmguardTankTrigger(ai); }

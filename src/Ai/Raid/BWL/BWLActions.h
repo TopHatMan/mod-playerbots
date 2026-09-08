@@ -138,6 +138,41 @@ public:
     bool Execute(Event event) override;
 };
 
+class BwlChromaggusBreakLosAction : public MovementAction
+{
+public:
+    BwlChromaggusBreakLosAction(PlayerbotAI* botAI) : MovementAction(botAI, "bwl chromaggus break los") {}
+    bool Execute(Event event) override;
+};
+
+class BwlChromaggusFrenzyTranqAction : public Action
+{
+public:
+    BwlChromaggusFrenzyTranqAction(PlayerbotAI* botAI) : Action(botAI, "bwl chromaggus tranq") {}
+    bool Execute(Event event) override;
+};
+
+class BwlChromaggusSheepAction : public Action
+{
+public:
+    BwlChromaggusSheepAction(PlayerbotAI* botAI) : Action(botAI, "bwl chromaggus sheep") {}
+    bool Execute(Event event) override;
+};
+
+class BwlChromaggusDispelAction : public Action
+{
+public:
+    BwlChromaggusDispelAction(PlayerbotAI* botAI) : Action(botAI, "bwl chromaggus dispel") {}
+    bool Execute(Event event) override;
+};
+
+class BwlChromaggusTimeLapseTankAction : public AttackAction
+{
+public:
+    BwlChromaggusTimeLapseTankAction(PlayerbotAI* botAI) : AttackAction(botAI, "bwl chromaggus time lapse tank") {}
+    bool Execute(Event event) override;
+};
+
 class BwlNefarianFearWardAction : public Action
 {
 public:

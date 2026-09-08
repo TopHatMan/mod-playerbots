@@ -136,6 +136,41 @@ public:
     bool IsActive() override;
 };
 
+class BwlChromaggusBreathTrigger : public Trigger
+{
+public:
+    BwlChromaggusBreathTrigger(PlayerbotAI* botAI) : Trigger(botAI, "bwl chromaggus breath") {}
+    bool IsActive() override;
+};
+
+class BwlChromaggusFrenzyTrigger : public Trigger
+{
+public:
+    BwlChromaggusFrenzyTrigger(PlayerbotAI* botAI) : Trigger(botAI, "bwl chromaggus frenzy") {}
+    bool IsActive() override;
+};
+
+class BwlChromaggusMutationTrigger : public Trigger
+{
+public:
+    BwlChromaggusMutationTrigger(PlayerbotAI* botAI) : Trigger(botAI, "bwl chromaggus mutation") {}
+    bool IsActive() override;
+};
+
+class BwlChromaggusDispelTrigger : public Trigger
+{
+public:
+    BwlChromaggusDispelTrigger(PlayerbotAI* botAI) : Trigger(botAI, "bwl chromaggus dispel") {}
+    bool IsActive() override;
+};
+
+class BwlChromaggusTimeLapseTrigger : public Trigger
+{
+public:
+    BwlChromaggusTimeLapseTrigger(PlayerbotAI* botAI) : Trigger(botAI, "bwl chromaggus time lapse") {}
+    bool IsActive() override;
+};
+
 // Nefarian
 
 class BwlWildMagicTrigger : public Trigger

@@ -11,6 +11,7 @@
 #include "Pet.h"
 #include "Playerbots.h"
 #include "RtiTargetValue.h"
+#include <initializer_list>
 
 using namespace BlackwingLairHelpers;
 using namespace EncounterHelpers;
@@ -456,6 +457,100 @@ bool BwlFlamegorTranqAction::Execute(Event event)
 bool BwlUseHourglassSandAction::Execute(Event /*event*/)
 {
     return botAI->CastSpell(static_cast<uint32>(BlackwingLairSpells::SPELL_HOURGLASS_SAND), bot);
+}
+
+bool BwlChromaggusBreakLosAction::Execute(Event /*event*/)
+{
+    Unit* boss = AI_VALUE2(Unit*, "find target", "chromaggus");
+    if (!boss)
+        return false;
+
+    if (!boss->IsWithinLOSInMap(bot))
+        return true;
+
+    bot->CastStop();
+    bot->AttackStop();
+
+    static constexpr float step = 10.0f;
+    for (int i = 0; i < 8; ++i)
+    {
+        float const angle = i * static_cast<float>(M_PI) / 4.0f;
+        float const x = bot->GetPositionX() + step * cos(angle);
+        float const y = bot->GetPositionY() + step * sin(angle);
+        float const z = bot->GetPositionZ();
+        if (!boss->IsWithinLOS(x, y, z))
+            return MoveTo(bot->GetMapId(), x, y, z, false, false, false, false, MovementPriority::MOVEMENT_COMBAT);
+    }
+
+    return MoveAway(boss, step);
+}
+
+bool BwlChromaggusFrenzyTranqAction::Execute(Event event)
+{
+    Unit* boss = AI_VALUE2(Unit*, "find target", "chromaggus");
+    if (!boss || !boss->HasAura(static_cast<uint32>(BlackwingLairSpells::SPELL_CHROMAGGUS_FRENZY)))
+        return false;
+    return botAI->DoSpecificAction("tranquilizing shot", event, true);
+}
+
+bool BwlChromaggusSheepAction::Execute(Event /*event*/)
+{
+    GuidVector targets = AI_VALUE(GuidVector, "possible targets");
+    for (ObjectGuid guid : targets)
+    {
+        Unit* unit = botAI->GetUnit(guid);
+        if (!unit || !unit->IsAlive() ||
+            !unit->HasAura(static_cast<uint32>(BlackwingLairSpells::SPELL_CHROMATIC_MUTATION)))
+            continue;
+        if (unit->IsPolymorphed())
+            continue;
+        return botAI->CastSpell("polymorph", unit);
+    }
+    return false;
+}
+
+bool BwlChromaggusDispelAction::Execute(Event event)
+{
+    auto tryDispel = [&](std::initializer_list<std::string> actions) -> bool
+    {
+        for (std::string const& action : actions)
+            if (botAI->DoSpecificAction(action, event, true))
+                return true;
+        return false;
+    };
+
+    switch (bot->getClass())
+    {
+        case CLASS_MAGE:
+            return tryDispel({"remove curse", "remove curse on party"});
+        case CLASS_DRUID:
+            return tryDispel({"remove curse on party", "abolish poison", "abolish poison on party",
+                              "cure poison", "cure poison on party"});
+        case CLASS_PRIEST:
+            return tryDispel({"dispel magic", "dispel magic on party", "abolish disease",
+                              "abolish disease on party", "cure disease", "cure disease on party"});
+        case CLASS_PALADIN:
+            return tryDispel({"cleanse magic", "cleanse magic on party", "cleanse poison",
+                              "cleanse poison on party", "cleanse disease", "cleanse disease on party",
+                              "purify poison", "purify poison on party", "purify disease",
+                              "purify disease on party"});
+        case CLASS_SHAMAN:
+            return tryDispel({"cure poison", "cure poison on party", "cure disease", "cure disease on party"});
+        default:
+            return false;
+    }
+}
+
+bool BwlChromaggusTimeLapseTankAction::Execute(Event event)
+{
+    Unit* boss = AI_VALUE2(Unit*, "find target", "chromaggus");
+    if (!boss)
+        return false;
+
+    if (bot->GetVictim() != boss)
+        return Attack(boss);
+
+    return botAI->DoSpecificAction("taunt spell", event, true);
 }
 
 bool BwlNefarianFearWardAction::Execute(Event /*event*/)

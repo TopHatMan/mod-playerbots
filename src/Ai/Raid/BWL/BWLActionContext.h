@@ -43,6 +43,11 @@ public:
         creators["bwl flamegor tranq"] = &RaidBwlActionContext::bwl_flamegor_tranq;
 
         creators["bwl use hourglass sand"] = &RaidBwlActionContext::bwl_use_hourglass_sand;
+        creators["bwl chromaggus break los"] = &RaidBwlActionContext::bwl_chromaggus_break_los;
+        creators["bwl chromaggus tranq"] = &RaidBwlActionContext::bwl_chromaggus_tranq;
+        creators["bwl chromaggus sheep"] = &RaidBwlActionContext::bwl_chromaggus_sheep;
+        creators["bwl chromaggus dispel"] = &RaidBwlActionContext::bwl_chromaggus_dispel;
+        creators["bwl chromaggus time lapse tank"] = &RaidBwlActionContext::bwl_chromaggus_time_lapse_tank;
         creators["bwl nefarian fear ward"] = &RaidBwlActionContext::bwl_nefarian_fear_ward;
         creators["bwl death talon wyrmguard tank move away"] = &RaidBwlActionContext::bwl_death_talon_wyrmguard_tank_move_away;
         creators["bwl death talon wyrmguard ranged move away"] = &RaidBwlActionContext::bwl_death_talon_wyrmguard_ranged_move_away;
@@ -70,6 +75,11 @@ private:
     static Action* bwl_ebonroc_taunt(PlayerbotAI* ai) { return new BwlEbonrocTauntAction(ai); }
     static Action* bwl_flamegor_tranq(PlayerbotAI* ai) { return new BwlFlamegorTranqAction(ai); }
     static Action* bwl_use_hourglass_sand(PlayerbotAI* ai) { return new BwlUseHourglassSandAction(ai); }
+    static Action* bwl_chromaggus_break_los(PlayerbotAI* ai) { return new BwlChromaggusBreakLosAction(ai); }
+    static Action* bwl_chromaggus_tranq(PlayerbotAI* ai) { return new BwlChromaggusFrenzyTranqAction(ai); }
+    static Action* bwl_chromaggus_sheep(PlayerbotAI* ai) { return new BwlChromaggusSheepAction(ai); }
+    static Action* bwl_chromaggus_dispel(PlayerbotAI* ai) { return new BwlChromaggusDispelAction(ai); }
+    static Action* bwl_chromaggus_time_lapse_tank(PlayerbotAI* ai) { return new BwlChromaggusTimeLapseTankAction(ai); }
     static Action* bwl_nefarian_fear_ward(PlayerbotAI* ai) { return new BwlNefarianFearWardAction(ai); }
     static Action* bwl_death_talon_wyrmguard_tank_move_away(PlayerbotAI* ai) { return new BwlDeathTalonWyrmguardTankMoveAwayAction(ai); }
     static Action* bwl_death_talon_wyrmguard_ranged_move_away(PlayerbotAI* ai) { return new BwlDeathTalonWyrmguardRangedMoveAwayAction(ai); }

@@ -66,6 +66,16 @@ void RaidBwlStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 
     triggers.push_back(new TriggerNode("bwl affliction bronze", {
         NextAction("bwl use hourglass sand", ACTION_RAID) }));
+    triggers.push_back(new TriggerNode("bwl chromaggus breath", {
+        NextAction("bwl chromaggus break los", ACTION_EMERGENCY + 4) }));
+    triggers.push_back(new TriggerNode("bwl chromaggus frenzy", {
+        NextAction("bwl chromaggus tranq", ACTION_RAID + 3) }));
+    triggers.push_back(new TriggerNode("bwl chromaggus mutation", {
+        NextAction("bwl chromaggus sheep", ACTION_RAID + 3) }));
+    triggers.push_back(new TriggerNode("bwl chromaggus dispel", {
+        NextAction("bwl chromaggus dispel", ACTION_RAID + 2) }));
+    triggers.push_back(new TriggerNode("bwl chromaggus time lapse", {
+        NextAction("bwl chromaggus time lapse tank", ACTION_RAID + 4) }));
 
     triggers.push_back(new TriggerNode("bwl wild magic", {
         NextAction("ice block", ACTION_RAID) }));
@@ -85,6 +95,7 @@ void RaidBwlStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
     multipliers.push_back(new VaelastraszBurningAdrenalineMultiplier(botAI));
     multipliers.push_back(new BroodlordSharedThreatMultiplier(botAI));
     multipliers.push_back(new FiremawFlameBuffetMultiplier(botAI));
+    multipliers.push_back(new ChromaggusTimeLapseMultiplier(botAI));
 }
 
 void RaidBwlStrategy::AppendTargetExclusions(GuidSet& exclusions, TargetValueExclusionType type)

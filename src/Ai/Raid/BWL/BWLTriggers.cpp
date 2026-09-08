@@ -224,6 +224,138 @@ bool BwlAfflictionBronzeTrigger::IsActive()
     return bot->HasAura(static_cast<uint32>(BlackwingLairSpells::SPELL_BROOD_AFFLICTION_BRONZE));
 }
 
+bool BwlChromaggusBreathTrigger::IsActive()
+{
+    if (PlayerbotAI::IsTank(bot) && !PlayerbotAI::IsMainTank(bot))
+        return false; // OT stays visible as Time Lapse insurance.
+
+    Unit* boss = AI_VALUE2(Unit*, "find target", "chromaggus");
+    if (!boss || !boss->HasUnitState(UNIT_STATE_CASTING))
+        return false;
+
+    Spell* currentSpell = boss->GetCurrentSpell(CURRENT_GENERIC_SPELL);
+    if (!currentSpell || !currentSpell->m_spellInfo)
+        return false;
+
+    if (!IsChromaggusBreathSpell(currentSpell->m_spellInfo->Id))
+        return false;
+
+    // MT stays in view. Everyone else LoS the breath.
+    if (PlayerbotAI::IsMainTank(bot))
+        return false;
+
+    return boss->IsWithinLOSInMap(bot);
+}
+
+bool BwlChromaggusFrenzyTrigger::IsActive()
+{
+    if (bot->getClass() != CLASS_HUNTER)
+        return false;
+
+    Unit* boss = AI_VALUE2(Unit*, "find target", "chromaggus");
+    if (!boss)
+        return false;
+
+    Aura* frenzy = boss->GetAura(static_cast<uint32>(BlackwingLairSpells::SPELL_CHROMAGGUS_FRENZY));
+    if (!frenzy)
+        return false;
+
+    int32 const elapsed = frenzy->GetMaxDuration() - frenzy->GetDuration();
+    return elapsed >= static_cast<int32>(GetAliveHunterIndex(bot) * TRANQ_STAGGER_MS);
+}
+
+bool BwlChromaggusMutationTrigger::IsActive()
+{
+    if (bot->getClass() != CLASS_MAGE)
+        return false;
+
+    Unit* boss = AI_VALUE2(Unit*, "find target", "chromaggus");
+    if (!boss)
+        return false;
+
+    GuidVector targets = AI_VALUE(GuidVector, "possible targets");
+    for (ObjectGuid guid : targets)
+    {
+        Unit* unit = botAI->GetUnit(guid);
+        if (unit && unit->IsAlive() && unit->HasAura(static_cast<uint32>(BlackwingLairSpells::SPELL_CHROMATIC_MUTATION)))
+            return true;
+    }
+    return false;
+}
+
+static bool ChromaggusHasDispellableAffliction(Unit const* unit, uint8 clazz)
+{
+    if (!unit)
+        return false;
+    bool const curse = unit->HasAura(static_cast<uint32>(BlackwingLairSpells::SPELL_BROOD_AFFLICTION_BLACK));
+    bool const magic = unit->HasAura(static_cast<uint32>(BlackwingLairSpells::SPELL_BROOD_AFFLICTION_BLUE));
+    bool const poison = unit->HasAura(static_cast<uint32>(BlackwingLairSpells::SPELL_BROOD_AFFLICTION_GREEN));
+    bool const disease = unit->HasAura(static_cast<uint32>(BlackwingLairSpells::SPELL_BROOD_AFFLICTION_RED));
+    switch (clazz)
+    {
+        case CLASS_MAGE:
+        case CLASS_DRUID:
+            return curse || (clazz == CLASS_DRUID && poison);
+        case CLASS_PRIEST:
+            return magic || disease;
+        case CLASS_PALADIN:
+            return magic || poison || disease;
+        case CLASS_SHAMAN:
+            return poison || disease;
+        default:
+            return false;
+    }
+}
+
+bool BwlChromaggusDispelTrigger::IsActive()
+{
+    if (!AI_VALUE2(Unit*, "find target", "chromaggus"))
+        return false;
+
+    uint8 const clazz = bot->getClass();
+    if (clazz != CLASS_MAGE && clazz != CLASS_DRUID && clazz != CLASS_PRIEST &&
+        clazz != CLASS_PALADIN && clazz != CLASS_SHAMAN)
+        return false;
+
+    if (ChromaggusHasDispellableAffliction(bot, clazz))
+        return true;
+
+    if (Group* group = bot->GetGroup())
+    {
+        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+        {
+            Player* member = ref->GetSource();
+            if (!member || member == bot || !member->IsAlive() || member->GetMapId() != bot->GetMapId())
+                continue;
+            if (bot->GetDistance(member) > 40.0f)
+                continue;
+            if (ChromaggusHasDispellableAffliction(member, clazz))
+                return true;
+        }
+    }
+    return false;
+}
+
+bool BwlChromaggusTimeLapseTrigger::IsActive()
+{
+    if (!PlayerbotAI::IsTank(bot))
+        return false;
+
+    Unit* boss = AI_VALUE2(Unit*, "find target", "chromaggus");
+    if (!boss)
+        return false;
+
+    Unit* victim = boss->GetVictim();
+    if (!victim || victim == bot)
+        return false;
+
+    if (victim->HasAura(static_cast<uint32>(BlackwingLairSpells::SPELL_TIMELAPSE)))
+        return true;
+
+    Player* victimPlayer = victim->ToPlayer();
+    return !victimPlayer || !PlayerbotAI::IsTank(victimPlayer);
+}
+
 // Nefarian
 
 bool BwlWildMagicTrigger::IsActive()
