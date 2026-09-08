@@ -17,4 +17,5 @@ void SayStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode("low mana", { NextAction("say::low mana", 99.0f) }));
     triggers.push_back(new TriggerNode("tank aoe", { NextAction("say::taunt", 99.0f) }));
     triggers.push_back(new TriggerNode("medium aoe", { NextAction("say::aoe", 99.0f) }));
+    triggers.push_back(new TriggerNode("can loot", { NextAction("say::loot", 99.0f) }));
 }

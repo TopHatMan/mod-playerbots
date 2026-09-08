@@ -6,6 +6,7 @@
 
 #include "AiFactory.h"
 #include "BattlegroundMgr.h"
+#include "BotTalk.h"
 #include "DKAiObjectContext.h"
 #include "DruidAiObjectContext.h"
 #include "Engine.h"
@@ -303,6 +304,9 @@ void AiFactory::AddDefaultCombatStrategies(Player* player, PlayerbotAI* const fa
 
     if (!player->InBattleground())
         engine->addStrategiesNoInit("racials", "chat", "default", "cast time", "potions", "duel", "boost", nullptr);
+
+    if (BotTalk::IsEnabled())
+        engine->addStrategy("say", false);
 
     if (sPlayerbotAIConfig.autoAvoidAoe && facade->HasGameClientMaster())
         engine->addStrategy("avoid aoe", false);
@@ -602,6 +606,8 @@ void AiFactory::AddDefaultNonCombatStrategies(Player* player, PlayerbotAI* const
     {
         nonCombatEngine->addStrategiesNoInit("nc", "food", "chat", "follow", "default", "force rebuff", "quest", "loot",
                                             "gather", "duel", "pvp", "buff", "mount", "emote", nullptr);
+        if (BotTalk::IsEnabled())
+            nonCombatEngine->addStrategy("say", false);
     }
 
     if (sPlayerbotAIConfig.autoSaveMana && PlayerbotAI::IsHeal(player, true))

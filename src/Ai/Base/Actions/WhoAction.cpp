@@ -116,6 +116,12 @@ std::string const WhoAction::QuerySpec(std::string const /*text*/)
 
     out << "|h|cffffffff" << chat->FormatRace(bot->getRace()) << " [" << (bot->getGender() == GENDER_MALE ? "M" : "F")
         << "] " << chat->FormatClass(bot, spec);
+    if (botAI->IsTank(bot, true))
+        out << " |cff00ff00tank|r";
+    else if (botAI->IsHeal(bot, true))
+        out << " |cff00ff00heal|r";
+    else
+        out << " |cff00ff00dps|r";
     out << " (|h|cff00ff00" << (uint32)bot->GetLevel() << "|h|cffffffff lvl), ";
     out << "|h|cff00ff00" << botAI->GetEquipGearScore(bot/*, false, false*/) << "|h|cffffffff GS (";
 

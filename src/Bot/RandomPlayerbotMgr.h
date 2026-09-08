@@ -133,7 +133,10 @@ public:
     void RandomTeleportForLevel(Player* bot);
     void RandomTeleportGrindForLevel(Player* bot);
     void RandomTeleportForRpg(Player* bot);
+    bool TryTeleportNearRealPlayer(Player* bot);
     uint32 GetMaxAllowedBotCount();
+    uint32 CalculateSmartPopulationTarget();
+    uint32 CountOnlineRealPlayers() const;
     bool ProcessBot(Player* player);
     void Revive(Player* player);
     void ChangeStrategy(Player* player);

@@ -5,6 +5,8 @@
  */
 
 #include "PartyMemberToResurrect.h"
+#include "Corpse.h"
+#include "Group.h"
 #include "Playerbots.h"
 
 class IsTargetOfResurrectSpell : public SpellEntryPredicate
@@ -24,25 +26,55 @@ public:
     }
 };
 
-class FindDeadPlayer : public FindPlayerPredicate
-{
-public:
-    FindDeadPlayer(PartyMemberValue* value) : value(value) {}
-
-    bool Check(Unit* unit) override
-    {
-        Player* player = unit->ToPlayer();
-        return player && !player->isResurrectRequested() && player->getDeathState() == DeathState::Corpse &&
-               !value->IsTargetOfSpellCast(player, predicate);
-    }
-
-private:
-    PartyMemberValue* value;
-    IsTargetOfResurrectSpell predicate;
-};
-
 Unit* PartyMemberToResurrect::Calculate()
 {
-    FindDeadPlayer finder(this);
-    return FindPartyMember(finder);
+    Group* group = bot->GetGroup();
+    if (!group)
+        return nullptr;
+
+    IsTargetOfResurrectSpell alreadyCasting;
+    Player* bestReal = nullptr;
+    Player* bestOther = nullptr;
+    float bestRealDist = 99999.f;
+    float bestOtherDist = 99999.f;
+    float const maxDist = std::max(sPlayerbotAIConfig.spellDistance * 3.0f, 80.0f);
+
+    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+    {
+        Player* player = ref->GetSource();
+        if (!player || player == bot || player->IsAlive() || player->isResurrectRequested())
+            continue;
+        if (player->IsGameMaster() || player->GetMapId() != bot->GetMapId())
+            continue;
+
+        float dist = bot->GetDistance(player);
+        if (Corpse* corpse = player->GetCorpse())
+        {
+            float const corpseDist = bot->GetDistance(corpse);
+            if (corpseDist < dist)
+                dist = corpseDist;
+        }
+        if (dist > maxDist)
+            continue;
+        if (IsTargetOfSpellCast(player, alreadyCasting))
+            continue;
+
+        bool const realParticipant = IsRealPlayer(player) ||
+            (GET_PLAYERBOT_AI(player) && GET_PLAYERBOT_AI(player)->HasGameClientMaster());
+        if (realParticipant)
+        {
+            if (dist < bestRealDist)
+            {
+                bestRealDist = dist;
+                bestReal = player;
+            }
+        }
+        else if (dist < bestOtherDist)
+        {
+            bestOtherDist = dist;
+            bestOther = player;
+        }
+    }
+
+    return bestReal ? static_cast<Unit*>(bestReal) : bestOther;
 }

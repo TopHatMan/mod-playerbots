@@ -7,6 +7,8 @@
 #include "PlayerbotAIConfig.h"
 #include "BisListMgr.h"
 #include "Config.h"
+#include "World.h"
+#include <algorithm>
 #include "NewRpgInfo.h"
 #include "PlayerbotDungeonRepository.h"
 #include "PlayerbotFactory.h"
@@ -63,6 +65,8 @@ void LoadListString(std::string const value, T& list)
 
 // Parses a comma-separated, whitespace-tolerant bot name list (as used by both
 // AiPlayerbot.LevelBrackets.ExcludeNames and AiPlayerbot.ResetBotLevel.ExcludeNames) into out.
+static void ClampBracketVector(std::vector<LevelBracketConfig>& ranges, uint8 minLevel, uint8 maxLevel);
+
 static void ParseLevelMgrExcludeNames(std::string const& csv, std::vector<std::string>& out)
 {
     out.clear();
@@ -185,6 +189,11 @@ bool PlayerbotAIConfig::Initialize()
     allowGuildBots = sConfigMgr->GetOption<bool>("AiPlayerbot.AllowGuildBots", true);
     allowTrustedAccountBots = sConfigMgr->GetOption<bool>("AiPlayerbot.AllowTrustedAccountBots", true);
     disabledWithoutRealPlayer = sConfigMgr->GetOption<bool>("AiPlayerbot.DisabledWithoutRealPlayer", false);
+    smartPopulationEnabled = sConfigMgr->GetOption<bool>("AiPlayerbot.SmartPopulation.Enabled", false);
+    smartPopulationBaseOnline = sConfigMgr->GetOption<uint32>("AiPlayerbot.SmartPopulation.BaseOnline", 80);
+    smartPopulationBotsPerPlayer = sConfigMgr->GetOption<uint32>("AiPlayerbot.SmartPopulation.BotsPerRealPlayer", 40);
+    smartPopulationLoginsPerInterval = sConfigMgr->GetOption<uint32>("AiPlayerbot.SmartPopulation.LoginsPerInterval", 8);
+    smartPopulationNearbyPercent = sConfigMgr->GetOption<uint32>("AiPlayerbot.SmartPopulation.NearbyPercent", 40);
     randomBotGuildNearby = sConfigMgr->GetOption<bool>("AiPlayerbot.RandomBotGuildNearby", false);
     randomBotInvitePlayer = sConfigMgr->GetOption<bool>("AiPlayerbot.RandomBotInvitePlayer", false);
     inviteChat = sConfigMgr->GetOption<bool>("AiPlayerbot.InviteChat", false);
@@ -193,12 +202,12 @@ bool PlayerbotAIConfig::Initialize()
     LoadList<std::vector<uint32>>(randomBotMapsAsString, randomBotMaps);
     probTeleToBankers = sConfigMgr->GetOption<float>("AiPlayerbot.ProbTeleToBankers", 0.25f);
     enableWeightTeleToCityBankers = sConfigMgr->GetOption<bool>("AiPlayerbot.EnableWeightTeleToCityBankers", false);
-    weightTeleToStormwind = sConfigMgr->GetOption<int>("AiPlayerbot.TeleToStormwindWeight", 2);
-    weightTeleToIronforge = sConfigMgr->GetOption<int>("AiPlayerbot.TeleToIronforgeWeight", 1);
+    weightTeleToStormwind = sConfigMgr->GetOption<int>("AiPlayerbot.TeleToStormwindWeight", 6);
+    weightTeleToIronforge = sConfigMgr->GetOption<int>("AiPlayerbot.TeleToIronforgeWeight", 6);
     weightTeleToDarnassus = sConfigMgr->GetOption<int>("AiPlayerbot.TeleToDarnassusWeight", 1);
     weightTeleToExodar = sConfigMgr->GetOption<int>("AiPlayerbot.TeleToExodarWeight", 1);
-    weightTeleToOrgrimmar = sConfigMgr->GetOption<int>("AiPlayerbot.TeleToOrgrimmarWeight", 2);
-    weightTeleToUndercity = sConfigMgr->GetOption<int>("AiPlayerbot.TeleToUndercityWeight", 1);
+    weightTeleToOrgrimmar = sConfigMgr->GetOption<int>("AiPlayerbot.TeleToOrgrimmarWeight", 6);
+    weightTeleToUndercity = sConfigMgr->GetOption<int>("AiPlayerbot.TeleToUndercityWeight", 6);
     weightTeleToThunderBluff = sConfigMgr->GetOption<int>("AiPlayerbot.TeleToThunderBluffWeight", 1);
     weightTeleToSilvermoonCity = sConfigMgr->GetOption<int>("AiPlayerbot.TeleToSilvermoonCityWeight", 1);
     weightTeleToShattrathCity = sConfigMgr->GetOption<int>("AiPlayerbot.TeleToShattrathCityWeight", 1);
@@ -242,8 +251,10 @@ bool PlayerbotAIConfig::Initialize()
 
     botAutologin = sConfigMgr->GetOption<bool>("AiPlayerbot.BotAutologin", false);
     randomBotAutologin = sConfigMgr->GetOption<bool>("AiPlayerbot.RandomBotAutologin", true);
-    minRandomBots = sConfigMgr->GetOption<int32>("AiPlayerbot.MinRandomBots", 500);
-    maxRandomBots = sConfigMgr->GetOption<int32>("AiPlayerbot.MaxRandomBots", 500);
+    minRandomBots = sConfigMgr->GetOption<int32>("AiPlayerbot.MinRandomBots", 1000);
+    maxRandomBots = sConfigMgr->GetOption<int32>("AiPlayerbot.MaxRandomBots", 3600);
+    if (maxRandomBots < minRandomBots)
+        maxRandomBots = minRandomBots;
     randomBotUpdateInterval = sConfigMgr->GetOption<int32>("AiPlayerbot.RandomBotUpdateInterval", 20);
     randomBotCountChangeMinInterval =
         sConfigMgr->GetOption<int32>("AiPlayerbot.RandomBotCountChangeMinInterval", 30 * MINUTE);
@@ -677,11 +688,6 @@ bool PlayerbotAIConfig::Initialize()
     randomBotHordeRatio = sConfigMgr->GetOption<int32>("AiPlayerbot.RandomBotHordeRatio", 50);
     disableDeathKnightLogin = sConfigMgr->GetOption<bool>("AiPlayerbot.DisableDeathKnightLogin", 0);
     limitTalentsExpansion = sConfigMgr->GetOption<bool>("AiPlayerbot.LimitTalentsExpansion", 0);
-    if (sWorld->getIntConfig(CONFIG_EXPANSION) < EXPANSION_WRATH_OF_THE_LICH_KING && !limitTalentsExpansion)
-    {
-        limitTalentsExpansion = true;
-        LOG_INFO("playerbots", "Enabled LimitTalentsExpansion because Expansion is below WotLK");
-    }
     botActiveAlone = sConfigMgr->GetOption<int32>("AiPlayerbot.BotActiveAlone", 10);
     BotActiveAloneDurationSeconds = sConfigMgr->GetOption<int32>("AiPlayerbot.BotActiveAloneDurationSeconds", 30);
     BotActiveAloneForceWhenInRadius = sConfigMgr->GetOption<uint32>("AiPlayerbot.BotActiveAloneForceWhenInRadius", 150);
@@ -756,6 +762,8 @@ bool PlayerbotAIConfig::Initialize()
 
     selfBotLevel = sConfigMgr->GetOption<int32>("AiPlayerbot.SelfBotLevel", 1);
 
+    ApplyExpansionLimits();
+
     RandomPlayerbotFactory::CreateRandomBots();
     if (World::IsStopped())
     {
@@ -793,6 +801,20 @@ bool PlayerbotAIConfig::Initialize()
     LOG_INFO("server.loading", "---------------------------------------");
     LOG_INFO("server.loading", "       mod-playerbots initialized      ");
     LOG_INFO("server.loading", "---------------------------------------");
+    if (sPlayerbotAIConfig.smartPopulationEnabled)
+    {
+        LOG_WARN("playerbots",
+                 "SmartPopulation is ON: bots wait for a real player, then trickle in. "
+                 "The world will look empty. Set AiPlayerbot.SmartPopulation.Enabled = 0 "
+                 "and raise Min/MaxRandomBots to log the population in at server start.");
+    }
+    else
+    {
+        LOG_INFO("playerbots",
+                 "Random bots log in at world start: {}-{} (fill to {} while initializing).",
+                 sPlayerbotAIConfig.minRandomBots, sPlayerbotAIConfig.maxRandomBots,
+                 sPlayerbotAIConfig.maxRandomBots);
+    }
 
     return true;
 }
@@ -834,7 +856,7 @@ void PlayerbotAIConfig::LoadRandomBotLevelConfig()
         levelBracketsExcludeNames);
 
     levelBracketsNumRanges =
-        static_cast<uint8>(sConfigMgr->GetOption<uint32>("AiPlayerbot.LevelBrackets.NumRanges", 9));
+        static_cast<uint8>(sConfigMgr->GetOption<uint32>("AiPlayerbot.LevelBrackets.NumRanges", 7));
     levelBracketsAlliance.resize(levelBracketsNumRanges);
     levelBracketsHorde.resize(levelBracketsNumRanges);
 
@@ -951,6 +973,153 @@ void PlayerbotAIConfig::LoadRandomBotLevelConfig()
 
     ParseLevelMgrExcludeNames(sConfigMgr->GetOption<std::string>("AiPlayerbot.ResetBotLevel.ExcludeNames", ""),
         resetBotLevelExcludeNames);
+
+    ClampBracketVector(levelBracketsAlliance, static_cast<uint8>(randomBotMinLevel),
+                       static_cast<uint8>(randomBotMaxLevel));
+    ClampBracketVector(levelBracketsHorde, static_cast<uint8>(randomBotMinLevel),
+                       static_cast<uint8>(randomBotMaxLevel));
+}
+
+uint32 PlayerbotAIConfig::GetExpansionMaxLevel() const
+{
+    switch (sWorld->getIntConfig(CONFIG_EXPANSION))
+    {
+        case EXPANSION_CLASSIC:
+            return 60;
+        case EXPANSION_THE_BURNING_CRUSADE:
+            return 70;
+        default:
+            return DEFAULT_MAX_LEVEL;
+    }
+}
+
+uint32 PlayerbotAIConfig::GetRandomBotLoginBatchSize() const
+{
+    if (smartPopulationEnabled && smartPopulationLoginsPerInterval > 0)
+        return std::min(randomBotsPerInterval, smartPopulationLoginsPerInterval);
+    return randomBotsPerInterval;
+}
+
+bool PlayerbotAIConfig::IsRandomBotRaceAllowed(uint8 race) const
+{
+    if (sWorld->getIntConfig(CONFIG_EXPANSION) < EXPANSION_THE_BURNING_CRUSADE &&
+        (race == RACE_BLOODELF || race == RACE_DRAENEI))
+        return false;
+    return true;
+}
+
+bool PlayerbotAIConfig::IsRandomBotClassAllowed(uint8 cls) const
+{
+    if (cls == CLASS_DEATH_KNIGHT &&
+        (disableDeathKnightLogin || sWorld->getIntConfig(CONFIG_EXPANSION) < EXPANSION_WRATH_OF_THE_LICH_KING))
+        return false;
+    return true;
+}
+
+static void ClampBracketVector(std::vector<LevelBracketConfig>& ranges, uint8 minLevel, uint8 maxLevel)
+{
+    uint32 total = 0;
+    for (LevelBracketConfig& range : ranges)
+    {
+        if (range.lower > maxLevel || range.upper < minLevel)
+        {
+            range.pct = 0;
+            continue;
+        }
+        if (range.lower < minLevel)
+            range.lower = minLevel;
+        if (range.upper > maxLevel)
+            range.upper = maxLevel;
+        if (range.lower > range.upper)
+            range.pct = 0;
+        total += range.pct;
+    }
+
+    if (total == 0 || total == 100)
+        return;
+
+    int missing = 100 - static_cast<int>(total);
+    while (missing > 0)
+    {
+        bool progressed = false;
+        for (LevelBracketConfig& range : ranges)
+        {
+            if (missing <= 0)
+                break;
+            if (range.pct == 0 || range.lower > range.upper)
+                continue;
+            ++range.pct;
+            --missing;
+            progressed = true;
+        }
+        if (!progressed)
+            break;
+    }
+}
+
+void PlayerbotAIConfig::ApplyExpansionLimits()
+{
+    uint32 const expansionCap = GetExpansionMaxLevel();
+    uint32 const worldCap = sWorld->getIntConfig(CONFIG_MAX_PLAYER_LEVEL);
+    uint32 const previousMax = randomBotMaxLevel;
+    randomBotMaxLevel = std::min({ randomBotMaxLevel, expansionCap, worldCap });
+    if (randomBotMinLevel > randomBotMaxLevel)
+        randomBotMinLevel = 1;
+
+    if (previousMax != randomBotMaxLevel)
+        LOG_INFO("playerbots",
+                 "Clamped RandomBotMaxLevel from {} to {} (expansion {}, world max {})",
+                 previousMax, randomBotMaxLevel, sWorld->getIntConfig(CONFIG_EXPANSION), worldCap);
+
+    if (sWorld->getIntConfig(CONFIG_EXPANSION) < EXPANSION_WRATH_OF_THE_LICH_KING && !disableDeathKnightLogin)
+    {
+        disableDeathKnightLogin = true;
+        LOG_INFO("playerbots", "Disabled death knight random-bot login because Expansion is below WotLK");
+    }
+
+    // WotLK talent strings dump points into TBC/WotLK rows. On a Classic/TBC
+    // cap, force the 1-60 / 1-70 talent limiter so bots play the era.
+    if (sWorld->getIntConfig(CONFIG_EXPANSION) < EXPANSION_WRATH_OF_THE_LICH_KING && !limitTalentsExpansion)
+    {
+        limitTalentsExpansion = true;
+        LOG_INFO("playerbots", "Enabled LimitTalentsExpansion because Expansion is below WotLK");
+    }
+
+    std::vector<uint32> allowedMaps;
+    allowedMaps.reserve(randomBotMaps.size());
+    for (uint32 mapId : randomBotMaps)
+    {
+        if (mapId == 530 && sWorld->getIntConfig(CONFIG_EXPANSION) < EXPANSION_THE_BURNING_CRUSADE)
+            continue;
+        if (mapId == 571 && sWorld->getIntConfig(CONFIG_EXPANSION) < EXPANSION_WRATH_OF_THE_LICH_KING)
+            continue;
+        allowedMaps.push_back(mapId);
+    }
+    if (allowedMaps.empty())
+        allowedMaps = { 0, 1 };
+    if (allowedMaps != randomBotMaps)
+    {
+        LOG_INFO("playerbots", "Filtered RandomBotMaps to expansion-available continents ({})",
+                 allowedMaps.size());
+        randomBotMaps.swap(allowedMaps);
+    }
+
+    if (sWorld->getIntConfig(CONFIG_EXPANSION) < EXPANSION_THE_BURNING_CRUSADE)
+    {
+        weightTeleToExodar = 0;
+        weightTeleToSilvermoonCity = 0;
+        weightTeleToShattrathCity = 0;
+    }
+    if (sWorld->getIntConfig(CONFIG_EXPANSION) < EXPANSION_WRATH_OF_THE_LICH_KING)
+        weightTeleToDalaran = 0;
+
+    if (botActiveAloneSmartScaleWhenMaxLevel > randomBotMaxLevel)
+        botActiveAloneSmartScaleWhenMaxLevel = randomBotMaxLevel;
+
+    ClampBracketVector(levelBracketsAlliance, static_cast<uint8>(randomBotMinLevel),
+                       static_cast<uint8>(randomBotMaxLevel));
+    ClampBracketVector(levelBracketsHorde, static_cast<uint8>(randomBotMinLevel),
+                       static_cast<uint8>(randomBotMaxLevel));
 }
 
 bool PlayerbotAIConfig::IsInRandomAccountList(uint32 id)

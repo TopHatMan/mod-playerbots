@@ -47,6 +47,7 @@
 #include "ReturnStrategy.h"
 #include "RpgStrategy.h"
 #include "RunawayStrategy.h"
+#include "SayStrategy.h"
 #include "StayStrategy.h"
 #include "TankAssistStrategy.h"
 #include "TellTargetStrategy.h"
@@ -66,6 +67,7 @@ public:
         creators["loot"] = &StrategyContext::loot;
         creators["gather"] = &StrategyContext::gather;
         creators["emote"] = &StrategyContext::emote;
+        creators["say"] = &StrategyContext::say;
         creators["passive"] = &StrategyContext::passive;
         creators["aggressive"] = &StrategyContext::aggressive;
         creators["save mana"] = &StrategyContext::auto_save_mana;
@@ -154,6 +156,7 @@ private:
     static Strategy* loot(PlayerbotAI* botAI) { return new LootNonCombatStrategy(botAI); }
     static Strategy* gather(PlayerbotAI* botAI) { return new GatherStrategy(botAI); }
     static Strategy* emote(PlayerbotAI* botAI) { return new EmoteStrategy(botAI); }
+    static Strategy* say(PlayerbotAI* botAI) { return new SayStrategy(botAI); }
     static Strategy* passive(PlayerbotAI* botAI) { return new PassiveStrategy(botAI); }
     static Strategy* aggressive(PlayerbotAI* botAI) { return new AggressiveStrategy(botAI); }
     // static Strategy* conserve_mana(PlayerbotAI* botAI) { return new ConserveManaStrategy(botAI); }

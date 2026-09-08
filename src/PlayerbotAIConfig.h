@@ -96,6 +96,11 @@ public:
 
     bool Initialize();
     void LoadRandomBotLevelConfig();
+    void ApplyExpansionLimits();
+    uint32 GetExpansionMaxLevel() const;
+    uint32 GetRandomBotLoginBatchSize() const;
+    bool IsRandomBotRaceAllowed(uint8 race) const;
+    bool IsRandomBotClassAllowed(uint8 cls) const;
     bool IsInRandomAccountList(uint32 id);
     bool IsInRandomQuestItemList(uint32 id);
     bool IsPvpProhibited(uint32 zoneId, uint32 areaId);
@@ -104,6 +109,11 @@ public:
 
     bool enabled;
     bool disabledWithoutRealPlayer;
+    bool smartPopulationEnabled;
+    uint32 smartPopulationBaseOnline;
+    uint32 smartPopulationBotsPerPlayer;
+    uint32 smartPopulationLoginsPerInterval;
+    uint32 smartPopulationNearbyPercent;
     bool EnableICCBuffs;
     bool allowAccountBots, allowGuildBots, allowTrustedAccountBots;
     bool randomBotGuildNearby, randomBotInvitePlayer, inviteChat;

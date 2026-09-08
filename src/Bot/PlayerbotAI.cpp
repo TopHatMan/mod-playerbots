@@ -7,6 +7,8 @@
 #include "PlayerbotAI.h"
 #include "AiFactory.h"
 #include "AreaDefines.h"
+#include "BotActivityMgr.h"
+#include "BotTalk.h"
 #include "BudgetValues.h"
 #include "ChannelMgr.h"
 #include "CharacterPackets.h"
@@ -560,6 +562,7 @@ void PlayerbotAI::UpdateAIInternal([[maybe_unused]] uint32 elapsed, bool minimal
     masterOutgoingPacketHandlers.Handle(helper);
 
     DoNextAction(minimal);
+    BotTalk::Tick(bot, this);
 
     if (pmo)
         pmo->finish();
@@ -4664,6 +4667,13 @@ bool PlayerbotAI::AllowActive(ActivityType activityType)
     // always allow packet handling (e.g. group invites, trade, loot, friend requests etc)
     if (activityType == PACKET_ACTIVITY)
         return true;
+
+    // Guest mods (dungeon-sim, pvp-life, artisans) own this bot for a while.
+    // Let combat/party continue; stop grind/rpg/travel from teleporting it away.
+    if (BotActivityMgr::BlocksWorldWander(bot) &&
+        (activityType == GRIND_ACTIVITY || activityType == RPG_ACTIVITY ||
+         activityType == TRAVEL_ACTIVITY || activityType == OUT_OF_PARTY_ACTIVITY))
+        return false;
 
     // all bots forced active, no rotation or scaling needed
     if (sPlayerbotAIConfig.botActiveAlone >= 100 && !sPlayerbotAIConfig.botActiveAloneSmartScale)

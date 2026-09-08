@@ -8,6 +8,9 @@
 #define PLAYERBOTS_PLAYERBOTS_H
 
 #include "AiObjectContext.h"
+#include "BotActivityMgr.h"
+#include "BotGearLane.h"
+#include "BotTalk.h"
 #include "Group.h"
 #include "Pet.h"
 #include "PlayerbotAI.h"

@@ -6,6 +6,7 @@
 
 #include "SayAction.h"
 #include "AiFactory.h"
+#include "BotTalk.h"
 #include "Event.h"
 #include "PlayerbotTextMgr.h"
 #include "Playerbots.h"
@@ -133,12 +134,13 @@ bool SayAction::Execute(Event /*event*/)
     if (!PlayerbotTextMgr::instance().GetBotText(qualifier, text, placeholders))
         return false;
 
+    BotTalk::Channel channel = BotTalk::Channel::Say;
     if (text.find("/y ") == 0)
-        bot->Yell(text.substr(3), (bot->GetTeamId() == TEAM_ALLIANCE ? LANG_COMMON : LANG_ORCISH));
-    else
-        bot->Say(text, (bot->GetTeamId() == TEAM_ALLIANCE ? LANG_COMMON : LANG_ORCISH));
+        channel = BotTalk::Channel::Yell;
+    else if (BotTalk::ShouldUseParty(bot))
+        channel = BotTalk::PreferredGroupChannel(bot);
 
-    return true;
+    return BotTalk::Speak(bot, channel, text);
 }
 
 bool SayAction::isUseful()

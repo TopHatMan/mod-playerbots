@@ -67,8 +67,40 @@
 #        DATABASE & CONNECTIONS
 #        DEBUG
 #        CHAT SETTINGS
+#        BOT TALK (NEW)
+#        ACTIVITY BUS / PLAYER-GROUP RESERVE (NEW)
+#        GEAR LANES (NEW)
 #        LOGS
 #    DEPRECATED (TEMPORARY)
+####################################################################################################
+
+####################################################################################################
+# NEW KEYS — ashbringer-exp takeover
+# Copy these into live playerbots.conf. Code defaults match the values below,
+# but live conf should still have them. Details: docs/TAKEOVER.md
+#
+# Talk — KEEP OFF (unsolicited bot speech fights npc-chat-llm)
+#   AiPlayerbot.BotTalk.Enable                    = 0
+#   AiPlayerbot.RandomBotTalk                     = 0
+#   AiPlayerbot.BotTalk.GroupChance               = 18
+#   AiPlayerbot.BotTalk.WorldChance               = 8
+#   AiPlayerbot.BotTalk.CooldownMin               = 20
+#   AiPlayerbot.BotTalk.CooldownMax               = 55
+#   AiPlayerbot.BotTalk.PreferPartyWhenGrouped    = 1
+#
+# Activity bus (grouped-with-you bots cannot be snatched by dungeon-sim)
+#   AiPlayerbot.BotActivity.PlayerGroupReserve           = 1
+#   AiPlayerbot.BotActivity.PlayerGroupReconcileSeconds  = 15
+#
+# Gear lanes (comments only — do not merge these)
+#   Personal loot = bots grouped WITH you (dungeon-sim PersonalLoot)
+#   Dungeon-sim   = bots WITHOUT you (autonomous run awards)
+#
+# Full world at server start (copy these or the realm stays empty)
+#   AiPlayerbot.MinRandomBots                     = 1000
+#   AiPlayerbot.MaxRandomBots                     = 3600
+#   AiPlayerbot.SmartPopulation.Enabled           = 0
+#   AiPlayerbot.DisabledWithoutRealPlayer         = 0
 ####################################################################################################
 
 ###################################
@@ -86,8 +118,12 @@ AiPlayerbot.Enabled = 1
 AiPlayerbot.RandomBotAutologin = 1
 
 # Randombot count
-AiPlayerbot.MinRandomBots = 500
-AiPlayerbot.MaxRandomBots = 500
+# Log these in at WORLD START so the realm is already full when you log in.
+# 3600 bots = 360 rndbot accounts (10 characters each). RandomBotAccountCount = 0
+# will create however many accounts are still missing.
+# Defaults: 1000 (min), 3600 (max). Startup fill uses Max.
+AiPlayerbot.MinRandomBots = 1000
+AiPlayerbot.MaxRandomBots = 3600
 
 # Randombot accounts
 # Set to 0 to automatically calculate needed accounts based on MaxRandomBots, EnablePeriodicOnlineOffline
@@ -111,12 +147,27 @@ AiPlayerbot.RandomBotAccountPrefix = "rndbot"
 AiPlayerbot.DeleteRandomBotAccounts = 0
 
 # Disable randombots when no real players are logged in
-# Default: 0 (randombots will login when server starts)
-# If enabled, randombots will only log in 30 seconds (default) after a real player logs in, and will
-# log out 300 seconds (default) after all real players log out
+# KEEP THIS AT 0. 1 = empty world until you log in.
+# Default: 0 (randombots login when the server starts)
 AiPlayerbot.DisabledWithoutRealPlayer = 0
 AiPlayerbot.DisabledWithoutRealPlayerLoginDelay = 30
 AiPlayerbot.DisabledWithoutRealPlayerLogoutDelay = 300
+
+####################################################################################################
+# SMART POPULATION — KEEP DISABLED
+#
+# This is what made the world feel empty: no bots until a real player is online,
+# then only BaseOnline + BotsPerRealPlayer trickle in (8 logins per tick).
+# For a full vanilla world, leave Enabled = 0 so Min/MaxRandomBots log in at
+# server start (turbo batch until Max is online).
+#
+# Expansion clamp (level 60 / no DK / no BE-Draenei) still runs either way.
+#
+AiPlayerbot.SmartPopulation.Enabled = 0
+AiPlayerbot.SmartPopulation.BaseOnline = 80
+AiPlayerbot.SmartPopulation.BotsPerRealPlayer = 40
+AiPlayerbot.SmartPopulation.LoginsPerInterval = 8
+AiPlayerbot.SmartPopulation.NearbyPercent = 40
 
 ####################################################################################################
 
@@ -731,6 +782,8 @@ AiPlayerbot.EndFishingWithMaster = 30.0
 AiPlayerbot.RandomBotRandomPassword = 0
 
 # Minimum and maximum levels for randombots
+# RandomBotMaxLevel is also clamped to the server Expansion (0=60, 1=70, 2=80)
+# so leftover TBC/WotLK characters are not scheduled on a vanilla 60 realm.
 AiPlayerbot.RandomBotMinLevel = 1
 AiPlayerbot.RandomBotMaxLevel = 60
 
@@ -767,6 +820,7 @@ AiPlayerbot.RandomBotAllianceRatio = 50
 AiPlayerbot.RandomBotHordeRatio = 50
 
 # Disable logging in of death knight bots
+# Forced on when Expansion is below WotLK.
 AiPlayerbot.DisableDeathKnightLogin = 0
 
 # Enable simulated expansion limitation for talents and glyphs
@@ -1213,6 +1267,10 @@ AiPlayerbot.ExcludedHunterPetFamilies = ""
 ####################################################################################################
 # ACTIVITY
 #
+# BotActiveAlone is a CPU throttle (how many ungrouped bots think). It is
+# NOT the reservation bus. Guest mods reserve bots through BotActivityMgr
+# (AiPlayerbot.BotActivity.PlayerGroupReserve above). Do not confuse them.
+#
 
 # BotActiveAlone
 # - Controls how many bots are active when no real players are nearby.
@@ -1532,6 +1590,7 @@ AiPlayerbot.ZoneBracket.4197 = 79,80
 
 # Map IDs where bots can be teleported to
 # Defaults: 0 = Eastern Kingdoms, 1 = Kalimdor, 530 = Outland, 571 = Northrend
+# Outland/Northrend are ignored automatically when Expansion is below TBC/WotLK.
 AiPlayerbot.RandomBotMaps = 0,1,530,571
 
 # Probability bots teleport to banker (city)
@@ -1540,13 +1599,14 @@ AiPlayerbot.ProbTeleToBankers = 0.25
 
 # Control probability weights for bots teleporting to Capital city bankers
 # Sum of weights need not be 100. Set to 0 to disable teleporting to the city.
+# Level-cap bots further pack Stormwind/Ironforge and Orgrimmar/Undercity.
 AiPlayerbot.EnableWeightTeleToCityBankers = 1
-AiPlayerbot.TeleToStormwindWeight = 2
-AiPlayerbot.TeleToIronforgeWeight = 1
+AiPlayerbot.TeleToStormwindWeight = 6
+AiPlayerbot.TeleToIronforgeWeight = 6
 AiPlayerbot.TeleToDarnassusWeight = 1
 AiPlayerbot.TeleToExodarWeight = 1
-AiPlayerbot.TeleToOrgrimmarWeight = 2
-AiPlayerbot.TeleToUndercityWeight = 1
+AiPlayerbot.TeleToOrgrimmarWeight = 6
+AiPlayerbot.TeleToUndercityWeight = 6
 AiPlayerbot.TeleToThunderBluffWeight = 1
 AiPlayerbot.TeleToSilvermoonCityWeight = 1
 AiPlayerbot.TeleToShattrathCityWeight = 1
@@ -2585,7 +2645,8 @@ AiPlayerbot.CommandSeparator = "\\\\"
 AiPlayerbot.EnableAutoTradeOnItemMention = 1
 
 # Enable bots talking (say / yell / general chatting / lfg)
-AiPlayerbot.RandomBotTalk = 1
+# KEEP OFF. Unsolicited bot say/party chat fights mod-npc-chat-llm (player-driven RP only).
+AiPlayerbot.RandomBotTalk = 0
 # Enable bots emoting
 AiPlayerbot.RandomBotEmote = 0
 # Enable randombots suggesting dungeons in chat
@@ -2602,6 +2663,50 @@ AIPlayerbot.GuildFeedback = 1
 AiPlayerbot.GuildRepliesRate = 100
 # Bots without a master will say their lines
 AiPlayerbot.RandomBotSayWithoutMaster = 0
+
+#
+# First-class bot talk (hub API: BotTalk)
+#
+# Grouped-with-player bots speak in party/raid. Nearby world bots say/yell.
+# Combat callouts use the "say" strategy. Other mods must call BotTalk, not
+# invent a second chat stack. See docs/TAKEOVER.md.
+#
+# KEEP OFF unless you want unsolicited bot speech. Player whispers to bots
+# still go through mod-npc-chat-llm (NpcChat.Bot.*), which is player-driven.
+# Default: 0 (disabled — does not trigger NPC LLM)
+AiPlayerbot.BotTalk.Enable = 0
+# Chance (1-100) a grouped bot chats after its cooldown, out of combat
+AiPlayerbot.BotTalk.GroupChance = 18
+# Chance (1-100) a nearby ungrouped bot says something in the world
+AiPlayerbot.BotTalk.WorldChance = 8
+# Seconds between ambient lines per bot
+AiPlayerbot.BotTalk.CooldownMin = 20
+AiPlayerbot.BotTalk.CooldownMax = 55
+# Prefer party/raid chat when a real player is in the group
+AiPlayerbot.BotTalk.PreferPartyWhenGrouped = 1
+
+#
+# Activity bus (hub API: BotActivityMgr)
+#
+# Reserve every bot in a real player's group as owner "player-group".
+# Dungeon-sim, pvp-life, and artisans must not take those bots.
+# Combat / follow / personal loot still work. Grind/RPG teleports do not.
+# Logging out as the player does not free the party while you are still
+# a group member. Default: 1 (enabled)
+AiPlayerbot.BotActivity.PlayerGroupReserve = 1
+# How often (seconds) to re-check player-group reservations
+AiPlayerbot.BotActivity.PlayerGroupReconcileSeconds = 15
+
+#
+# Gear lanes (do not merge)
+#
+# Personal loot = bots grouped WITH you get companion gear
+#   (mod-playerbot-dungeon-sim PlayerbotDungeonSim.PersonalLoot.*)
+# Dungeon-sim   = bots WITHOUT you get autonomous-run gear
+# Factory BiS is not a living-world gear source.
+# Helper: BotGearLane::LaneFor(bot). See docs/TAKEOVER.md.
+# Player-group reserve above is what stops dungeon-sim from pulling those
+# companion bots into an autonomous run.
 
 #
 #

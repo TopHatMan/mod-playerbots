@@ -105,6 +105,7 @@ ChatCommandHandlerStrategy::ChatCommandHandlerStrategy(PlayerbotAI* botAI) : Pas
     supported.push_back("repair");
     supported.push_back("emblems");
     supported.push_back("talents");
+    supported.push_back("role");
     supported.push_back("spells");
     supported.push_back("co");
     supported.push_back("nc");

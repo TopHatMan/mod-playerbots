@@ -55,6 +55,7 @@
 #include "ResetAiAction.h"
 #include "ReviveFromCorpseAction.h"
 #include "RewardAction.h"
+#include "RoleAction.h"
 #include "RtiAction.h"
 #include "RtscAction.h"
 #include "SaveManaAction.h"
@@ -128,10 +129,12 @@ public:
         creators["equip"] = &ChatActionContext::equip;
         creators["unequip"] = &ChatActionContext::unequip;
         creators["sell"] = &ChatActionContext::sell;
+        creators["auction"] = &ChatActionContext::auction;
         creators["buy"] = &ChatActionContext::buy;
         creators["reward"] = &ChatActionContext::reward;
         creators["trade"] = &ChatActionContext::trade;
         creators["talents"] = &ChatActionContext::talents;
+        creators["role"] = &ChatActionContext::role;
         creators["spells"] = &ChatActionContext::spells;
         creators["co"] = &ChatActionContext::co;
         creators["nc"] = &ChatActionContext::nc;
@@ -270,10 +273,12 @@ private:
     static Action* dead(PlayerbotAI* botAI) { return new ChangeDeadStrategyAction(botAI); }
     static Action* spells(PlayerbotAI* botAI) { return new ListSpellsAction(botAI); }
     static Action* talents(PlayerbotAI* botAI) { return new ChangeTalentsAction(botAI); }
+    static Action* role(PlayerbotAI* botAI) { return new RoleAction(botAI); }
 
     static Action* equip(PlayerbotAI* botAI) { return new EquipAction(botAI); }
     static Action* unequip(PlayerbotAI* botAI) { return new UnequipAction(botAI); }
     static Action* sell(PlayerbotAI* botAI) { return new SellAction(botAI); }
+    static Action* auction(PlayerbotAI* botAI) { return new ListAuctionAction(botAI); }
     static Action* buy(PlayerbotAI* botAI) { return new BuyAction(botAI); }
     static Action* reward(PlayerbotAI* botAI) { return new RewardAction(botAI); }
     static Action* trade(PlayerbotAI* botAI) { return new TradeAction(botAI); }

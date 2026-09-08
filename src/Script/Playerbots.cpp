@@ -7,6 +7,8 @@
 #include "Playerbots.h"
 #include "BattleGroundTactics.h"
 #include "BattlefieldScript.h"
+#include "BotActivityMgr.h"
+#include "BotTalk.h"
 #include "Channel.h"
 #include "CheckMountStateAction.h"
 #include "Config.h"
@@ -15,7 +17,10 @@
 #include "DatabaseEnv.h"
 #include "PlayerbotsDatabase.h"
 #include <mysqld_error.h>
+#include "Group.h"
+#include "GroupScript.h"
 #include "GuildTaskMgr.h"
+#include "ObjectAccessor.h"
 #include "PlayerScript.h"
 #include "PlayerbotAIConfig.h"
 #include "PlayerbotCommandScript.h"
@@ -159,6 +164,8 @@ public:
                     "|cff00ff00Playerbots:|r The server is configured with " + maxAllowedBotCount + " bots.");
             }
         }
+
+        BotActivityMgr::SyncPlayerGroupFor(player);
     }
 
     bool OnPlayerBeforeTeleport(Player* /*player*/, uint32 /*mapid*/, float /*x*/, float /*y*/, float /*z*/,
@@ -410,6 +417,8 @@ public:
         LOG_INFO("server.loading", "Load Playerbots Config...");
 
         sPlayerbotAIConfig.Initialize();
+        BotTalk::LoadConfig();
+        BotActivityMgr::LoadConfig();
 
         LOG_INFO("server.loading", ">> Loaded playerbots config in {} ms", GetMSTimeDiffToNow(oldMSTime));
         LOG_INFO("server.loading", " ");
@@ -423,6 +432,7 @@ public:
     void OnUpdate(uint32 diff) override
     {
         PlayerbotWorldThreadProcessor::instance().Update(diff);
+        BotActivityMgr::Update();
         sRandomPlayerbotMgr.UpdateAI(diff);  // World thread only
     }
 };
@@ -512,6 +522,8 @@ public:
         }
 
         sRandomPlayerbotMgr.OnPlayerLogout(player);
+        if (player)
+            BotActivityMgr::Release(player->GetGUID().GetCounter());
     }
 
     void OnPlayerbotLogoutBots() override
@@ -565,6 +577,42 @@ public:
     PlayerbotsBattlefieldScript() : BattlefieldScript("PlayerbotsBattlefieldScript") { }
 };
 
+class PlayerbotsGroupScript : public GroupScript
+{
+public:
+    PlayerbotsGroupScript() : GroupScript("PlayerbotsGroupScript", {
+        GROUPHOOK_ON_ADD_MEMBER,
+        GROUPHOOK_ON_REMOVE_MEMBER,
+        GROUPHOOK_ON_DISBAND,
+        GROUPHOOK_ON_CREATE
+    }) {}
+
+    void OnAddMember(Group* group, ObjectGuid /*guid*/) override
+    {
+        BotActivityMgr::SyncPlayerGroup(group);
+    }
+
+    void OnRemoveMember(Group* group, ObjectGuid guid, RemoveMethod /*method*/, ObjectGuid /*kicker*/,
+                        char const* /*reason*/) override
+    {
+        BotActivityMgr::Release(guid.GetCounter(), BotActivityMgr::Owner::PlayerGroup);
+        BotActivityMgr::SyncPlayerGroup(group);
+    }
+
+    void OnDisband(Group* group) override
+    {
+        if (!group)
+            return;
+        for (Group::MemberSlot const& slot : group->GetMemberSlots())
+            BotActivityMgr::Release(slot.guid.GetCounter(), BotActivityMgr::Owner::PlayerGroup);
+    }
+
+    void OnCreate(Group* group, Player* /*leader*/) override
+    {
+        BotActivityMgr::SyncPlayerGroup(group);
+    }
+};
+
 void AddPlayerbotsSecureLoginScripts();
 void AddPlayerbotsSelfBotAfkScripts();
 
@@ -583,6 +631,7 @@ void AddPlayerbotsScripts()
     new PlayerbotsMiscScript();
     new PlayerbotsServerScript();
     new PlayerbotsWorldScript();
+    new PlayerbotsGroupScript();
     new PlayerbotsScript();
     new PlayerBotsBGScript();
     AddPlayerbotsSecureLoginScripts();
