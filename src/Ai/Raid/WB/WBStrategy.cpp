@@ -5,7 +5,11 @@
  */
 
 #include "WBStrategy.h"
+#include "Playerbots.h"
+#include "WBHelpers.h"
 #include "WBMultipliers.h"
+
+using namespace WorldBossHelpers;
 
 void RaidWorldBossStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
@@ -47,6 +51,10 @@ void RaidWorldBossStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         NextAction("wb emeriss avoid mushroom", ACTION_RAID + 4) }));
     triggers.push_back(new TriggerNode("wb emeriss dispel", {
         NextAction("wb emeriss dispel", ACTION_RAID + 2) }));
+    triggers.push_back(new TriggerNode("wb lethon nature resistance", {
+        NextAction("wb lethon nature resistance", ACTION_RAID) }));
+    triggers.push_back(new TriggerNode("wb lethon shade", {
+        NextAction("wb lethon kill shade", ACTION_RAID + 3) }));
 }
 
 void RaidWorldBossStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
@@ -54,4 +62,18 @@ void RaidWorldBossStrategy::InitMultipliers(std::vector<Multiplier*>& multiplier
     multipliers.push_back(new AzuregosMultiplier(botAI));
     multipliers.push_back(new KazzakMultiplier(botAI));
     multipliers.push_back(new EmeraldDragonMultiplier(botAI));
+}
+
+void RaidWorldBossStrategy::AppendTargetExclusions(GuidSet& exclusions, TargetValueExclusionType type)
+{
+    if (type != TargetValueExclusionType::Dps)
+        return;
+
+    Unit* lethon = FindEmeraldDragon(botAI->GetBot());
+    if (!lethon || lethon->GetEntry() != NPC_LETHON)
+        return;
+
+    Creature* shade = botAI->GetBot()->FindNearestCreature(NPC_SPIRIT_SHADE, 80.0f, true);
+    if (shade && shade->IsAlive())
+        exclusions.insert(lethon->GetGUID());
 }

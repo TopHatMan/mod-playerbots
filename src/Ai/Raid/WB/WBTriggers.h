@@ -114,4 +114,11 @@ public:
     bool IsActive() override;
 };
 
+class WbLethonShadeTrigger : public Trigger
+{
+public:
+    WbLethonShadeTrigger(PlayerbotAI* botAI) : Trigger(botAI, "wb lethon shade") {}
+    bool IsActive() override;
+};
+
 #endif

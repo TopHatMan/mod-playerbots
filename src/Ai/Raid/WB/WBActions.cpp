@@ -239,3 +239,15 @@ bool WbEmerissDispelAction::Execute(Event event)
             return false;
     }
 }
+
+bool WbLethonKillShadeAction::Execute(Event /*event*/)
+{
+    Creature* nearest = bot->FindNearestCreature(NPC_SPIRIT_SHADE, 80.0f, true);
+    if (!nearest || !nearest->IsAlive())
+        return false;
+
+    botAI->GetAiObjectContext()->GetValue<GuidVector>("prioritized targets")->Set({ nearest->GetGUID() });
+    if (bot->GetVictim() == nearest)
+        return false;
+    return Attack(nearest);
+}

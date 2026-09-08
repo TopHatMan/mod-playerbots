@@ -36,6 +36,8 @@ public:
         creators["wb dragon fog"] = &RaidWorldBossTriggerContext::dragon_fog;
         creators["wb emeriss mushroom"] = &RaidWorldBossTriggerContext::emeriss_mushroom;
         creators["wb emeriss dispel"] = &RaidWorldBossTriggerContext::emeriss_dispel;
+        creators["wb lethon shade"] = &RaidWorldBossTriggerContext::lethon_shade;
+        creators["wb lethon nature resistance"] = &RaidWorldBossTriggerContext::lethon_nature;
     }
 
 private:
@@ -57,6 +59,8 @@ private:
     static Trigger* dragon_fog(PlayerbotAI* ai) { return new WbDragonFogTrigger(ai); }
     static Trigger* emeriss_mushroom(PlayerbotAI* ai) { return new WbEmerissMushroomTrigger(ai); }
     static Trigger* emeriss_dispel(PlayerbotAI* ai) { return new WbEmerissDispelTrigger(ai); }
+    static Trigger* lethon_shade(PlayerbotAI* ai) { return new WbLethonShadeTrigger(ai); }
+    static Trigger* lethon_nature(PlayerbotAI* ai) { return new BossNatureResistanceTrigger(ai, "lethon"); }
 };
 
 #endif

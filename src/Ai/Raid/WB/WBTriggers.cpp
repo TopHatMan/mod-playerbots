@@ -254,3 +254,12 @@ bool WbEmerissDispelTrigger::IsActive()
     }
     return false;
 }
+
+bool WbLethonShadeTrigger::IsActive()
+{
+    Unit* boss = FindEmeraldDragon(bot);
+    if (!boss || boss->GetEntry() != NPC_LETHON)
+        return false;
+    Creature* shade = bot->FindNearestCreature(NPC_SPIRIT_SHADE, 80.0f, true);
+    return shade && shade->IsAlive();
+}

@@ -36,6 +36,8 @@ public:
         creators["wb dragon move from fog"] = &RaidWorldBossActionContext::dragon_fog;
         creators["wb emeriss avoid mushroom"] = &RaidWorldBossActionContext::emeriss_mushroom;
         creators["wb emeriss dispel"] = &RaidWorldBossActionContext::emeriss_dispel;
+        creators["wb lethon kill shade"] = &RaidWorldBossActionContext::lethon_shade;
+        creators["wb lethon nature resistance"] = &RaidWorldBossActionContext::lethon_nature;
     }
 
 private:
@@ -56,6 +58,8 @@ private:
     static Action* dragon_fog(PlayerbotAI* ai) { return new WbDragonMoveFromFogAction(ai); }
     static Action* emeriss_mushroom(PlayerbotAI* ai) { return new WbEmerissAvoidMushroomAction(ai); }
     static Action* emeriss_dispel(PlayerbotAI* ai) { return new WbEmerissDispelAction(ai); }
+    static Action* lethon_shade(PlayerbotAI* ai) { return new WbLethonKillShadeAction(ai); }
+    static Action* lethon_nature(PlayerbotAI* ai) { return new BossNatureResistanceAction(ai, "lethon"); }
 };
 
 #endif

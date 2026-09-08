@@ -108,4 +108,11 @@ public:
     bool Execute(Event event) override;
 };
 
+class WbLethonKillShadeAction : public AttackAction
+{
+public:
+    WbLethonKillShadeAction(PlayerbotAI* botAI) : AttackAction(botAI, "wb lethon kill shade") {}
+    bool Execute(Event event) override;
+};
+
 #endif
