@@ -102,6 +102,43 @@ bool BwlVaelastraszTankSwapTrigger::IsActive()
     return SelectNextVaelastraszTank(bot) == bot;
 }
 
+bool BwlBroodlordPositioningTrigger::IsActive()
+{
+    Unit* boss = AI_VALUE2(Unit*, "find target", "broodlord lashlayer");
+    if (!boss || boss->GetVictim() == bot)
+        return false;
+    return !PlayerbotAI::IsTank(bot);
+}
+
+bool BwlBroodlordBlastWaveTrigger::IsActive()
+{
+    if (PlayerbotAI::IsTank(bot) || !PlayerbotAI::IsRanged(bot))
+        return false;
+
+    Unit* boss = AI_VALUE2(Unit*, "find target", "broodlord lashlayer");
+    if (!boss)
+        return false;
+
+    return bot->GetDistance2d(boss) < BROODLORD_BLASTWAVE_DISTANCE;
+}
+
+bool BwlBroodlordTankTrigger::IsActive()
+{
+    if (!PlayerbotAI::IsTank(bot))
+        return false;
+
+    Unit* boss = AI_VALUE2(Unit*, "find target", "broodlord lashlayer");
+    if (!boss)
+        return false;
+
+    Unit* victim = boss->GetVictim();
+    if (!victim || victim == bot)
+        return false;
+
+    Player* victimPlayer = victim->ToPlayer();
+    return !victimPlayer || !PlayerbotAI::IsTank(victimPlayer);
+}
+
 // Chromaggus
 
 bool BwlAfflictionBronzeTrigger::IsActive()

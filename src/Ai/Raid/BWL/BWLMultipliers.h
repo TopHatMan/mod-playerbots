@@ -33,4 +33,12 @@ public:
     float GetValue(Action* action) override;
 };
 
+class BroodlordSharedThreatMultiplier : public Multiplier
+{
+public:
+    BroodlordSharedThreatMultiplier(
+        PlayerbotAI* botAI) : Multiplier(botAI, "broodlord shared threat multiplier") {}
+    float GetValue(Action* action) override;
+};
+
 #endif

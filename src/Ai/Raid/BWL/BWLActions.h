@@ -87,6 +87,20 @@ public:
     bool Execute(Event event) override;
 };
 
+class BwlBroodlordAvoidBlastWaveAction : public MovementAction
+{
+public:
+    BwlBroodlordAvoidBlastWaveAction(PlayerbotAI* botAI) : MovementAction(botAI, "bwl broodlord avoid blast wave") {}
+    bool Execute(Event event) override;
+};
+
+class BwlBroodlordTankAction : public AttackAction
+{
+public:
+    BwlBroodlordTankAction(PlayerbotAI* botAI) : AttackAction(botAI, "bwl broodlord tank") {}
+    bool Execute(Event event) override;
+};
+
 // Chromaggus
 
 class BwlUseHourglassSandAction : public Action

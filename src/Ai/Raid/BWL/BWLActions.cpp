@@ -364,6 +364,32 @@ bool BwlVaelastraszTankSwapAction::Execute(Event event)
     return botAI->DoSpecificAction("taunt spell", event, true);
 }
 
+bool BwlBroodlordAvoidBlastWaveAction::Execute(Event /*event*/)
+{
+    Unit* boss = AI_VALUE2(Unit*, "find target", "broodlord lashlayer");
+    if (!boss)
+        return false;
+
+    float distToTravel = BROODLORD_BLASTWAVE_DISTANCE - bot->GetDistance2d(boss);
+    if (distToTravel <= 0.0f)
+        return false;
+
+    bot->CastStop();
+    return MoveAway(boss, distToTravel);
+}
+
+bool BwlBroodlordTankAction::Execute(Event event)
+{
+    Unit* boss = AI_VALUE2(Unit*, "find target", "broodlord lashlayer");
+    if (!boss)
+        return false;
+
+    if (bot->GetVictim() != boss)
+        return Attack(boss);
+
+    return botAI->DoSpecificAction("taunt spell", event, true);
+}
+
 // Chromaggus
 
 bool BwlUseHourglassSandAction::Execute(Event /*event*/)

@@ -71,6 +71,27 @@ public:
     bool IsActive() override;
 };
 
+class BwlBroodlordPositioningTrigger : public Trigger
+{
+public:
+    BwlBroodlordPositioningTrigger(PlayerbotAI* botAI) : Trigger(botAI, "bwl broodlord positioning") {}
+    bool IsActive() override;
+};
+
+class BwlBroodlordBlastWaveTrigger : public Trigger
+{
+public:
+    BwlBroodlordBlastWaveTrigger(PlayerbotAI* botAI) : Trigger(botAI, "bwl broodlord blast wave") {}
+    bool IsActive() override;
+};
+
+class BwlBroodlordTankTrigger : public Trigger
+{
+public:
+    BwlBroodlordTankTrigger(PlayerbotAI* botAI) : Trigger(botAI, "bwl broodlord tank") {}
+    bool IsActive() override;
+};
+
 // Chromaggus
 
 class BwlAfflictionBronzeTrigger : public Trigger

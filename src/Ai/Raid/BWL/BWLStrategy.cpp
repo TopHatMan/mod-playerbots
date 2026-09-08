@@ -42,6 +42,12 @@ void RaidBwlStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 
     triggers.push_back(new TriggerNode("bwl broodlord fire resistance", {
         NextAction("bwl broodlord fire resistance", ACTION_RAID) }));
+    triggers.push_back(new TriggerNode("bwl broodlord positioning", {
+        NextAction("rear flank", ACTION_MOVE + 4) }));
+    triggers.push_back(new TriggerNode("bwl broodlord blast wave", {
+        NextAction("bwl broodlord avoid blast wave", ACTION_RAID + 3) }));
+    triggers.push_back(new TriggerNode("bwl broodlord tank", {
+        NextAction("bwl broodlord tank", ACTION_RAID + 2) }));
 
     triggers.push_back(new TriggerNode("bwl firemaw fire resistance", {
         NextAction("bwl firemaw fire resistance", ACTION_RAID) }));
@@ -67,6 +73,7 @@ void RaidBwlStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
     multipliers.push_back(new RazorgoreTankMultiplier(botAI));
     multipliers.push_back(new VaelastraszTankMultiplier(botAI));
     multipliers.push_back(new VaelastraszBurningAdrenalineMultiplier(botAI));
+    multipliers.push_back(new BroodlordSharedThreatMultiplier(botAI));
 }
 
 void RaidBwlStrategy::AppendTargetExclusions(GuidSet& exclusions, TargetValueExclusionType type)

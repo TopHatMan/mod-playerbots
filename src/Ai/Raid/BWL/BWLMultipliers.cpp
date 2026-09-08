@@ -9,6 +9,7 @@
 #include "BWLActions.h"
 #include "BWLHelpers.h"
 #include "ChooseTargetActions.h"
+#include "EncounterHelpers.h"
 #include "GenericSpellActions.h"
 #include "HunterActions.h"
 #include "Playerbots.h"
@@ -112,6 +113,28 @@ float VaelastraszBurningAdrenalineMultiplier::GetValue(Action* action)
             target->GetHealthPct() < 20.0f)
             return 0.0f;
     }
+
+    return 1.0f;
+}
+
+float BroodlordSharedThreatMultiplier::GetValue(Action* action)
+{
+    Unit* boss = AI_VALUE2(Unit*, "find target", "broodlord lashlayer");
+    if (!boss)
+        return 1.0f;
+
+    if (dynamic_cast<BwlBroodlordTankAction*>(action) || dynamic_cast<BwlBroodlordAvoidBlastWaveAction*>(action))
+        return 1.0f;
+
+    // Knock Away is not a taunt-swap: never taunt a tank who still has the boss.
+    Unit* victim = boss->GetVictim();
+    Player* victimPlayer = victim ? victim->ToPlayer() : nullptr;
+    if (victimPlayer && PlayerbotAI::IsTank(victimPlayer) && victim != bot &&
+        EncounterHelpers::IsTauntAction(bot, action))
+        return 0.0f;
+
+    if (PlayerbotAI::IsDps(bot) && EncounterHelpers::IsDpsCooldownAction(bot, action))
+        return 0.0f;
 
     return 1.0f;
 }

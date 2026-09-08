@@ -32,6 +32,8 @@ public:
         creators["bwl vaelastrasz tank swap"] = &RaidBwlActionContext::bwl_vaelastrasz_tank_swap;
 
         creators["bwl broodlord fire resistance"] = &RaidBwlActionContext::bwl_broodlord_fire_resistance_action;
+        creators["bwl broodlord avoid blast wave"] = &RaidBwlActionContext::bwl_broodlord_avoid_blast_wave;
+        creators["bwl broodlord tank"] = &RaidBwlActionContext::bwl_broodlord_tank;
 
         creators["bwl firemaw fire resistance"] = &RaidBwlActionContext::bwl_firemaw_fire_resistance_action;
         creators["bwl flamegor fire resistance"] = &RaidBwlActionContext::bwl_flamegor_fire_resistance_action;
@@ -55,6 +57,8 @@ private:
     static Action* bwl_vaelastrasz_move_away(PlayerbotAI* ai) { return new BwlVaelastraszMoveAwayAction(ai); }
     static Action* bwl_vaelastrasz_tank_swap(PlayerbotAI* ai) { return new BwlVaelastraszTankSwapAction(ai); }
     static Action* bwl_broodlord_fire_resistance_action(PlayerbotAI* ai) { return new BossFireResistanceAction(ai, "broodlord lashlayer"); }
+    static Action* bwl_broodlord_avoid_blast_wave(PlayerbotAI* ai) { return new BwlBroodlordAvoidBlastWaveAction(ai); }
+    static Action* bwl_broodlord_tank(PlayerbotAI* ai) { return new BwlBroodlordTankAction(ai); }
     static Action* bwl_firemaw_fire_resistance_action(PlayerbotAI* ai) { return new BossFireResistanceAction(ai, "firemaw"); }
     static Action* bwl_flamegor_fire_resistance_action(PlayerbotAI* ai) { return new BossFireResistanceAction(ai, "flamegor"); }
     static Action* bwl_use_hourglass_sand(PlayerbotAI* ai) { return new BwlUseHourglassSandAction(ai); }
