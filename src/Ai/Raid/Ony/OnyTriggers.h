@@ -4,14 +4,12 @@
  * or (at your option) any later version.
  */
 
-// OnyxiaTriggers.h
 #ifndef PLAYERBOTS_ONYTRIGGERS_H
 #define PLAYERBOTS_ONYTRIGGERS_H
 
 #include "PlayerbotAI.h"
 #include "Trigger.h"
 
-// Mechanics
 class OnyxiaDeepBreathTrigger : public Trigger
 {
 public:
@@ -44,6 +42,34 @@ class OnyxiaAvoidEggsTrigger : public Trigger
 {
 public:
     OnyxiaAvoidEggsTrigger(PlayerbotAI* botAI);
+    bool IsActive() override;
+};
+
+class OnyxiaTankWallTrigger : public Trigger
+{
+public:
+    OnyxiaTankWallTrigger(PlayerbotAI* botAI);
+    bool IsActive() override;
+};
+
+class OnyxiaBellowingRoarTrigger : public Trigger
+{
+public:
+    OnyxiaBellowingRoarTrigger(PlayerbotAI* botAI);
+    bool IsActive() override;
+};
+
+class OnyxiaLavaTrigger : public Trigger
+{
+public:
+    OnyxiaLavaTrigger(PlayerbotAI* botAI);
+    bool IsActive() override;
+};
+
+class OnyxiaTankTauntTrigger : public Trigger
+{
+public:
+    OnyxiaTankTauntTrigger(PlayerbotAI* botAI);
     bool IsActive() override;
 };
 

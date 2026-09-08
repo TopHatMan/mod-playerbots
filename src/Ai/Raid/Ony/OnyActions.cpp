@@ -5,67 +5,50 @@
  */
 
 #include "OnyActions.h"
+#include "EncounterHelpers.h"
 #include "GenericSpellActions.h"
 #include "LastMovementValue.h"
 #include "MovementActions.h"
+#include "OnyHelpers.h"
 #include "Playerbots.h"
 #include "PositionAction.h"
+
+using namespace OnyxiaHelpers;
 
 bool RaidOnyxiaMoveToSideAction::Execute(Event /*event*/)
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "onyxia");
-    if (!boss)
+    if (!boss || !IsOnyxiaGrounded(boss))
         return false;
 
-    float angleToBot = boss->GetAngle(bot);
-    float bossFacing = boss->GetOrientation();
-    float diff = fabs(angleToBot - bossFacing);
-    if (diff > M_PI)
-        diff = 2 * M_PI - diff;
+    float const bossFacing = boss->GetOrientation();
+    float const leftAngle = bossFacing + static_cast<float>(M_PI_2);
+    float const rightAngle = bossFacing - static_cast<float>(M_PI_2);
+    float const sideDist = PlayerbotAI::IsRanged(bot) ? RANGED_SIDE_DISTANCE : MELEE_SIDE_DISTANCE;
 
-    float distance = bot->GetDistance(boss);
+    float const leftX = boss->GetPositionX() + sideDist * cos(leftAngle);
+    float const leftY = boss->GetPositionY() + sideDist * sin(leftAngle);
+    float const rightX = boss->GetPositionX() + sideDist * cos(rightAngle);
+    float const rightY = boss->GetPositionY() + sideDist * sin(rightAngle);
 
-    // Too close (30 yards) and either in front or behind
-    if (distance <= 30.0f && (diff < M_PI / 4 || diff > 3 * M_PI / 4))
-    {
-        float offsetAngle = bossFacing + M_PI_2;  // 90° to the right
-        float offsetDist = 15.0f;
+    bool const useLeft = bot->GetExactDist2d(leftX, leftY) < bot->GetExactDist2d(rightX, rightY);
+    float const targetX = useLeft ? leftX : rightX;
+    float const targetY = useLeft ? leftY : rightY;
 
-        float sideX = boss->GetPositionX() + offsetDist * cos(offsetAngle);
-        float sideY = boss->GetPositionY() + offsetDist * sin(offsetAngle);
+    if (bot->GetExactDist2d(targetX, targetY) < 2.0f)
+        return false;
 
-        // bot->Yell("Too close to front or tail — moving to side of Onyxia!", LANG_UNIVERSAL);
-        return MoveTo(boss->GetMapId(), sideX, sideY, boss->GetPositionZ(), false, false, false, false,
-                      MovementPriority::MOVEMENT_COMBAT);
-    }
-
-    return false;
+    return MoveTo(boss->GetMapId(), targetX, targetY, boss->GetPositionZ(), false, false, false, false,
+                  MovementPriority::MOVEMENT_COMBAT);
 }
 
 bool RaidOnyxiaSpreadOutAction::Execute(Event /*event*/)
 {
     Unit* boss = AI_VALUE2(Unit*, "find target", "onyxia");
-
-    if (!boss)
+    if (!IsOnyxiaAirborne(boss))
         return false;
 
-    // Trigger may fire on one tick, but the action can execute on a later tick.
-    // By that time the cast may have finished, so current spell can be null.
-    Spell* currentSpell = boss->GetCurrentSpell(CURRENT_GENERIC_SPELL);
-    if (!currentSpell || !currentSpell->m_spellInfo)
-        return false;
-
-    // Fireball
-    if (currentSpell->m_spellInfo->Id != 18392)
-        return false;
-
-    Unit* unitTarget = currentSpell->m_targets.GetUnitTarget();
-    Player* target = unitTarget ? unitTarget->ToPlayer() : nullptr;
-    if (!target || target != bot)
-        return false;
-
-    // bot->Yell("Spreading out — I'm the Fireball target!", LANG_UNIVERSAL);
-    return MoveFromGroup(9.0f);  // move 9 yards
+    return MoveFromGroup(SPREAD_DISTANCE + 1.0f);
 }
 
 bool RaidOnyxiaMoveToSafeZoneAction::Execute(Event /*event*/)
@@ -75,19 +58,16 @@ bool RaidOnyxiaMoveToSafeZoneAction::Execute(Event /*event*/)
         return false;
 
     Spell* currentSpell = boss->GetCurrentSpell(CURRENT_GENERIC_SPELL);
-    if (!currentSpell || !currentSpell->m_spellInfo)
+    if (!currentSpell || !currentSpell->m_spellInfo || !IsDeepBreathSpell(currentSpell->m_spellInfo->Id))
         return false;
 
-    uint32 spellId = currentSpell->m_spellInfo->Id;
-
+    uint32 const spellId = currentSpell->m_spellInfo->Id;
     std::vector<SafeZone> safeZones = GetSafeZonesForBreath(spellId);
     if (safeZones.empty())
         return false;
 
-    // Find closest safe zone
     SafeZone* bestZone = nullptr;
     float bestDist = std::numeric_limits<float>::max();
-
     for (auto& zone : safeZones)
     {
         float dist = bot->GetExactDist2d(zone.pos.GetPositionX(), zone.pos.GetPositionY());
@@ -101,26 +81,25 @@ bool RaidOnyxiaMoveToSafeZoneAction::Execute(Event /*event*/)
     if (!bestZone)
         return false;
 
-    if (bot->IsWithinDist2d(bestZone->pos.GetPositionX(), bestZone->pos.GetPositionY(), bestZone->radius))
-        return false;  // Already safe
-
-    // Stop channeling spell first
     bot->AttackStop();
     bot->CastStop();
 
-    // bot->Yell("Moving to Safe Zone!", LANG_UNIVERSAL);
-    return MoveTo(bot->GetMapId(), bestZone->pos.GetPositionX(), bestZone->pos.GetPositionY(), bestZone->pos.GetPositionZ(),
-                  false, false, false, false, MovementPriority::MOVEMENT_COMBAT);
+    if (bot->IsWithinDist2d(bestZone->pos.GetPositionX(), bestZone->pos.GetPositionY(), bestZone->radius))
+    {
+        botAI->SetNextCheckDelay(DEEP_BREATH_HOLD_MS);
+        return true;
+    }
+
+    return MoveTo(bot->GetMapId(), bestZone->pos.GetPositionX(), bestZone->pos.GetPositionY(),
+                  bestZone->pos.GetPositionZ(), false, false, false, false, MovementPriority::MOVEMENT_COMBAT);
 }
 
 bool RaidOnyxiaKillWhelpsAction::Execute(Event /*event*/)
 {
     Unit* currentTarget = AI_VALUE(Unit*, "current target");
-    // If already attacking a whelp, don't swap targets
-    if (currentTarget && currentTarget->GetEntry() == 11262)
-    {
+    if (currentTarget && currentTarget->GetEntry() == NPC_ONYXIAN_WHELP)
         return false;
-    }
+
     GuidVector targets = AI_VALUE(GuidVector, "possible targets");
     for (ObjectGuid guid : targets)
     {
@@ -128,39 +107,118 @@ bool RaidOnyxiaKillWhelpsAction::Execute(Event /*event*/)
         if (!unit || !unit->IsAlive() || !unit->IsInWorld())
             continue;
 
-        if (unit->GetEntry() == 11262)  // Onyxia Whelp
-        {
-            // bot->Yell("Attacking Whelps!", LANG_UNIVERSAL);
+        if (unit->GetEntry() == NPC_ONYXIAN_WHELP)
             return Attack(unit);
-        }
     }
     return false;
 }
 
 bool OnyxiaAvoidEggsAction::Execute(Event /*event*/)
 {
-    Position botPos = Position(bot->GetPositionX(), bot->GetPositionY(), bot->GetPositionZ());
+    Position const botPos(bot->GetPositionX(), bot->GetPositionY(), bot->GetPositionZ());
 
-    float x, y;
-
-    // get safe zone slightly away from eggs (Can this be dynamic?)
-    if (botPos.GetExactDist2d(-36.0f, -164.0f) <= 5.0f)
+    float x;
+    float y;
+    if (botPos.GetExactDist2d(-35.0f, -165.0f) <= EGG_AVOID_RADIUS)
     {
         x = -10.0f;
         y = -180.0f;
     }
-    else if (botPos.GetExactDist2d(-34.0f, -262.0f) <= 5.0f)
+    else if (botPos.GetExactDist2d(-35.0f, -260.0f) <= EGG_AVOID_RADIUS)
     {
         x = -16.0f;
         y = -250.0f;
     }
     else
-    {
-        return false;  // Not in danger zone
-    }
-
-    // bot->Yell("Too close to eggs — backing off!", LANG_UNIVERSAL);
+        return false;
 
     return MoveTo(bot->GetMapId(), x, y, bot->GetPositionZ(), false, false, false, false,
                   MovementPriority::MOVEMENT_COMBAT);
+}
+
+bool OnyxiaTankWallAction::Execute(Event /*event*/)
+{
+    Unit* boss = AI_VALUE2(Unit*, "find target", "onyxia");
+    if (!IsOnyxiaGrounded(boss) || !PlayerbotAI::IsMainTank(bot))
+        return false;
+
+    if (bot->GetExactDist2d(TANK_WALL_X, TANK_WALL_Y) <= TANK_WALL_TOLERANCE)
+        return false;
+
+    return MoveTo(bot->GetMapId(), TANK_WALL_X, TANK_WALL_Y, TANK_WALL_Z, false, false, false, false,
+                  MovementPriority::MOVEMENT_COMBAT);
+}
+
+bool OnyxiaAntiFearAction::Execute(Event event)
+{
+    switch (bot->getClass())
+    {
+        case CLASS_WARRIOR:
+            return botAI->DoSpecificAction("berserker rage", event, true);
+        case CLASS_PRIEST:
+        {
+            Unit* boss = AI_VALUE2(Unit*, "find target", "onyxia");
+            Unit* tank = boss ? boss->GetVictim() : nullptr;
+            if (!tank)
+                tank = bot;
+            if (botAI->HasAura("fear ward", tank))
+                return false;
+            return botAI->CastSpell("fear ward", tank);
+        }
+        case CLASS_SHAMAN:
+            return botAI->DoSpecificAction("tremor totem", event, true);
+        default:
+            return false;
+    }
+}
+
+bool OnyxiaMoveFromLavaAction::Execute(Event /*event*/)
+{
+    bot->CastStop();
+
+    if (Creature* trigger = bot->FindNearestCreature(NPC_ONYXIA_TRIGGER, ERUPTION_DISTANCE, true))
+        return FleePosition(trigger->GetPosition(), ERUPTION_DISTANCE);
+
+    std::vector<Position> eruptions =
+        EncounterHelpers::GetDynamicObjectPositions(bot, ERUPTION_DISTANCE, SPELL_ERUPTION);
+    if (!eruptions.empty())
+        return FleePosition(eruptions.front(), ERUPTION_DISTANCE);
+
+    Unit* dryTarget = nullptr;
+    float bestDist = 100.0f;
+    if (Group* group = bot->GetGroup())
+    {
+        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+        {
+            Player* member = ref->GetSource();
+            if (!member || member == bot || !member->IsAlive() || member->GetMapId() != bot->GetMapId())
+                continue;
+            if (member->GetLiquidData().Flags & MAP_LIQUID_TYPE_MAGMA)
+                continue;
+            float dist = bot->GetDistance(member);
+            if (dist < bestDist)
+            {
+                bestDist = dist;
+                dryTarget = member;
+            }
+        }
+    }
+
+    if (!dryTarget)
+        return Move(frand(0.0f, 2.0f * static_cast<float>(M_PI)), ERUPTION_DISTANCE);
+
+    return MoveTo(dryTarget->GetMapId(), dryTarget->GetPositionX(), dryTarget->GetPositionY(),
+                  dryTarget->GetPositionZ(), false, false, false, true, MovementPriority::MOVEMENT_FORCED);
+}
+
+bool OnyxiaTankTauntAction::Execute(Event event)
+{
+    Unit* boss = AI_VALUE2(Unit*, "find target", "onyxia");
+    if (!boss)
+        return false;
+
+    if (bot->GetVictim() != boss)
+        return Attack(boss);
+
+    return botAI->DoSpecificAction("taunt spell", event, true);
 }

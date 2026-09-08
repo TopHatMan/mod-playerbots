@@ -4,10 +4,10 @@
  * or (at your option) any later version.
  */
 
-// RaidOnyxiaStrategy.h
 #ifndef PLAYERBOTS_ONYSTRATEGY_H
 #define PLAYERBOTS_ONYSTRATEGY_H
 
+#include "Multiplier.h"
 #include "Strategy.h"
 
 class RaidOnyxiaStrategy : public Strategy
@@ -19,6 +19,13 @@ public:
 
     void InitTriggers(std::vector<TriggerNode*>& triggers) override;
     void InitMultipliers(std::vector<Multiplier*>& multipliers) override;
+};
+
+class OnyxiaMultiplier : public Multiplier
+{
+public:
+    OnyxiaMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "onyxia multiplier") {}
+    float GetValue(Action* action) override;
 };
 
 #endif
