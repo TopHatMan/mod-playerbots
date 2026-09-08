@@ -214,6 +214,11 @@ not put playerbots core code in those folders.
 - [ ] Factory must not re-BiS a bot that just received personal loot
 - [ ] Alt / addclass bots in a player group stay on the personal-loot lane
 
+### Raid common sense (20/40)
+
+- [x] Generic `"raid"` strategy on groups of 5+: warlocks soulstone healers (prefer real players) and announce in party/raid; druids claim a brez target and rebirth them. Functional RaidCall is not gated by BotTalk.Enable (LLM ignores bot speakers).
+- [ ] Per-boss ZG / AQ / leftover MC
+
 ### Raid AI (vanilla)
 
 Done: Core Hounds, Majordomo, Magmadar, Gehennas, Onyxia, BWL (Razorgore

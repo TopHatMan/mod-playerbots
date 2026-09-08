@@ -412,6 +412,7 @@ public:
     std::vector<std::string> GetStrategies(BotState type);
     Strategy* GetStrategy(std::string const name, BotState type);
     void ApplyInstanceStrategies(uint32 mapId, bool tellMaster = false);
+    void EnsureRaidCommonSense();
     bool IsInNonRaidDungeon() const;
     bool HasTargetExclusions() const;
     void EvaluateHealerDpsStrategy();

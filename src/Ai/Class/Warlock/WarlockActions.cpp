@@ -5,6 +5,7 @@
  */
 
 #include "WarlockActions.h"
+#include "BotTalk.h"
 #include "Event.h"
 #include "Item.h"
 #include "ObjectGuid.h"
@@ -380,34 +381,39 @@ bool UseSoulstoneHealerAction::Execute(Event /*event*/)
     uint32 now = getMSTime();
     if (group)
     {
-        for (GroupReference* gref = group->GetFirstMember(); gref; gref = gref->next())
-        {
-            Player* member = gref->GetSource();
-            if (member && member->IsAlive() && botAI->IsHeal(member) && !HasSoulstoneAura(member))
+        auto tryPick = [&](bool realOnly) {
+            for (GroupReference* gref = group->GetFirstMember(); gref; gref = gref->next())
             {
+                Player* member = gref->GetSource();
+                if (!member || !member->IsAlive() || !botAI->IsHeal(member) || HasSoulstoneAura(member))
+                    continue;
+                if (realOnly && GET_PLAYERBOT_AI(member) && !GET_PLAYERBOT_AI(member)->HasGameClientMaster())
+                    continue;
+                std::lock_guard<std::mutex> lock(soulstoneReservationsMutex);
+                if (soulstoneReservations.count(member->GetGUID()) && soulstoneReservations[member->GetGUID()] > now)
+                    continue;
+                float distance = ServerFacade::instance().GetDistance2d(bot, member);
+                if (distance < 30.0f && bot->IsWithinLOSInMap(member))
                 {
-                    std::lock_guard<std::mutex> lock(soulstoneReservationsMutex);
-                    if (soulstoneReservations.count(member->GetGUID()) &&
-                        soulstoneReservations[member->GetGUID()] > now)
-                        continue;  // Already being soulstoned
-
-                    float distance = ServerFacade::instance().GetDistance2d(bot, member);
-                    if (distance < 30.0f && bot->IsWithinLOSInMap(member))
-                    {
-                        healer = member;
-                        soulstoneReservations[healer->GetGUID()] = now + 2500;  // Reserve for 2.5 seconds
-                        break;
-                    }
+                    healer = member;
+                    soulstoneReservations[healer->GetGUID()] = now + 2500;
+                    return;
                 }
             }
-        }
+        };
+        tryPick(true);
+        if (!healer)
+            tryPick(false);
     }
 
     if (!healer)
         return false;
 
     bot->SetSelection(healer->GetGUID());
-    return UseItem(items[0], ObjectGuid::Empty, nullptr, healer);
+    bool const ok = UseItem(items[0], ObjectGuid::Empty, nullptr, healer);
+    if (ok)
+        BotTalk::RaidCall(bot, "Soulstone on " + healer->GetName() + ".");
+    return ok;
 }
 
 const std::vector<uint32> CastCreateFirestoneAction::firestoneSpellIds = {

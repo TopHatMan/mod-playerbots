@@ -55,6 +55,10 @@ bool SpeakLine(Player* bot, Channel channel, std::string const& textKey,
 bool SayCallout(Player* bot, Callout callout);
 bool Tick(Player* bot, PlayerbotAI* botAI);
 
+// Functional party/raid callouts (soulstone, brez). Not gated by BotTalk.Enable
+// so raid common sense still speaks while ambient chatter stays off for the LLM.
+bool RaidCall(Player* bot, std::string_view text);
+
 Channel PreferredGroupChannel(Player* bot);
 bool ShouldUseParty(Player* bot);
 } // namespace BotTalk

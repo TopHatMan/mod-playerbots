@@ -20,6 +20,7 @@
 #include "NaxxStrategy.h"
 #include "OSStrategy.h"
 #include "OnyStrategy.h"
+#include "RaidCommonSenseStrategy.h"
 #include "RSStrategy.h"
 #include "SSCStrategy.h"
 #include "Strategy.h"
@@ -54,6 +55,7 @@ public:
         creators["icc"] = &RaidStrategyContext::icc;
         creators["rs"] = &RaidStrategyContext::rs;
         creators["worldboss"] = &RaidStrategyContext::worldboss;
+        creators["raid"] = &RaidStrategyContext::raid;
     }
 
 private:
@@ -77,6 +79,7 @@ private:
     static Strategy* icc(PlayerbotAI* botAI) { return new RaidIccStrategy(botAI); }
     static Strategy* rs(PlayerbotAI* botAI) { return new RaidRsStrategy(botAI); }
     static Strategy* worldboss(PlayerbotAI* botAI) { return new RaidWorldBossStrategy(botAI); }
+    static Strategy* raid(PlayerbotAI* botAI) { return new RaidCommonSenseStrategy(botAI); }
 };
 
 #endif

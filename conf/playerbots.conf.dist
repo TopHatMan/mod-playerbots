@@ -2673,6 +2673,8 @@ AiPlayerbot.RandomBotSayWithoutMaster = 0
 #
 # KEEP OFF unless you want unsolicited bot speech. Player whispers to bots
 # still go through mod-npc-chat-llm (NpcChat.Bot.*), which is player-driven.
+# Raid common sense still uses party/raid for soulstone/brez callouts;
+# npc-chat-llm ignores bot speakers so those lines do not start LLM jobs.
 # Default: 0 (disabled — does not trigger NPC LLM)
 AiPlayerbot.BotTalk.Enable = 0
 # Chance (1-100) a grouped bot chats after its cooldown, out of combat

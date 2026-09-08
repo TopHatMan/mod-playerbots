@@ -561,6 +561,7 @@ void PlayerbotAI::UpdateAIInternal([[maybe_unused]] uint32 elapsed, bool minimal
     masterIncomingPacketHandlers.Handle(helper);
     masterOutgoingPacketHandlers.Handle(helper);
 
+    EnsureRaidCommonSense();
     DoNextAction(minimal);
     BotTalk::Tick(bot, this);
 
@@ -1832,11 +1833,16 @@ void PlayerbotAI::ApplyInstanceStrategies(uint32 mapId, bool tellMaster)
         }
     }
 
+    if (!strategyName.empty())
+    {
+        engines[BOT_STATE_COMBAT]->addStrategy(strategyName);
+        engines[BOT_STATE_NON_COMBAT]->addStrategy(strategyName);
+    }
+
+    EnsureRaidCommonSense();
+
     if (strategyName.empty())
         return;
-
-    engines[BOT_STATE_COMBAT]->addStrategy(strategyName);
-    engines[BOT_STATE_NON_COMBAT]->addStrategy(strategyName);
 
     if (tellMaster && !strategyName.empty())
     {
@@ -1949,6 +1955,26 @@ bool PlayerbotAI::HasStrategy(std::string const name, BotState type) { return en
 Strategy* PlayerbotAI::GetStrategy(std::string const name, BotState type)
 {
     return engines[type] ? engines[type]->GetStrategy(name) : nullptr;
+}
+
+void PlayerbotAI::EnsureRaidCommonSense()
+{
+    if (!bot || !engines[BOT_STATE_COMBAT] || !engines[BOT_STATE_NON_COMBAT])
+        return;
+
+    Group* group = bot->GetGroup();
+    bool const want = group && group->GetMembersCount() >= 5;
+    BotState const states[2] = {BOT_STATE_COMBAT, BOT_STATE_NON_COMBAT};
+    for (BotState state : states)
+    {
+        if (want)
+        {
+            if (!engines[state]->HasStrategy("raid"))
+                engines[state]->addStrategy("raid", false);
+        }
+        else if (engines[state]->HasStrategy("raid"))
+            engines[state]->removeStrategy("raid", false);
+    }
 }
 
 void PlayerbotAI::ResetStrategies(bool /*load*/)

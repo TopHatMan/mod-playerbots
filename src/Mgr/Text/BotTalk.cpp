@@ -170,6 +170,13 @@ Channel PreferredGroupChannel(Player* bot)
     return Channel::Party;
 }
 
+bool RaidCall(Player* bot, std::string_view text)
+{
+    if (!bot || text.empty())
+        return false;
+    return Speak(bot, PreferredGroupChannel(bot), text);
+}
+
 bool Speak(Player* bot, Channel channel, std::string_view text, Player* whisperTo)
 {
     if (!bot || text.empty())
