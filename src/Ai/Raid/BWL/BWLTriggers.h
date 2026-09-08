@@ -64,6 +64,13 @@ public:
     bool IsActive() override;
 };
 
+class BwlVaelastraszTankSwapTrigger : public Trigger
+{
+public:
+    BwlVaelastraszTankSwapTrigger(PlayerbotAI* botAI) : Trigger(botAI, "bwl vaelastrasz tank swap") {}
+    bool IsActive() override;
+};
+
 // Chromaggus
 
 class BwlAfflictionBronzeTrigger : public Trigger

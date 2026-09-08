@@ -80,6 +80,13 @@ private:
     bool MoveAlongFleeDirection(Unit const* boss, float fleeX, float fleeY);
 };
 
+class BwlVaelastraszTankSwapAction : public AttackAction
+{
+public:
+    BwlVaelastraszTankSwapAction(PlayerbotAI* botAI) : AttackAction(botAI, "bwl vaelastrasz tank swap") {}
+    bool Execute(Event event) override;
+};
+
 // Chromaggus
 
 class BwlUseHourglassSandAction : public Action

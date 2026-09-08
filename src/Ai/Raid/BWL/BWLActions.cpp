@@ -23,7 +23,7 @@ static constexpr float RAZORGORE_BACK_FUZZ_ARC = M_PI_4;
 static constexpr float RAZORGORE_RANGE_DISTANCE = 15.0f;
 static constexpr float RAZORGORE_MELEE_DISTANCE = 3.0f;
 
-static constexpr float VAELASTRASZ_REPULSION_RANGE = 20.0f;
+static constexpr float VAELASTRASZ_REPULSION_RANGE = 30.0f;
 static constexpr float VAELASTRASZ_TAIL_SWEEP_RECOVERY_RANGE = 30.0f;
 static constexpr float VAELASTRASZ_RANGED_BIAS_THRESHOLD = 25.0f;
 static constexpr float VAELASTRASZ_RANGED_BIAS_FLEE_WEIGHT = 0.7f;
@@ -350,6 +350,18 @@ bool BwlVaelastraszMoveAwayAction::MoveAlongFleeDirection(Unit const* boss, floa
     }
 
     return false;
+}
+
+bool BwlVaelastraszTankSwapAction::Execute(Event event)
+{
+    Unit* boss = AI_VALUE2(Unit*, "find target", "vaelastrasz the corrupt");
+    if (!boss)
+        return false;
+
+    if (bot->GetVictim() != boss)
+        return Attack(boss);
+
+    return botAI->DoSpecificAction("taunt spell", event, true);
 }
 
 // Chromaggus

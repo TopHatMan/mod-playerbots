@@ -84,6 +84,24 @@ bool BwlVaelastraszBurningAdrenalineTrigger::IsActive()
     return bot->HasAura(static_cast<uint32>(BlackwingLairSpells::SPELL_BURNING_ADRENALINE));
 }
 
+bool BwlVaelastraszTankSwapTrigger::IsActive()
+{
+    if (!PlayerbotAI::IsTank(bot))
+        return false;
+
+    Unit* boss = AI_VALUE2(Unit*, "find target", "vaelastrasz the corrupt");
+    if (!boss || !boss->IsAlive())
+        return false;
+
+    Unit* victim = boss->GetVictim();
+    if (!victim || victim == bot)
+        return false;
+    if (!victim->HasAura(static_cast<uint32>(BlackwingLairSpells::SPELL_BURNING_ADRENALINE)))
+        return false;
+
+    return SelectNextVaelastraszTank(bot) == bot;
+}
+
 // Chromaggus
 
 bool BwlAfflictionBronzeTrigger::IsActive()

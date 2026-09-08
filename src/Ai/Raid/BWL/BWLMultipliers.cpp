@@ -9,14 +9,15 @@
 #include "BWLActions.h"
 #include "BWLHelpers.h"
 #include "ChooseTargetActions.h"
+#include "GenericSpellActions.h"
 #include "HunterActions.h"
 #include "Playerbots.h"
 #include "ReachTargetActions.h"
 
 using namespace BlackwingLairHelpers;
 
-static constexpr float VAELASTRASZ_BA_SAFE_DISTANCE = 20.0f;
-static constexpr float VAELASTRASZ_BA_BOSS_DISTANCE = 30.0f;
+static constexpr float VAELASTRASZ_BA_SAFE_DISTANCE = 30.0f;
+static constexpr float VAELASTRASZ_BA_BOSS_DISTANCE = 35.0f;
 
 float RazorgoreTankMultiplier::GetValue(Action* action)
 {
@@ -58,14 +59,23 @@ float VaelastraszTankMultiplier::GetValue(Action* action)
     if (!boss)
         return 1.0f;
 
+    if (dynamic_cast<BwlVaelastraszTankSwapAction*>(action))
+        return 1.0f;
+
+    Unit* victim = boss->GetVictim();
+    Player* victimPlayer = victim ? victim->ToPlayer() : nullptr;
+    bool const victimHasBA = victim && victim->HasAura(static_cast<uint32>(BlackwingLairSpells::SPELL_BURNING_ADRENALINE));
+
     // Stay at rear flank position and don't move in front of the boss.
     if (dynamic_cast<TankFaceAction*>(action))
     {
-        Unit* victim = boss->GetVictim();
-        Player* victimPlayer = victim ? victim->ToPlayer() : nullptr;
-        if (victim != bot && victimPlayer && PlayerbotAI::IsTank(victimPlayer))
+        if (victim != bot && victimPlayer && PlayerbotAI::IsTank(victimPlayer) && !victimHasBA)
             return 0.0f;
     }
+
+    // Don't tank-assist a BA'd tank; the next tank in the chain taunts instead.
+    if (victimHasBA && victim != bot && dynamic_cast<TankAssistAction*>(action))
+        return 0.0f;
 
     return 1.0f;
 }
@@ -91,6 +101,15 @@ float VaelastraszBurningAdrenalineMultiplier::GetValue(Action* action)
         }
         // Also block charge actions
         if (dynamic_cast<CastReachTargetSpellAction*>(action))
+            return 0.0f;
+    }
+
+    // BA victims die at the end of the debuff; don't dump heals into a corpse-to-be.
+    if (auto* heal = dynamic_cast<CastHealingSpellAction*>(action))
+    {
+        Unit* target = heal->GetTarget();
+        if (target && target->HasAura(static_cast<uint32>(BlackwingLairSpells::SPELL_BURNING_ADRENALINE)) &&
+            target->GetHealthPct() < 20.0f)
             return 0.0f;
     }
 

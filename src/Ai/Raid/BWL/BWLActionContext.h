@@ -29,6 +29,7 @@ public:
 
         creators["bwl vaelastrasz fire resistance"] = &RaidBwlActionContext::bwl_vaelastrasz_fire_resistance_action;
         creators["bwl vaelastrasz move away"] = &RaidBwlActionContext::bwl_vaelastrasz_move_away;
+        creators["bwl vaelastrasz tank swap"] = &RaidBwlActionContext::bwl_vaelastrasz_tank_swap;
 
         creators["bwl broodlord fire resistance"] = &RaidBwlActionContext::bwl_broodlord_fire_resistance_action;
 
@@ -52,6 +53,7 @@ private:
     static Action* bwl_razorgore_avoid_conflagration(PlayerbotAI* ai) { return new BwlRazorgoreAvoidConflagrationAction(ai); }
     static Action* bwl_vaelastrasz_fire_resistance_action(PlayerbotAI* ai) { return new BossFireResistanceAction(ai, "vaelastrasz the corrupt"); }
     static Action* bwl_vaelastrasz_move_away(PlayerbotAI* ai) { return new BwlVaelastraszMoveAwayAction(ai); }
+    static Action* bwl_vaelastrasz_tank_swap(PlayerbotAI* ai) { return new BwlVaelastraszTankSwapAction(ai); }
     static Action* bwl_broodlord_fire_resistance_action(PlayerbotAI* ai) { return new BossFireResistanceAction(ai, "broodlord lashlayer"); }
     static Action* bwl_firemaw_fire_resistance_action(PlayerbotAI* ai) { return new BossFireResistanceAction(ai, "firemaw"); }
     static Action* bwl_flamegor_fire_resistance_action(PlayerbotAI* ai) { return new BossFireResistanceAction(ai, "flamegor"); }

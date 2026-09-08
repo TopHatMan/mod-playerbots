@@ -6,6 +6,7 @@
 
 #include "BWLHelpers.h"
 #include "AiObjectContext.h"
+#include "EncounterHelpers.h"
 #include "GameObject.h"
 #include "Group.h"
 #include "Playerbots.h"
@@ -245,6 +246,39 @@ namespace BlackwingLairHelpers
             }
         }
         return closest;
+    }
+
+    Player* SelectNextVaelastraszTank(Player* bot)
+    {
+        if (!bot)
+            return nullptr;
+
+        std::vector<Player*> chain;
+        if (Player* mt = EncounterHelpers::GetGroupMainTank(bot))
+            chain.push_back(mt);
+        for (uint8 i = 0; i < 4; ++i)
+        {
+            if (Player* ot = EncounterHelpers::GetGroupAssistTank(bot, i))
+            {
+                bool already = false;
+                for (Player* existing : chain)
+                    if (existing == ot)
+                        already = true;
+                if (!already)
+                    chain.push_back(ot);
+            }
+        }
+
+        for (Player* tank : chain)
+        {
+            if (!tank || !tank->IsAlive() || tank->GetMapId() != bot->GetMapId())
+                continue;
+            if (tank->HasAura(static_cast<uint32>(BlackwingLairSpells::SPELL_BURNING_ADRENALINE)))
+                continue;
+            return tank;
+        }
+
+        return nullptr;
     }
 
     bool IsChromaggusBreathSpell(uint32 spellId)
