@@ -25,11 +25,20 @@ void RaidMcStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(
         new TriggerNode("mc magmadar fire resistance",
                         { NextAction("mc magmadar fire resistance", ACTION_RAID) }));
+    triggers.push_back(
+        new TriggerNode("mc magmadar fire",
+                        { NextAction("mc magmadar move from fire", ACTION_RAID + 4) }));
+    triggers.push_back(
+        new TriggerNode("mc magmadar frenzy",
+                        { NextAction("mc magmadar tranq", ACTION_RAID + 3) }));
 
     // Gehennas
     triggers.push_back(
         new TriggerNode("mc gehennas shadow resistance",
                         { NextAction("mc gehennas shadow resistance", ACTION_RAID) }));
+    triggers.push_back(
+        new TriggerNode("mc gehennas rain",
+                        { NextAction("mc gehennas move from rain", ACTION_RAID + 4) }));
 
     // Garr
     triggers.push_back(

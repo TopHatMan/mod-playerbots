@@ -11,6 +11,27 @@
 #include "Playerbots.h"
 #include "Trigger.h"
 
+class McMagmadarFireTrigger : public Trigger
+{
+public:
+    McMagmadarFireTrigger(PlayerbotAI* botAI) : Trigger(botAI, "mc magmadar fire") {}
+    bool IsActive() override;
+};
+
+class McGehennasRainTrigger : public Trigger
+{
+public:
+    McGehennasRainTrigger(PlayerbotAI* botAI) : Trigger(botAI, "mc gehennas rain") {}
+    bool IsActive() override;
+};
+
+class McMagmadarFrenzyTrigger : public Trigger
+{
+public:
+    McMagmadarFrenzyTrigger(PlayerbotAI* botAI) : Trigger(botAI, "mc magmadar frenzy") {}
+    bool IsActive() override;
+};
+
 class McLivingBombDebuffTrigger : public Trigger
 {
 public:

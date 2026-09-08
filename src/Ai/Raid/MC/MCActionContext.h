@@ -19,6 +19,9 @@ public:
     {
         creators["mc lucifron shadow resistance"] = &RaidMcActionContext::lucifron_shadow_resistance;
         creators["mc magmadar fire resistance"] = &RaidMcActionContext::magmadar_fire_resistance;
+        creators["mc magmadar move from fire"] = &RaidMcActionContext::magmadar_move_from_fire;
+        creators["mc magmadar tranq"] = &RaidMcActionContext::magmadar_tranq;
+        creators["mc gehennas move from rain"] = &RaidMcActionContext::gehennas_move_from_rain;
         creators["mc gehennas shadow resistance"] = &RaidMcActionContext::gehennas_shadow_resistance;
         creators["mc garr fire resistance"] = &RaidMcActionContext::garr_fire_resistance;
         creators["mc baron geddon fire resistance"] = &RaidMcActionContext::baron_geddon_fire_resistance;
@@ -49,6 +52,9 @@ public:
 private:
     static Action* lucifron_shadow_resistance(PlayerbotAI* botAI) { return new BossShadowResistanceAction(botAI, "lucifron"); }
     static Action* magmadar_fire_resistance(PlayerbotAI* botAI) { return new BossFireResistanceAction(botAI, "magmadar"); }
+    static Action* magmadar_move_from_fire(PlayerbotAI* botAI) { return new McMagmadarMoveFromFireAction(botAI); }
+    static Action* magmadar_tranq(PlayerbotAI* botAI) { return new McMagmadarTranqAction(botAI); }
+    static Action* gehennas_move_from_rain(PlayerbotAI* botAI) { return new McGehennasMoveFromRainAction(botAI); }
     static Action* gehennas_shadow_resistance(PlayerbotAI* botAI) { return new BossShadowResistanceAction(botAI, "gehennas"); }
     static Action* garr_fire_resistance(PlayerbotAI* botAI) { return new BossFireResistanceAction(botAI, "garr"); }
     static Action* baron_geddon_fire_resistance(PlayerbotAI* botAI) { return new BossFireResistanceAction(botAI, "baron geddon"); }

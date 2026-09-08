@@ -5,6 +5,7 @@
  */
 
 #include "MCActions.h"
+#include "GameObject.h"
 #include "MCHelpers.h"
 #include "Pet.h"
 #include "Playerbots.h"
@@ -244,6 +245,30 @@ bool McMoveFromLavaAction::Execute(Event /*event*/)
         botAI->SetNextCheckDelay(std::min(MAX_ESCAPE_HOLD_MS, uint32(1000.0f * bot->GetDistance(dryTarget) / speed)));
 
     return true;
+}
+
+bool McMagmadarMoveFromFireAction::Execute(Event /*event*/)
+{
+    GameObject* fire = bot->FindNearestGameObject(GO_MAGMADAR_LAVA_BOMB, MAGMADAR_FIRE_DISTANCE, true);
+    if (!fire)
+        return false;
+
+    bot->CastStop();
+    return FleePosition(fire->GetPosition(), MAGMADAR_FIRE_DISTANCE);
+}
+
+bool McGehennasMoveFromRainAction::Execute(Event /*event*/)
+{
+    bot->CastStop();
+    return Move(frand(0.0f, 2.0f * static_cast<float>(M_PI)), GEHENNAS_RAIN_DISTANCE);
+}
+
+bool McMagmadarTranqAction::Execute(Event event)
+{
+    Unit* boss = AI_VALUE2(Unit*, "find target", "magmadar");
+    if (!boss || !boss->HasAura(SPELL_MAGMADAR_FRENZY))
+        return false;
+    return botAI->DoSpecificAction("tranquilizing shot", event, true);
 }
 
 bool McGolemaggBackOffAction::Execute(Event /*event*/)

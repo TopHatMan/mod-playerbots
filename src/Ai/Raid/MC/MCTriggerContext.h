@@ -18,6 +18,9 @@ public:
     {
         creators["mc lucifron shadow resistance"] = &RaidMcTriggerContext::lucifron_shadow_resistance;
         creators["mc magmadar fire resistance"] = &RaidMcTriggerContext::magmadar_fire_resistance;
+        creators["mc magmadar fire"] = &RaidMcTriggerContext::magmadar_fire;
+        creators["mc magmadar frenzy"] = &RaidMcTriggerContext::magmadar_frenzy;
+        creators["mc gehennas rain"] = &RaidMcTriggerContext::gehennas_rain;
         creators["mc gehennas shadow resistance"] = &RaidMcTriggerContext::gehennas_shadow_resistance;
         creators["mc garr fire resistance"] = &RaidMcTriggerContext::garr_fire_resistance;
         creators["mc baron geddon fire resistance"] = &RaidMcTriggerContext::baron_geddon_fire_resistance;
@@ -48,6 +51,9 @@ public:
 private:
     static Trigger* lucifron_shadow_resistance(PlayerbotAI* botAI) { return new BossShadowResistanceTrigger(botAI, "lucifron"); }
     static Trigger* magmadar_fire_resistance(PlayerbotAI* botAI) { return new BossFireResistanceTrigger(botAI, "magmadar"); }
+    static Trigger* magmadar_fire(PlayerbotAI* botAI) { return new McMagmadarFireTrigger(botAI); }
+    static Trigger* magmadar_frenzy(PlayerbotAI* botAI) { return new McMagmadarFrenzyTrigger(botAI); }
+    static Trigger* gehennas_rain(PlayerbotAI* botAI) { return new McGehennasRainTrigger(botAI); }
     static Trigger* gehennas_shadow_resistance(PlayerbotAI* botAI) { return new BossShadowResistanceTrigger(botAI, "gehennas"); }
     static Trigger* garr_fire_resistance(PlayerbotAI* botAI) { return new BossFireResistanceTrigger(botAI, "garr"); }
     static Trigger* baron_geddon_fire_resistance(PlayerbotAI* botAI) { return new BossFireResistanceTrigger(botAI, "baron geddon"); }

@@ -36,6 +36,30 @@ public:
     bool Execute(Event event) override;
 };
 
+class McMagmadarMoveFromFireAction : public MovementAction
+{
+public:
+    McMagmadarMoveFromFireAction(PlayerbotAI* botAI, std::string const name = "mc magmadar move from fire")
+        : MovementAction(botAI, name) {}
+    bool Execute(Event event) override;
+};
+
+class McGehennasMoveFromRainAction : public MovementAction
+{
+public:
+    McGehennasMoveFromRainAction(PlayerbotAI* botAI, std::string const name = "mc gehennas move from rain")
+        : MovementAction(botAI, name) {}
+    bool Execute(Event event) override;
+};
+
+class McMagmadarTranqAction : public Action
+{
+public:
+    McMagmadarTranqAction(PlayerbotAI* botAI, std::string const name = "mc magmadar tranq")
+        : Action(botAI, name) {}
+    bool Execute(Event event) override;
+};
+
 class McMoveFromLavaAction : public MovementAction
 {
 public:

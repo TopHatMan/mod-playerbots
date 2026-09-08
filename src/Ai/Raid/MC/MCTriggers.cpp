@@ -43,6 +43,28 @@ bool McInLavaTrigger::IsActive()
            (liquid.Status & (LIQUID_MAP_WATER_WALK | LIQUID_MAP_IN_WATER | LIQUID_MAP_UNDER_WATER));
 }
 
+bool McMagmadarFireTrigger::IsActive()
+{
+    if (!AI_VALUE2(Unit*, "find target", "magmadar"))
+        return false;
+    return bot->FindNearestGameObject(GO_MAGMADAR_LAVA_BOMB, MAGMADAR_FIRE_DISTANCE, true) != nullptr;
+}
+
+bool McGehennasRainTrigger::IsActive()
+{
+    if (!AI_VALUE2(Unit*, "find target", "gehennas"))
+        return false;
+    return bot->HasAura(SPELL_RAIN_OF_FIRE);
+}
+
+bool McMagmadarFrenzyTrigger::IsActive()
+{
+    if (bot->getClass() != CLASS_HUNTER)
+        return false;
+    Unit* boss = AI_VALUE2(Unit*, "find target", "magmadar");
+    return boss && boss->HasAura(SPELL_MAGMADAR_FRENZY);
+}
+
 bool McGolemaggMagmaSplashTrigger::IsActive()
 {
     if (PlayerbotAI::IsTank(bot))

@@ -46,7 +46,15 @@ enum MoltenCoreSpells
     SPELL_MAGIC_REFLECTION = 20619,
     SPELL_DAMAGE_REFLECTION = 21075,
     SPELL_BLAST_WAVE = 20229,
+
+    // Magmadar / Gehennas ground fire
+    SPELL_MAGMADAR_FRENZY = 19451,
+    SPELL_RAIN_OF_FIRE = 19717,
 };
+
+constexpr uint32 GO_MAGMADAR_LAVA_BOMB = 177704;
+constexpr float MAGMADAR_FIRE_DISTANCE = 5.0f;
+constexpr float GEHENNAS_RAIN_DISTANCE = 8.0f;
 
 constexpr float MAJORDOMO_BLAST_WAVE_DISTANCE = 12.0f;
 constexpr float MAJORDOMO_COALS_REJOIN_DISTANCE = 35.0f;
