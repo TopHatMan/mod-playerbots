@@ -6,6 +6,7 @@
 
 #include "PlayerbotAI.h"
 #include "AiFactory.h"
+#include "AreaDefines.h"
 #include "BudgetValues.h"
 #include "ChannelMgr.h"
 #include "CharacterPackets.h"
@@ -1469,6 +1470,30 @@ void PlayerbotAI::ChangeEngine(BotState type)
 
 void PlayerbotAI::ChangeEngineOnCombat()
 {
+    // Continent zone changes do not fire a map teleport, so re-apply outdoor
+    // world-boss strategies when the bot actually enters combat.
+    if (sPlayerbotAIConfig.applyInstanceStrategies)
+    {
+        bool const wantWorldBoss = [&]()
+        {
+            switch (bot->GetZoneId())
+            {
+                case AREA_AZSHARA:
+                case AREA_BLASTED_LANDS:
+                case AREA_DUSKWOOD:
+                case AREA_THE_HINTERLANDS:
+                case AREA_FERALAS:
+                case AREA_ASHENVALE:
+                case AREA_HELLFIRE_PENINSULA:
+                    return true;
+                default:
+                    return false;
+            }
+        }();
+        if (wantWorldBoss != HasStrategy("worldboss", BOT_STATE_COMBAT))
+            ApplyInstanceStrategies(bot->GetMapId());
+    }
+
     if (HasStrategy("wait for attack", BOT_STATE_COMBAT))
         aiObjectContext->GetValue<time_t>("combat start time")->Set(time(nullptr));
 
@@ -1644,10 +1669,10 @@ void PlayerbotAI::ApplyInstanceStrategies(uint32 mapId, bool tellMaster)
     {
         "aq20", "blacktemple", "bwl", "gruulslair", "hyjal", "icc", "karazhan", "magtheridon",
         "moltencore", "naxx", "onyxia", "rs", "ssc", "tbc-ac", "tbc-mech", "tbc-mgt", "tbc-ramp",
-        "tbc-seth", "tbc-ub", "tempestkeep", "ulduar", "voa", "wotlk-an", "wotlk-cos", "wotlk-dtk",
-        "wotlk-eoe", "wotlk-fos", "wotlk-gd", "wotlk-hol", "wotlk-hos", "wotlk-nex", "wotlk-occ",
-        "wotlk-ok", "wotlk-os", "wotlk-pos", "wotlk-toc", "wotlk-uk", "wotlk-up", "wotlk-vh",
-        "zulaman"
+        "tbc-seth", "tbc-ub", "tempestkeep", "ulduar", "voa", "worldboss", "wotlk-an", "wotlk-cos",
+        "wotlk-dtk", "wotlk-eoe", "wotlk-fos", "wotlk-gd", "wotlk-hol", "wotlk-hos", "wotlk-nex",
+        "wotlk-occ", "wotlk-ok", "wotlk-os", "wotlk-pos", "wotlk-toc", "wotlk-uk", "wotlk-up",
+        "wotlk-vh", "zulaman"
     };
 
     for (std::string const& strat : allInstanceStrategies)
@@ -1781,6 +1806,26 @@ void PlayerbotAI::ApplyInstanceStrategies(uint32 mapId, bool tellMaster)
             break;
         default:
             break;
+    }
+
+    // Outdoor world bosses live on continent maps; attach by zone so Azshara /
+    // Blasted Lands / emerald-dragon portals / Hellfire get the strategy.
+    if (strategyName.empty())
+    {
+        switch (bot->GetZoneId())
+        {
+            case AREA_AZSHARA:
+            case AREA_BLASTED_LANDS:
+            case AREA_DUSKWOOD:
+            case AREA_THE_HINTERLANDS:
+            case AREA_FERALAS:
+            case AREA_ASHENVALE:
+            case AREA_HELLFIRE_PENINSULA:
+                strategyName = "worldboss";
+                break;
+            default:
+                break;
+        }
     }
 
     if (strategyName.empty())
