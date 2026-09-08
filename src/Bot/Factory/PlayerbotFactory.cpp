@@ -13,6 +13,7 @@
 #include "ArenaTeamMgr.h"
 #include "DBCStores.h"
 #include "DBCStructure.h"
+#include "ExpansionProgression.h"
 #include "GuildMgr.h"
 #include "InventoryAction.h"
 #include "Item.h"
@@ -3484,6 +3485,9 @@ void PlayerbotFactory::InitAvailableSpells()
             if (!trainer->CanTeachSpell(bot, trainerSpell))
                 continue;
 
+            if (!ExpansionProgression::IsSpellAllowed(trainerSpell->SpellId))
+                continue;
+
             if (trainerSpell->IsCastable())
                 bot->CastSpell(bot, trainerSpell->SpellId, true);
             else
@@ -3619,6 +3623,14 @@ void PlayerbotFactory::InitTalents(uint32 specNo)
             continue;
 
         if ((classMask & talentTabInfo->ClassMask) == 0)
+            continue;
+
+        if (sPlayerbotAIConfig.limitTalentsExpansion && bot->GetLevel() <= 60 &&
+            (talentInfo->Row > 6 || (talentInfo->Row == 6 && talentInfo->Col != 1)))
+            continue;
+
+        if (sPlayerbotAIConfig.limitTalentsExpansion && bot->GetLevel() <= 70 && bot->GetLevel() > 60 &&
+            (talentInfo->Row > 8 || (talentInfo->Row == 8 && talentInfo->Col != 1)))
             continue;
 
         spells[talentInfo->Row].push_back(talentInfo);

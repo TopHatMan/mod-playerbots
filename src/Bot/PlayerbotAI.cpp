@@ -17,6 +17,7 @@
 #include "DBCStores.h"
 #include "EmoteAction.h"
 #include "Engine.h"
+#include "ExpansionProgression.h"
 #include "EventProcessor.h"
 #include "ExternalEventHelper.h"
 #include "GameObjectData.h"
@@ -3365,6 +3366,9 @@ bool PlayerbotAI::CanCastSpell(uint32 spellid, Unit* target, bool checkHasSpell,
         return false;
     }
 
+    if (!ExpansionProgression::IsSpellAllowed(spellid))
+        return false;
+
     if (bot->HasUnitState(UNIT_STATE_LOST_CONTROL))
     {
         if (!sPlayerbotAIConfig.logInGroupOnly || (bot->GetGroup() && HasGameClientMaster()))
@@ -3516,6 +3520,9 @@ bool PlayerbotAI::CanCastSpell(uint32 spellid, GameObject* goTarget, bool checkH
     if (!spellid)
         return false;
 
+    if (!ExpansionProgression::IsSpellAllowed(spellid))
+        return false;
+
     if (bot->HasUnitState(UNIT_STATE_LOST_CONTROL))
         return false;
 
@@ -3572,6 +3579,9 @@ bool PlayerbotAI::CanCastSpell(uint32 spellid, GameObject* goTarget, bool checkH
 bool PlayerbotAI::CanCastSpell(uint32 spellid, float x, float y, float z, bool checkHasSpell, Item* itemTarget)
 {
     if (!spellid)
+        return false;
+
+    if (!ExpansionProgression::IsSpellAllowed(spellid))
         return false;
 
     Pet* pet = bot->GetPet();

@@ -16,10 +16,12 @@ AfflictionWarlockStrategy::AfflictionWarlockStrategy(PlayerbotAI* botAI) : Gener
 std::vector<NextAction> AfflictionWarlockStrategy::getDefaultActions()
 {
     return {
-       NextAction("corruption", 5.5f),
-       NextAction("unstable affliction", 5.4f),
-       NextAction("haunt", 5.3f),
-       NextAction("shadow bolt", 5.2f),
+       NextAction("corruption", 5.6f),
+       NextAction("curse of agony", 5.5f),
+       NextAction("siphon life", 5.4f),
+       NextAction("shadow bolt", 5.3f),
+       NextAction("unstable affliction", 5.2f),
+       NextAction("haunt", 5.15f),
        NextAction("shoot", 5.0f)
     };
 }

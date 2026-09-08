@@ -16,13 +16,14 @@ MarksmanshipHunterStrategy::MarksmanshipHunterStrategy(PlayerbotAI* botAI) : Gen
 std::vector<NextAction> MarksmanshipHunterStrategy::getDefaultActions()
 {
     return {
-        NextAction("kill command", 5.8f),
-        NextAction("kill shot", 5.7f),
         NextAction("serpent sting", 5.6f),
-        NextAction("chimera shot", 5.5f),
-        NextAction("aimed shot", 5.4f),
-        NextAction("arcane shot", 5.3f),
-        NextAction("steady shot", 5.2f),
+        NextAction("aimed shot", 5.5f),
+        NextAction("arcane shot", 5.4f),
+        NextAction("multi-shot", 5.3f),
+        NextAction("chimera shot", 5.25f),
+        NextAction("kill command", 5.2f),
+        NextAction("kill shot", 5.15f),
+        NextAction("steady shot", 5.12f),
         NextAction("auto shot", 5.1f)
     };
 }

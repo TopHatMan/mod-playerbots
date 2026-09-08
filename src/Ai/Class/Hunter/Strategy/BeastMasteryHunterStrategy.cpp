@@ -17,12 +17,13 @@ std::vector<NextAction> BeastMasteryHunterStrategy::getDefaultActions()
 {
     return {
         NextAction("bestial wrath", 19.0f),
-        NextAction("kill command", 5.7f),
-        NextAction("kill shot", 5.6f),
-        NextAction("serpent sting", 5.5f),
-        NextAction("aimed shot", 5.4f),
-        NextAction("arcane shot", 5.3f),
-        NextAction("steady shot", 5.2f),
+        NextAction("serpent sting", 5.6f),
+        NextAction("aimed shot", 5.5f),
+        NextAction("arcane shot", 5.4f),
+        NextAction("multi-shot", 5.3f),
+        NextAction("kill command", 5.25f),
+        NextAction("kill shot", 5.2f),
+        NextAction("steady shot", 5.15f),
         NextAction("auto shot", 5.1f)
     };
 }

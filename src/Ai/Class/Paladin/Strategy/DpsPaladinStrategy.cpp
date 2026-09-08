@@ -104,9 +104,10 @@ std::vector<NextAction> DpsPaladinStrategy::getDefaultActions()
     return {
         NextAction("hammer of wrath", ACTION_DEFAULT + 0.6f),
         NextAction("judgement of wisdom", ACTION_DEFAULT + 0.5f),
+        NextAction("judgement of light", ACTION_DEFAULT + 0.45f),
         NextAction("crusader strike", ACTION_DEFAULT + 0.4f),
-        NextAction("divine storm", ACTION_DEFAULT + 0.3f),
-        NextAction("consecration", ACTION_DEFAULT + 0.1f),
+        NextAction("consecration", ACTION_DEFAULT + 0.2f),
+        NextAction("divine storm", ACTION_DEFAULT + 0.1f),
         NextAction("melee", ACTION_DEFAULT)
     };
 }

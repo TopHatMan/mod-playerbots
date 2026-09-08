@@ -9,6 +9,7 @@
 #include "DKAiObjectContext.h"
 #include "DruidAiObjectContext.h"
 #include "Engine.h"
+#include "ExpansionProgression.h"
 #include "Group.h"
 #include "HunterAiObjectContext.h"
 #include "Item.h"
@@ -95,10 +96,26 @@ uint8 AiFactory::GetPlayerSpecTab(Player* bot)
                 tab = PALADIN_TAB_RETRIBUTION;
                 break;
             case CLASS_PRIEST:
-                tab = PRIEST_TAB_HOLY;
+                // Vanilla leveling is Shadow; Holy is a healer spec after 40.
+                tab = ExpansionProgression::IsVanilla() ? PRIEST_TAB_SHADOW : PRIEST_TAB_HOLY;
                 break;
             case CLASS_WARLOCK:
-                tab = WARLOCK_TAB_DEMONOLOGY;
+                tab = ExpansionProgression::IsVanilla() ? WARLOCK_TAB_AFFLICTION : WARLOCK_TAB_DEMONOLOGY;
+                break;
+            case CLASS_WARRIOR:
+                tab = WARRIOR_TAB_ARMS;
+                break;
+            case CLASS_HUNTER:
+                tab = HUNTER_TAB_BEAST_MASTERY;
+                break;
+            case CLASS_ROGUE:
+                tab = ExpansionProgression::IsVanilla() ? ROGUE_TAB_COMBAT : ROGUE_TAB_ASSASSINATION;
+                break;
+            case CLASS_SHAMAN:
+                tab = ExpansionProgression::IsVanilla() ? SHAMAN_TAB_ENHANCEMENT : SHAMAN_TAB_ELEMENTAL;
+                break;
+            case CLASS_DRUID:
+                tab = ExpansionProgression::IsVanilla() ? DRUID_TAB_FERAL : DRUID_TAB_BALANCE;
                 break;
         }
 

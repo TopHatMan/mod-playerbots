@@ -69,6 +69,7 @@ CombatRogueStrategy::CombatRogueStrategy(PlayerbotAI* botAI) : GenericRogueStrat
 std::vector<NextAction> CombatRogueStrategy::getDefaultActions()
 {
     return {
+        NextAction("sinister strike", ACTION_DEFAULT + 0.2f),
         NextAction("killing spree", ACTION_DEFAULT + 0.1f),
         NextAction("melee", ACTION_DEFAULT)
     };

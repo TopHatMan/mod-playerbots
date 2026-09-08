@@ -39,9 +39,10 @@ std::vector<NextAction> EnhancementShamanStrategy::getDefaultActions()
 {
     return {
        NextAction("stormstrike", 5.5f),
-       NextAction("feral spirit", 5.4f),
-       NextAction("earth shock", 5.3f),
+       NextAction("earth shock", 5.4f),
+       NextAction("flame shock", 5.3f),
        NextAction("lava lash", 5.2f),
+       NextAction("feral spirit", 5.15f),
        NextAction("melee", 5.0f)
     };
 }
