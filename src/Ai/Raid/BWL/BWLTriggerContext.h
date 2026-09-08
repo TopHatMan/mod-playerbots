@@ -36,6 +36,11 @@ public:
 
         creators["bwl firemaw fire resistance"] = &RaidBwlTriggerContext::bwl_firemaw_fire_resistance_trigger;
         creators["bwl flamegor fire resistance"] = &RaidBwlTriggerContext::bwl_flamegor_fire_resistance_trigger;
+        creators["bwl drake positioning"] = &RaidBwlTriggerContext::bwl_drake_positioning;
+        creators["bwl drake wing buffet"] = &RaidBwlTriggerContext::bwl_drake_wing_buffet;
+        creators["bwl firemaw flame buffet"] = &RaidBwlTriggerContext::bwl_firemaw_flame_buffet;
+        creators["bwl ebonroc shadow"] = &RaidBwlTriggerContext::bwl_ebonroc_shadow;
+        creators["bwl flamegor frenzy"] = &RaidBwlTriggerContext::bwl_flamegor_frenzy;
 
         creators["bwl affliction bronze"] = &RaidBwlTriggerContext::bwl_affliction_bronze;
         creators["bwl wild magic"] = &RaidBwlTriggerContext::bwl_wild_magic;
@@ -61,6 +66,11 @@ private:
     static Trigger* bwl_broodlord_tank(PlayerbotAI* ai) { return new BwlBroodlordTankTrigger(ai); }
     static Trigger* bwl_firemaw_fire_resistance_trigger(PlayerbotAI* ai) { return new BossFireResistanceTrigger(ai, "firemaw"); }
     static Trigger* bwl_flamegor_fire_resistance_trigger(PlayerbotAI* ai) { return new BossFireResistanceTrigger(ai, "flamegor"); }
+    static Trigger* bwl_drake_positioning(PlayerbotAI* ai) { return new BwlDrakePositioningTrigger(ai); }
+    static Trigger* bwl_drake_wing_buffet(PlayerbotAI* ai) { return new BwlDrakeWingBuffetTrigger(ai); }
+    static Trigger* bwl_firemaw_flame_buffet(PlayerbotAI* ai) { return new BwlFiremawFlameBuffetTrigger(ai); }
+    static Trigger* bwl_ebonroc_shadow(PlayerbotAI* ai) { return new BwlEbonrocShadowTrigger(ai); }
+    static Trigger* bwl_flamegor_frenzy(PlayerbotAI* ai) { return new BwlFlamegorFrenzyTrigger(ai); }
     static Trigger* bwl_affliction_bronze(PlayerbotAI* ai) { return new BwlAfflictionBronzeTrigger(ai); }
     static Trigger* bwl_wild_magic(PlayerbotAI* ai) { return new BwlWildMagicTrigger(ai); }
     static Trigger* bwl_nefarian_fear_ward(PlayerbotAI* ai) { return new BwlNefarianFearWardTrigger(ai); }

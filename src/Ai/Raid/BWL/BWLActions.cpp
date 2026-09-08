@@ -390,6 +390,67 @@ bool BwlBroodlordTankAction::Execute(Event event)
     return botAI->DoSpecificAction("taunt spell", event, true);
 }
 
+bool BwlDrakeWingBuffetAction::Execute(Event event)
+{
+    Unit* drake = FindBwlDrake(bot);
+    if (!drake)
+        return false;
+
+    if (bot->GetVictim() != drake)
+        return Attack(drake);
+
+    return botAI->DoSpecificAction("taunt spell", event, true);
+}
+
+bool BwlFiremawBreakLosAction::Execute(Event /*event*/)
+{
+    Unit* boss = AI_VALUE2(Unit*, "find target", "firemaw");
+    if (!boss)
+        return false;
+
+    if (GetFlameBuffetStacks(bot) == 0)
+        return false;
+
+    if (!boss->IsWithinLOSInMap(bot))
+        return true;
+
+    bot->CastStop();
+    bot->AttackStop();
+
+    static constexpr float step = 10.0f;
+    for (int i = 0; i < 8; ++i)
+    {
+        float const angle = i * static_cast<float>(M_PI) / 4.0f;
+        float const x = bot->GetPositionX() + step * cos(angle);
+        float const y = bot->GetPositionY() + step * sin(angle);
+        float const z = bot->GetPositionZ();
+        if (!boss->IsWithinLOS(x, y, z))
+            return MoveTo(bot->GetMapId(), x, y, z, false, false, false, false, MovementPriority::MOVEMENT_COMBAT);
+    }
+
+    return MoveAway(boss, step);
+}
+
+bool BwlEbonrocTauntAction::Execute(Event event)
+{
+    Unit* boss = AI_VALUE2(Unit*, "find target", "ebonroc");
+    if (!boss)
+        return false;
+
+    if (bot->GetVictim() != boss)
+        return Attack(boss);
+
+    return botAI->DoSpecificAction("taunt spell", event, true);
+}
+
+bool BwlFlamegorTranqAction::Execute(Event event)
+{
+    Unit* boss = AI_VALUE2(Unit*, "find target", "flamegor");
+    if (!boss || !boss->HasAura(static_cast<uint32>(BlackwingLairSpells::SPELL_FLAMEGOR_FRENZY)))
+        return false;
+    return botAI->DoSpecificAction("tranquilizing shot", event, true);
+}
+
 // Chromaggus
 
 bool BwlUseHourglassSandAction::Execute(Event /*event*/)

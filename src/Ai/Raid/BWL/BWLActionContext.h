@@ -37,6 +37,10 @@ public:
 
         creators["bwl firemaw fire resistance"] = &RaidBwlActionContext::bwl_firemaw_fire_resistance_action;
         creators["bwl flamegor fire resistance"] = &RaidBwlActionContext::bwl_flamegor_fire_resistance_action;
+        creators["bwl drake wing buffet"] = &RaidBwlActionContext::bwl_drake_wing_buffet;
+        creators["bwl firemaw break los"] = &RaidBwlActionContext::bwl_firemaw_break_los;
+        creators["bwl ebonroc taunt"] = &RaidBwlActionContext::bwl_ebonroc_taunt;
+        creators["bwl flamegor tranq"] = &RaidBwlActionContext::bwl_flamegor_tranq;
 
         creators["bwl use hourglass sand"] = &RaidBwlActionContext::bwl_use_hourglass_sand;
         creators["bwl nefarian fear ward"] = &RaidBwlActionContext::bwl_nefarian_fear_ward;
@@ -61,6 +65,10 @@ private:
     static Action* bwl_broodlord_tank(PlayerbotAI* ai) { return new BwlBroodlordTankAction(ai); }
     static Action* bwl_firemaw_fire_resistance_action(PlayerbotAI* ai) { return new BossFireResistanceAction(ai, "firemaw"); }
     static Action* bwl_flamegor_fire_resistance_action(PlayerbotAI* ai) { return new BossFireResistanceAction(ai, "flamegor"); }
+    static Action* bwl_drake_wing_buffet(PlayerbotAI* ai) { return new BwlDrakeWingBuffetAction(ai); }
+    static Action* bwl_firemaw_break_los(PlayerbotAI* ai) { return new BwlFiremawBreakLosAction(ai); }
+    static Action* bwl_ebonroc_taunt(PlayerbotAI* ai) { return new BwlEbonrocTauntAction(ai); }
+    static Action* bwl_flamegor_tranq(PlayerbotAI* ai) { return new BwlFlamegorTranqAction(ai); }
     static Action* bwl_use_hourglass_sand(PlayerbotAI* ai) { return new BwlUseHourglassSandAction(ai); }
     static Action* bwl_nefarian_fear_ward(PlayerbotAI* ai) { return new BwlNefarianFearWardAction(ai); }
     static Action* bwl_death_talon_wyrmguard_tank_move_away(PlayerbotAI* ai) { return new BwlDeathTalonWyrmguardTankMoveAwayAction(ai); }

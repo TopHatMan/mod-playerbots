@@ -138,3 +138,25 @@ float BroodlordSharedThreatMultiplier::GetValue(Action* action)
 
     return 1.0f;
 }
+
+float FiremawFlameBuffetMultiplier::GetValue(Action* action)
+{
+    if (!AI_VALUE2(Unit*, "find target", "firemaw"))
+        return 1.0f;
+
+    if (dynamic_cast<BwlFiremawBreakLosAction*>(action))
+        return 1.0f;
+
+    uint32 const stacks = GetFlameBuffetStacks(bot);
+    uint32 const threshold = PlayerbotAI::IsTank(bot) ? 8 : static_cast<uint32>(FLAME_BUFFET_LOS_STACKS);
+    if (stacks < threshold)
+        return 1.0f;
+
+    if (dynamic_cast<AttackAction*>(action) || dynamic_cast<CastReachTargetSpellAction*>(action))
+        return 0.0f;
+    if (auto* spell = dynamic_cast<CastSpellAction*>(action))
+        if (spell->getThreatType() != Action::ActionThreatType::None)
+            return 0.0f;
+
+    return 1.0f;
+}

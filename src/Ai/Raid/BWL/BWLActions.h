@@ -101,6 +101,34 @@ public:
     bool Execute(Event event) override;
 };
 
+class BwlDrakeWingBuffetAction : public AttackAction
+{
+public:
+    BwlDrakeWingBuffetAction(PlayerbotAI* botAI) : AttackAction(botAI, "bwl drake wing buffet") {}
+    bool Execute(Event event) override;
+};
+
+class BwlFiremawBreakLosAction : public MovementAction
+{
+public:
+    BwlFiremawBreakLosAction(PlayerbotAI* botAI) : MovementAction(botAI, "bwl firemaw break los") {}
+    bool Execute(Event event) override;
+};
+
+class BwlEbonrocTauntAction : public AttackAction
+{
+public:
+    BwlEbonrocTauntAction(PlayerbotAI* botAI) : AttackAction(botAI, "bwl ebonroc taunt") {}
+    bool Execute(Event event) override;
+};
+
+class BwlFlamegorTranqAction : public Action
+{
+public:
+    BwlFlamegorTranqAction(PlayerbotAI* botAI) : Action(botAI, "bwl flamegor tranq") {}
+    bool Execute(Event event) override;
+};
+
 // Chromaggus
 
 class BwlUseHourglassSandAction : public Action

@@ -53,6 +53,16 @@ void RaidBwlStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         NextAction("bwl firemaw fire resistance", ACTION_RAID) }));
     triggers.push_back(new TriggerNode("bwl flamegor fire resistance", {
         NextAction("bwl flamegor fire resistance", ACTION_RAID) }));
+    triggers.push_back(new TriggerNode("bwl drake positioning", {
+        NextAction("rear flank", ACTION_MOVE + 4) }));
+    triggers.push_back(new TriggerNode("bwl drake wing buffet", {
+        NextAction("bwl drake wing buffet", ACTION_RAID + 3) }));
+    triggers.push_back(new TriggerNode("bwl firemaw flame buffet", {
+        NextAction("bwl firemaw break los", ACTION_RAID + 4) }));
+    triggers.push_back(new TriggerNode("bwl ebonroc shadow", {
+        NextAction("bwl ebonroc taunt", ACTION_RAID + 4) }));
+    triggers.push_back(new TriggerNode("bwl flamegor frenzy", {
+        NextAction("bwl flamegor tranq", ACTION_RAID + 3) }));
 
     triggers.push_back(new TriggerNode("bwl affliction bronze", {
         NextAction("bwl use hourglass sand", ACTION_RAID) }));
@@ -74,6 +84,7 @@ void RaidBwlStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
     multipliers.push_back(new VaelastraszTankMultiplier(botAI));
     multipliers.push_back(new VaelastraszBurningAdrenalineMultiplier(botAI));
     multipliers.push_back(new BroodlordSharedThreatMultiplier(botAI));
+    multipliers.push_back(new FiremawFlameBuffetMultiplier(botAI));
 }
 
 void RaidBwlStrategy::AppendTargetExclusions(GuidSet& exclusions, TargetValueExclusionType type)

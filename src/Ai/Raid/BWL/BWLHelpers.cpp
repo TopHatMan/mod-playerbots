@@ -10,6 +10,8 @@
 #include "GameObject.h"
 #include "Group.h"
 #include "Playerbots.h"
+#include "SpellAuras.h"
+#include <algorithm>
 
 namespace BlackwingLairHelpers
 {
@@ -248,7 +250,7 @@ namespace BlackwingLairHelpers
         return closest;
     }
 
-    Player* SelectNextVaelastraszTank(Player* bot)
+    Player* SelectNextTankWithoutAura(Player* bot, uint32 auraId)
     {
         if (!bot)
             return nullptr;
@@ -273,12 +275,77 @@ namespace BlackwingLairHelpers
         {
             if (!tank || !tank->IsAlive() || tank->GetMapId() != bot->GetMapId())
                 continue;
-            if (tank->HasAura(static_cast<uint32>(BlackwingLairSpells::SPELL_BURNING_ADRENALINE)))
+            if (auraId && tank->HasAura(auraId))
                 continue;
             return tank;
         }
 
         return nullptr;
+    }
+
+    Player* SelectNextVaelastraszTank(Player* bot)
+    {
+        return SelectNextTankWithoutAura(bot, static_cast<uint32>(BlackwingLairSpells::SPELL_BURNING_ADRENALINE));
+    }
+
+    Unit* FindBwlDrake(Player* bot)
+    {
+        if (!bot || !bot->GetMap())
+            return nullptr;
+
+        static uint32 const drakes[] = {
+            static_cast<uint32>(BlackwingLairNPCs::NPC_FIREMAW),
+            static_cast<uint32>(BlackwingLairNPCs::NPC_EBONROC),
+            static_cast<uint32>(BlackwingLairNPCs::NPC_FLAMEGOR)
+        };
+
+        for (uint32 entry : drakes)
+        {
+            Creature* creature = bot->FindNearestCreature(entry, 150.0f, true);
+            if (creature && creature->IsInCombat())
+                return creature;
+        }
+        return nullptr;
+    }
+
+    uint32 GetFlameBuffetStacks(Unit const* unit)
+    {
+        if (!unit)
+            return 0;
+        if (Aura const* aura = unit->GetAura(static_cast<uint32>(BlackwingLairSpells::SPELL_FLAMEBUFFET)))
+            return aura->GetStackAmount();
+        return 0;
+    }
+
+    uint32 GetAliveHunterIndex(Player* bot)
+    {
+        Group* group = bot ? bot->GetGroup() : nullptr;
+        if (!group)
+            return 0;
+
+        uint32 index = 0;
+        std::vector<Player*> hunters;
+        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+        {
+            Player* member = ref->GetSource();
+            if (!member || !member->IsAlive() || member->GetMapId() != bot->GetMapId())
+                continue;
+            if (member->getClass() == CLASS_HUNTER)
+                hunters.push_back(member);
+        }
+
+        std::sort(hunters.begin(), hunters.end(), [](Player const* left, Player const* right)
+        {
+            return left->GetGUID() < right->GetGUID();
+        });
+
+        for (Player* hunter : hunters)
+        {
+            if (hunter == bot)
+                return index;
+            ++index;
+        }
+        return 0;
     }
 
     bool IsChromaggusBreathSpell(uint32 spellId)

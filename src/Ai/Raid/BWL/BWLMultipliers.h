@@ -41,4 +41,12 @@ public:
     float GetValue(Action* action) override;
 };
 
+class FiremawFlameBuffetMultiplier : public Multiplier
+{
+public:
+    FiremawFlameBuffetMultiplier(
+        PlayerbotAI* botAI) : Multiplier(botAI, "firemaw flame buffet multiplier") {}
+    float GetValue(Action* action) override;
+};
+
 #endif

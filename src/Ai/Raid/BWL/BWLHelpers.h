@@ -115,7 +115,11 @@ namespace BlackwingLairHelpers
     Unit* SelectRazorgoreAddTarget(Player* bot);
     GameObject* FindOrbOfDomination(Player* bot);
     GameObject* FindNearestRazorgoreEgg(Player* bot);
+    Player* SelectNextTankWithoutAura(Player* bot, uint32 auraId);
     Player* SelectNextVaelastraszTank(Player* bot);
+    Unit* FindBwlDrake(Player* bot);
+    uint32 GetFlameBuffetStacks(Unit const* unit);
+    uint32 GetAliveHunterIndex(Player* bot);
     bool IsChromaggusBreathSpell(uint32 spellId);
 }
 

@@ -92,6 +92,41 @@ public:
     bool IsActive() override;
 };
 
+class BwlDrakePositioningTrigger : public Trigger
+{
+public:
+    BwlDrakePositioningTrigger(PlayerbotAI* botAI) : Trigger(botAI, "bwl drake positioning") {}
+    bool IsActive() override;
+};
+
+class BwlDrakeWingBuffetTrigger : public Trigger
+{
+public:
+    BwlDrakeWingBuffetTrigger(PlayerbotAI* botAI) : Trigger(botAI, "bwl drake wing buffet") {}
+    bool IsActive() override;
+};
+
+class BwlFiremawFlameBuffetTrigger : public Trigger
+{
+public:
+    BwlFiremawFlameBuffetTrigger(PlayerbotAI* botAI) : Trigger(botAI, "bwl firemaw flame buffet") {}
+    bool IsActive() override;
+};
+
+class BwlEbonrocShadowTrigger : public Trigger
+{
+public:
+    BwlEbonrocShadowTrigger(PlayerbotAI* botAI) : Trigger(botAI, "bwl ebonroc shadow") {}
+    bool IsActive() override;
+};
+
+class BwlFlamegorFrenzyTrigger : public Trigger
+{
+public:
+    BwlFlamegorFrenzyTrigger(PlayerbotAI* botAI) : Trigger(botAI, "bwl flamegor frenzy") {}
+    bool IsActive() override;
+};
+
 // Chromaggus
 
 class BwlAfflictionBronzeTrigger : public Trigger

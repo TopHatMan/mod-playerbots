@@ -7,6 +7,7 @@
 #include "BWLTriggers.h"
 #include "BWLHelpers.h"
 #include "Playerbots.h"
+#include "SpellAuras.h"
 
 using namespace BlackwingLairHelpers;
 
@@ -137,6 +138,83 @@ bool BwlBroodlordTankTrigger::IsActive()
 
     Player* victimPlayer = victim->ToPlayer();
     return !victimPlayer || !PlayerbotAI::IsTank(victimPlayer);
+}
+
+bool BwlDrakePositioningTrigger::IsActive()
+{
+    Unit* drake = FindBwlDrake(bot);
+    if (!drake || drake->GetVictim() == bot)
+        return false;
+    return !PlayerbotAI::IsTank(bot);
+}
+
+bool BwlDrakeWingBuffetTrigger::IsActive()
+{
+    if (!PlayerbotAI::IsTank(bot))
+        return false;
+
+    Unit* drake = FindBwlDrake(bot);
+    if (!drake)
+        return false;
+
+    Unit* victim = drake->GetVictim();
+    if (!victim || victim == bot)
+        return false;
+
+    Player* victimPlayer = victim->ToPlayer();
+    if (PlayerbotAI::IsMainTank(bot))
+        return true;
+    return !victimPlayer || !PlayerbotAI::IsTank(victimPlayer);
+}
+
+bool BwlFiremawFlameBuffetTrigger::IsActive()
+{
+    Unit* boss = AI_VALUE2(Unit*, "find target", "firemaw");
+    if (!boss)
+        return false;
+
+    uint32 const stacks = GetFlameBuffetStacks(bot);
+    uint32 const threshold = PlayerbotAI::IsTank(bot) ? 8 : static_cast<uint32>(FLAME_BUFFET_LOS_STACKS);
+    if (stacks < threshold)
+        return false;
+
+    // Stay out until the debuff actually expires.
+    return true;
+}
+
+bool BwlEbonrocShadowTrigger::IsActive()
+{
+    if (!PlayerbotAI::IsTank(bot))
+        return false;
+
+    Unit* boss = AI_VALUE2(Unit*, "find target", "ebonroc");
+    if (!boss)
+        return false;
+
+    Unit* victim = boss->GetVictim();
+    if (!victim || victim == bot)
+        return false;
+    if (!victim->HasAura(static_cast<uint32>(BlackwingLairSpells::SPELL_SHADOW_OF_EBONROC)))
+        return false;
+
+    return SelectNextTankWithoutAura(bot, static_cast<uint32>(BlackwingLairSpells::SPELL_SHADOW_OF_EBONROC)) == bot;
+}
+
+bool BwlFlamegorFrenzyTrigger::IsActive()
+{
+    if (bot->getClass() != CLASS_HUNTER)
+        return false;
+
+    Unit* boss = AI_VALUE2(Unit*, "find target", "flamegor");
+    if (!boss)
+        return false;
+
+    Aura* frenzy = boss->GetAura(static_cast<uint32>(BlackwingLairSpells::SPELL_FLAMEGOR_FRENZY));
+    if (!frenzy)
+        return false;
+
+    int32 const elapsed = frenzy->GetMaxDuration() - frenzy->GetDuration();
+    return elapsed >= static_cast<int32>(GetAliveHunterIndex(bot) * TRANQ_STAGGER_MS);
 }
 
 // Chromaggus
