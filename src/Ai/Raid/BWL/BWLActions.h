@@ -45,6 +45,28 @@ public:
     bool isUseful() override;
 };
 
+class BwlRazorgoreControlAction : public MovementAction
+{
+public:
+    BwlRazorgoreControlAction(PlayerbotAI* botAI) : MovementAction(botAI, "bwl razorgore control") {}
+    bool Execute(Event event) override;
+    bool isUseful() override;
+};
+
+class BwlRazorgoreFocusAddsAction : public AttackAction
+{
+public:
+    BwlRazorgoreFocusAddsAction(PlayerbotAI* botAI) : AttackAction(botAI, "bwl razorgore focus adds") {}
+    bool Execute(Event event) override;
+};
+
+class BwlRazorgoreAvoidConflagrationAction : public MovementAction
+{
+public:
+    BwlRazorgoreAvoidConflagrationAction(PlayerbotAI* botAI) : MovementAction(botAI, "bwl razorgore avoid conflagration") {}
+    bool Execute(Event event) override;
+};
+
 // Vaelastrasz the Corrupt
 
 class BwlVaelastraszMoveAwayAction : public MovementAction

@@ -7,6 +7,8 @@
 #include "BWLActions.h"
 #include "BWLHelpers.h"
 #include "EncounterHelpers.h"
+#include "GameObject.h"
+#include "Pet.h"
 #include "Playerbots.h"
 #include "RtiTargetValue.h"
 
@@ -135,6 +137,92 @@ bool BwlRazorgoreMarkBossAction::Execute(Event /*event*/)
 bool BwlRazorgoreMarkBossAction::isUseful()
 {
     return PlayerbotAI::IsTank(bot);
+}
+
+bool BwlRazorgoreControlAction::isUseful()
+{
+    return IsRazorgoreController(bot) && AreRazorgoreEggsAlive(botAI);
+}
+
+bool BwlRazorgoreControlAction::Execute(Event /*event*/)
+{
+    if (bot->HasAura(static_cast<uint32>(BlackwingLairSpells::SPELL_MIND_EXHAUSTION)))
+        return false;
+
+    if (Unit* charm = bot->GetCharm())
+    {
+        if (charm->GetEntry() != static_cast<uint32>(BlackwingLairNPCs::NPC_RAZORGORE))
+            return false;
+
+        GameObject* egg = FindNearestRazorgoreEgg(bot);
+        if (!egg)
+            return false;
+
+        constexpr float eggRange = 8.0f;
+        if (charm->GetDistance(egg) > eggRange)
+        {
+            charm->GetMotionMaster()->Clear();
+            charm->GetMotionMaster()->MovePoint(0, egg->GetPositionX(), egg->GetPositionY(), egg->GetPositionZ());
+            return true;
+        }
+
+        if (charm->HasUnitState(UNIT_STATE_CASTING))
+            return true;
+
+        charm->CastSpell(egg, static_cast<uint32>(BlackwingLairSpells::SPELL_EGG_DESTROY), false);
+        return true;
+    }
+
+    GameObject* orb = FindOrbOfDomination(bot);
+    if (!orb)
+        return false;
+
+    if (bot->GetDistance(orb) > INTERACTION_DISTANCE)
+        return MoveTo(orb->GetMapId(), orb->GetPositionX(), orb->GetPositionY(), orb->GetPositionZ(),
+                      false, false, false, false, MovementPriority::MOVEMENT_COMBAT);
+
+    if (Pet* pet = bot->GetPet())
+        bot->RemovePet(pet, PET_SAVE_NOT_IN_SLOT);
+
+    orb->Use(bot);
+    return true;
+}
+
+bool BwlRazorgoreFocusAddsAction::Execute(Event event)
+{
+    Unit* add = SelectRazorgoreAddTarget(bot);
+    if (!add)
+        return false;
+
+    botAI->GetAiObjectContext()->GetValue<GuidVector>("prioritized targets")->Set({ add->GetGUID() });
+    if (bot->GetVictim() != add)
+        return Attack(add);
+
+    if (PlayerbotAI::IsTank(bot) && add->GetVictim() != bot)
+        return botAI->DoSpecificAction("taunt spell", event, true);
+
+    return false;
+}
+
+bool BwlRazorgoreAvoidConflagrationAction::Execute(Event /*event*/)
+{
+    Unit* boss = AI_VALUE2(Unit*, "find target", "razorgore the untamed");
+    if (!boss)
+        return false;
+
+    Unit* victim = boss->GetVictim();
+    if (!victim || !victim->HasAura(static_cast<uint32>(BlackwingLairSpells::SPELL_CONFLAGRATION)))
+        return false;
+
+    if (victim == bot)
+        return false;
+
+    float const dist = bot->GetDistance2d(victim);
+    if (dist >= RAZORGORE_CONFLAG_DISTANCE)
+        return false;
+
+    bot->CastStop();
+    return MoveAway(victim, RAZORGORE_CONFLAG_DISTANCE - dist);
 }
 
 // Vaelastrasz the Corrupt

@@ -27,6 +27,27 @@ public:
     bool IsActive() override;
 };
 
+class BwlRazorgoreControlTrigger : public Trigger
+{
+public:
+    BwlRazorgoreControlTrigger(PlayerbotAI* botAI) : Trigger(botAI, "bwl razorgore control") {}
+    bool IsActive() override;
+};
+
+class BwlRazorgoreFocusAddsTrigger : public Trigger
+{
+public:
+    BwlRazorgoreFocusAddsTrigger(PlayerbotAI* botAI) : Trigger(botAI, "bwl razorgore focus adds") {}
+    bool IsActive() override;
+};
+
+class BwlRazorgoreConflagrationTrigger : public Trigger
+{
+public:
+    BwlRazorgoreConflagrationTrigger(PlayerbotAI* botAI) : Trigger(botAI, "bwl razorgore conflagration") {}
+    bool IsActive() override;
+};
+
 // Vaelastrasz the Corrupt
 
 class BwlVaelastraszPositioningTrigger : public Trigger

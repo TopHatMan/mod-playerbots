@@ -38,6 +38,36 @@ bool BwlRazorgoreNotMindControlledTrigger::IsActive()
     return false;
 }
 
+bool BwlRazorgoreControlTrigger::IsActive()
+{
+    if (!AreRazorgoreEggsAlive(botAI) || !IsRazorgoreController(bot))
+        return false;
+    return AI_VALUE2(Unit*, "find target", "razorgore the untamed") != nullptr ||
+           FindOrbOfDomination(bot) != nullptr;
+}
+
+bool BwlRazorgoreFocusAddsTrigger::IsActive()
+{
+    if (!AreRazorgoreEggsAlive(botAI) || IsRazorgoreController(bot))
+        return false;
+    return SelectRazorgoreAddTarget(bot) != nullptr;
+}
+
+bool BwlRazorgoreConflagrationTrigger::IsActive()
+{
+    Unit* boss = AI_VALUE2(Unit*, "find target", "razorgore the untamed");
+    if (!boss || AreRazorgoreEggsAlive(botAI))
+        return false;
+
+    Unit* victim = boss->GetVictim();
+    if (!victim || victim == bot)
+        return false;
+    if (!victim->HasAura(static_cast<uint32>(BlackwingLairSpells::SPELL_CONFLAGRATION)))
+        return false;
+
+    return bot->GetDistance2d(victim) < RAZORGORE_CONFLAG_DISTANCE;
+}
+
 // Vaelastrasz the Corrupt
 
 bool BwlVaelastraszPositioningTrigger::IsActive()

@@ -5,6 +5,7 @@
  */
 
 #include "BWLMultipliers.h"
+#include "AttackAction.h"
 #include "BWLActions.h"
 #include "BWLHelpers.h"
 #include "ChooseTargetActions.h"
@@ -19,6 +20,14 @@ static constexpr float VAELASTRASZ_BA_BOSS_DISTANCE = 30.0f;
 
 float RazorgoreTankMultiplier::GetValue(Action* action)
 {
+    if (IsRazorgoreController(bot) && AreRazorgoreEggsAlive(botAI))
+    {
+        if (dynamic_cast<BwlRazorgoreControlAction*>(action))
+            return 1.0f;
+        if (dynamic_cast<AttackAction*>(action) || dynamic_cast<TankAssistAction*>(action))
+            return 0.0f;
+    }
+
     if (!PlayerbotAI::IsTank(bot))
         return 1.0f;
 
@@ -28,7 +37,7 @@ float RazorgoreTankMultiplier::GetValue(Action* action)
 
     if (AreRazorgoreEggsAlive(botAI))
     {
-        // Off-tank picks up boss, blocks TankAssistAction to avoid changing targets
+        // Off-tank picks up an uncontrolled Razorgore so he cannot kill the orb user.
         if (IsRazorgoreOffTank(bot) && bot->GetVictim() != nullptr && dynamic_cast<TankAssistAction*>(action))
             return 0.0f;
         return 1.0f;

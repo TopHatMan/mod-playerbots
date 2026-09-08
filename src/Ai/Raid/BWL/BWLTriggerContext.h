@@ -20,6 +20,9 @@ public:
 
         creators["bwl razorgore fire resistance"] = &RaidBwlTriggerContext::bwl_razorgore_fire_resistance_trigger;
         creators["bwl razorgore not mind controlled"] = &RaidBwlTriggerContext::bwl_razorgore_not_mind_controlled;
+        creators["bwl razorgore control"] = &RaidBwlTriggerContext::bwl_razorgore_control;
+        creators["bwl razorgore focus adds"] = &RaidBwlTriggerContext::bwl_razorgore_focus_adds;
+        creators["bwl razorgore conflagration"] = &RaidBwlTriggerContext::bwl_razorgore_conflagration;
 
         creators["bwl vaelastrasz fire resistance"] = &RaidBwlTriggerContext::bwl_vaelastrasz_fire_resistance_trigger;
         creators["bwl vaelastrasz positioning"] = &RaidBwlTriggerContext::bwl_vaelastrasz_positioning;
@@ -41,6 +44,9 @@ private:
     static Trigger* bwl_suppression_device(PlayerbotAI* ai) { return new BwlSuppressionDeviceTrigger(ai); }
     static Trigger* bwl_razorgore_fire_resistance_trigger(PlayerbotAI* ai) { return new BossFireResistanceTrigger(ai, "razorgore the untamed"); }
     static Trigger* bwl_razorgore_not_mind_controlled(PlayerbotAI* ai) { return new BwlRazorgoreNotMindControlledTrigger(ai); }
+    static Trigger* bwl_razorgore_control(PlayerbotAI* ai) { return new BwlRazorgoreControlTrigger(ai); }
+    static Trigger* bwl_razorgore_focus_adds(PlayerbotAI* ai) { return new BwlRazorgoreFocusAddsTrigger(ai); }
+    static Trigger* bwl_razorgore_conflagration(PlayerbotAI* ai) { return new BwlRazorgoreConflagrationTrigger(ai); }
     static Trigger* bwl_vaelastrasz_fire_resistance_trigger(PlayerbotAI* ai) { return new BossFireResistanceTrigger(ai, "vaelastrasz the corrupt"); }
     static Trigger* bwl_vaelastrasz_positioning(PlayerbotAI* ai) { return new BwlVaelastraszPositioningTrigger(ai); }
     static Trigger* bwl_vaelastrasz_burning_adrenaline(PlayerbotAI* ai) { return new BwlVaelastraszBurningAdrenalineTrigger(ai); }

@@ -5,7 +5,11 @@
  */
 
 #include "BWLStrategy.h"
+#include "BWLHelpers.h"
 #include "BWLMultipliers.h"
+#include "Playerbots.h"
+
+using namespace BlackwingLairHelpers;
 
 void RaidBwlStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
@@ -16,6 +20,12 @@ void RaidBwlStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 
     triggers.push_back(new TriggerNode("bwl razorgore fire resistance", {
         NextAction("bwl razorgore fire resistance", ACTION_RAID) }));
+    triggers.push_back(new TriggerNode("bwl razorgore control", {
+        NextAction("bwl razorgore control", ACTION_RAID + 4) }));
+    triggers.push_back(new TriggerNode("bwl razorgore focus adds", {
+        NextAction("bwl razorgore focus adds", ACTION_RAID + 2) }));
+    triggers.push_back(new TriggerNode("bwl razorgore conflagration", {
+        NextAction("bwl razorgore avoid conflagration", ACTION_RAID + 4) }));
     triggers.push_back(new TriggerNode("bwl razorgore not mind controlled", {
         NextAction("bwl razorgore avoid aoe", ACTION_RAID) }));
     triggers.push_back(new TriggerNode("bwl razorgore not mind controlled", {
@@ -55,4 +65,20 @@ void RaidBwlStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
     multipliers.push_back(new RazorgoreTankMultiplier(botAI));
     multipliers.push_back(new VaelastraszTankMultiplier(botAI));
     multipliers.push_back(new VaelastraszBurningAdrenalineMultiplier(botAI));
+}
+
+void RaidBwlStrategy::AppendTargetExclusions(GuidSet& exclusions, TargetValueExclusionType type)
+{
+    if (type != TargetValueExclusionType::Dps && type != TargetValueExclusionType::Attacker)
+        return;
+
+    Unit* razorgore = AI_VALUE2(Unit*, "find target", "razorgore the untamed");
+    if (!razorgore)
+        return;
+
+    // Controlled Razorgore dying during P1 wipes the raid. Keep him off dps
+    // targeting while eggs are still up and he is charmed.
+    if (AreRazorgoreEggsAlive(botAI) &&
+        razorgore->HasAura(static_cast<uint32>(BlackwingLairSpells::SPELL_MINDCONTROL)))
+        exclusions.insert(razorgore->GetGUID());
 }
