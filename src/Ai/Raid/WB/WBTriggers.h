@@ -72,4 +72,46 @@ public:
     bool IsActive() override;
 };
 
+class WbDragonFlankTrigger : public Trigger
+{
+public:
+    WbDragonFlankTrigger(PlayerbotAI* botAI) : Trigger(botAI, "wb dragon flank") {}
+    bool IsActive() override;
+};
+
+class WbDragonSpreadTrigger : public Trigger
+{
+public:
+    WbDragonSpreadTrigger(PlayerbotAI* botAI) : Trigger(botAI, "wb dragon spread") {}
+    bool IsActive() override;
+};
+
+class WbDragonTankSwapTrigger : public Trigger
+{
+public:
+    WbDragonTankSwapTrigger(PlayerbotAI* botAI) : Trigger(botAI, "wb dragon tank swap") {}
+    bool IsActive() override;
+};
+
+class WbDragonFogTrigger : public Trigger
+{
+public:
+    WbDragonFogTrigger(PlayerbotAI* botAI) : Trigger(botAI, "wb dragon fog") {}
+    bool IsActive() override;
+};
+
+class WbEmerissMushroomTrigger : public Trigger
+{
+public:
+    WbEmerissMushroomTrigger(PlayerbotAI* botAI) : Trigger(botAI, "wb emeriss mushroom") {}
+    bool IsActive() override;
+};
+
+class WbEmerissDispelTrigger : public Trigger
+{
+public:
+    WbEmerissDispelTrigger(PlayerbotAI* botAI) : Trigger(botAI, "wb emeriss dispel") {}
+    bool IsActive() override;
+};
+
 #endif

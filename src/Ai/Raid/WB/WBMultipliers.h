@@ -23,4 +23,11 @@ public:
     float GetValue(Action* action) override;
 };
 
+class EmeraldDragonMultiplier : public Multiplier
+{
+public:
+    EmeraldDragonMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "emerald dragon multiplier") {}
+    float GetValue(Action* action) override;
+};
+
 #endif

@@ -28,6 +28,14 @@ public:
         creators["wb kazzak isolate"] = &RaidWorldBossActionContext::kazzak_isolate;
         creators["wb kazzak spread"] = &RaidWorldBossActionContext::kazzak_spread;
         creators["wb kazzak dispel"] = &RaidWorldBossActionContext::kazzak_dispel;
+
+        creators["wb dragon nature resistance"] = &RaidWorldBossActionContext::dragon_nature;
+        creators["wb dragon flank"] = &RaidWorldBossActionContext::dragon_flank;
+        creators["wb dragon spread"] = &RaidWorldBossActionContext::dragon_spread;
+        creators["wb dragon tank swap"] = &RaidWorldBossActionContext::dragon_swap;
+        creators["wb dragon move from fog"] = &RaidWorldBossActionContext::dragon_fog;
+        creators["wb emeriss avoid mushroom"] = &RaidWorldBossActionContext::emeriss_mushroom;
+        creators["wb emeriss dispel"] = &RaidWorldBossActionContext::emeriss_dispel;
     }
 
 private:
@@ -41,6 +49,13 @@ private:
     static Action* kazzak_isolate(PlayerbotAI* ai) { return new WbKazzakIsolateAction(ai); }
     static Action* kazzak_spread(PlayerbotAI* ai) { return new WbKazzakSpreadAction(ai); }
     static Action* kazzak_dispel(PlayerbotAI* ai) { return new WbKazzakDispelAction(ai); }
+    static Action* dragon_nature(PlayerbotAI* ai) { return new BossNatureResistanceAction(ai, "emeriss"); }
+    static Action* dragon_flank(PlayerbotAI* ai) { return new WbDragonFlankAction(ai); }
+    static Action* dragon_spread(PlayerbotAI* ai) { return new WbDragonSpreadAction(ai); }
+    static Action* dragon_swap(PlayerbotAI* ai) { return new WbDragonTankSwapAction(ai); }
+    static Action* dragon_fog(PlayerbotAI* ai) { return new WbDragonMoveFromFogAction(ai); }
+    static Action* emeriss_mushroom(PlayerbotAI* ai) { return new WbEmerissAvoidMushroomAction(ai); }
+    static Action* emeriss_dispel(PlayerbotAI* ai) { return new WbEmerissDispelAction(ai); }
 };
 
 #endif

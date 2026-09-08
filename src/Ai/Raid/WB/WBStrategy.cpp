@@ -32,10 +32,26 @@ void RaidWorldBossStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         NextAction("wb kazzak isolate", ACTION_RAID + 5) }));
     triggers.push_back(new TriggerNode("wb kazzak spread", {
         NextAction("wb kazzak spread", ACTION_RAID + 1) }));
+
+    triggers.push_back(new TriggerNode("wb dragon nature resistance", {
+        NextAction("wb dragon nature resistance", ACTION_RAID) }));
+    triggers.push_back(new TriggerNode("wb dragon fog", {
+        NextAction("wb dragon move from fog", ACTION_RAID + 4) }));
+    triggers.push_back(new TriggerNode("wb dragon tank swap", {
+        NextAction("wb dragon tank swap", ACTION_RAID + 3) }));
+    triggers.push_back(new TriggerNode("wb dragon flank", {
+        NextAction("wb dragon flank", ACTION_RAID + 2) }));
+    triggers.push_back(new TriggerNode("wb dragon spread", {
+        NextAction("wb dragon spread", ACTION_RAID + 1) }));
+    triggers.push_back(new TriggerNode("wb emeriss mushroom", {
+        NextAction("wb emeriss avoid mushroom", ACTION_RAID + 4) }));
+    triggers.push_back(new TriggerNode("wb emeriss dispel", {
+        NextAction("wb emeriss dispel", ACTION_RAID + 2) }));
 }
 
 void RaidWorldBossStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
 {
     multipliers.push_back(new AzuregosMultiplier(botAI));
     multipliers.push_back(new KazzakMultiplier(botAI));
+    multipliers.push_back(new EmeraldDragonMultiplier(botAI));
 }

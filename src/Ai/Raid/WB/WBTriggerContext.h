@@ -28,6 +28,14 @@ public:
         creators["wb kazzak spread"] = &RaidWorldBossTriggerContext::kazzak_spread;
         creators["wb kazzak twisted"] = &RaidWorldBossTriggerContext::kazzak_twisted;
         creators["wb kazzak decurse"] = &RaidWorldBossTriggerContext::kazzak_decurse;
+
+        creators["wb dragon nature resistance"] = &RaidWorldBossTriggerContext::dragon_nature;
+        creators["wb dragon flank"] = &RaidWorldBossTriggerContext::dragon_flank;
+        creators["wb dragon spread"] = &RaidWorldBossTriggerContext::dragon_spread;
+        creators["wb dragon tank swap"] = &RaidWorldBossTriggerContext::dragon_swap;
+        creators["wb dragon fog"] = &RaidWorldBossTriggerContext::dragon_fog;
+        creators["wb emeriss mushroom"] = &RaidWorldBossTriggerContext::emeriss_mushroom;
+        creators["wb emeriss dispel"] = &RaidWorldBossTriggerContext::emeriss_dispel;
     }
 
 private:
@@ -42,6 +50,13 @@ private:
     static Trigger* kazzak_spread(PlayerbotAI* ai) { return new WbKazzakSpreadTrigger(ai); }
     static Trigger* kazzak_twisted(PlayerbotAI* ai) { return new WbKazzakTwistedTrigger(ai); }
     static Trigger* kazzak_decurse(PlayerbotAI* ai) { return new WbKazzakDecurseTrigger(ai); }
+    static Trigger* dragon_nature(PlayerbotAI* ai) { return new BossNatureResistanceTrigger(ai, "emeriss"); }
+    static Trigger* dragon_flank(PlayerbotAI* ai) { return new WbDragonFlankTrigger(ai); }
+    static Trigger* dragon_spread(PlayerbotAI* ai) { return new WbDragonSpreadTrigger(ai); }
+    static Trigger* dragon_swap(PlayerbotAI* ai) { return new WbDragonTankSwapTrigger(ai); }
+    static Trigger* dragon_fog(PlayerbotAI* ai) { return new WbDragonFogTrigger(ai); }
+    static Trigger* emeriss_mushroom(PlayerbotAI* ai) { return new WbEmerissMushroomTrigger(ai); }
+    static Trigger* emeriss_dispel(PlayerbotAI* ai) { return new WbEmerissDispelTrigger(ai); }
 };
 
 #endif

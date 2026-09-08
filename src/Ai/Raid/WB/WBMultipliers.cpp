@@ -93,3 +93,26 @@ float KazzakMultiplier::GetValue(Action* action)
 
     return 1.0f;
 }
+
+float EmeraldDragonMultiplier::GetValue(Action* action)
+{
+    Unit* boss = FindEmeraldDragon(bot);
+    if (!boss)
+        return 1.0f;
+
+    if (dynamic_cast<WbDragonMoveFromFogAction*>(action) ||
+        dynamic_cast<WbDragonTankSwapAction*>(action) ||
+        dynamic_cast<WbEmerissAvoidMushroomAction*>(action))
+        return 1.0f;
+
+    if (bot->HasAura(SPELL_MARK_OF_NATURE))
+    {
+        if (dynamic_cast<AttackAction*>(action))
+            return 0.0f;
+        if (auto* spell = dynamic_cast<CastSpellAction*>(action))
+            if (spell->getThreatType() != Action::ActionThreatType::None)
+                return 0.0f;
+    }
+
+    return 1.0f;
+}

@@ -142,3 +142,100 @@ bool WbKazzakDispelAction::Execute(Event event)
             return false;
     }
 }
+
+bool WbDragonFlankAction::Execute(Event /*event*/)
+{
+    Unit* boss = FindEmeraldDragon(bot);
+    if (!boss)
+        return false;
+
+    float const bossFacing = boss->GetOrientation();
+    float const left = bossFacing + static_cast<float>(M_PI_2);
+    float const right = bossFacing - static_cast<float>(M_PI_2);
+    float const dist = PlayerbotAI::IsRanged(bot) ? 25.0f : 5.5f;
+    float const leftX = boss->GetPositionX() + dist * cos(left);
+    float const leftY = boss->GetPositionY() + dist * sin(left);
+    float const rightX = boss->GetPositionX() + dist * cos(right);
+    float const rightY = boss->GetPositionY() + dist * sin(right);
+    bool const useLeft = bot->GetExactDist2d(leftX, leftY) < bot->GetExactDist2d(rightX, rightY);
+    float const x = useLeft ? leftX : rightX;
+    float const y = useLeft ? leftY : rightY;
+    if (bot->GetExactDist2d(x, y) < 3.0f)
+        return false;
+    return MoveTo(boss->GetMapId(), x, y, boss->GetPositionZ(), false, false, false, false,
+                  MovementPriority::MOVEMENT_COMBAT);
+}
+
+bool WbDragonSpreadAction::Execute(Event /*event*/)
+{
+    if (!FindEmeraldDragon(bot))
+        return false;
+    return MoveFromGroup(SPREAD_DISTANCE + 1.0f);
+}
+
+bool WbDragonTankSwapAction::Execute(Event event)
+{
+    Unit* boss = FindEmeraldDragon(bot);
+    if (!boss)
+        return false;
+    if (bot->GetVictim() != boss)
+        return Attack(boss);
+    return botAI->DoSpecificAction("taunt spell", event, true);
+}
+
+bool WbDragonMoveFromFogAction::Execute(Event /*event*/)
+{
+    Creature* fog = bot->FindNearestCreature(NPC_DREAM_FOG, FOG_DISTANCE, true);
+    if (!fog)
+        return false;
+    bot->CastStop();
+    return FleePosition(fog->GetPosition(), FOG_DISTANCE);
+}
+
+bool WbEmerissAvoidMushroomAction::Execute(Event /*event*/)
+{
+    if (!FindEmeraldDragon(bot) || FindEmeraldDragon(bot)->GetEntry() != NPC_EMERISS)
+        return false;
+
+    Unit* corpse = nullptr;
+    float best = MUSHROOM_CORPSE_DISTANCE;
+    if (Group* group = bot->GetGroup())
+    {
+        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+        {
+            Player* member = ref->GetSource();
+            if (!member || member == bot || member->IsAlive() || member->GetMapId() != bot->GetMapId())
+                continue;
+            float dist = bot->GetDistance(member);
+            if (dist < best)
+            {
+                best = dist;
+                corpse = member;
+            }
+        }
+    }
+    if (!corpse)
+        return false;
+    bot->CastStop();
+    return FleePosition(corpse->GetPosition(), MUSHROOM_CORPSE_DISTANCE);
+}
+
+bool WbEmerissDispelAction::Execute(Event event)
+{
+    switch (bot->getClass())
+    {
+        case CLASS_DRUID:
+            return botAI->DoSpecificAction("abolish poison", event, true) ||
+                   botAI->DoSpecificAction("abolish poison on party", event, true) ||
+                   botAI->DoSpecificAction("cure poison", event, true) ||
+                   botAI->DoSpecificAction("cure poison on party", event, true);
+        case CLASS_SHAMAN:
+            return botAI->DoSpecificAction("cure poison", event, true) ||
+                   botAI->DoSpecificAction("cure poison on party", event, true);
+        case CLASS_PALADIN:
+            return botAI->DoSpecificAction("cleanse poison", event, true) ||
+                   botAI->DoSpecificAction("cleanse poison on party", event, true);
+        default:
+            return false;
+    }
+}

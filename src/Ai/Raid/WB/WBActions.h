@@ -66,4 +66,46 @@ public:
     bool Execute(Event event) override;
 };
 
+class WbDragonFlankAction : public MovementAction
+{
+public:
+    WbDragonFlankAction(PlayerbotAI* botAI) : MovementAction(botAI, "wb dragon flank") {}
+    bool Execute(Event event) override;
+};
+
+class WbDragonSpreadAction : public MovementAction
+{
+public:
+    WbDragonSpreadAction(PlayerbotAI* botAI) : MovementAction(botAI, "wb dragon spread") {}
+    bool Execute(Event event) override;
+};
+
+class WbDragonTankSwapAction : public AttackAction
+{
+public:
+    WbDragonTankSwapAction(PlayerbotAI* botAI) : AttackAction(botAI, "wb dragon tank swap") {}
+    bool Execute(Event event) override;
+};
+
+class WbDragonMoveFromFogAction : public MovementAction
+{
+public:
+    WbDragonMoveFromFogAction(PlayerbotAI* botAI) : MovementAction(botAI, "wb dragon move from fog") {}
+    bool Execute(Event event) override;
+};
+
+class WbEmerissAvoidMushroomAction : public MovementAction
+{
+public:
+    WbEmerissAvoidMushroomAction(PlayerbotAI* botAI) : MovementAction(botAI, "wb emeriss avoid mushroom") {}
+    bool Execute(Event event) override;
+};
+
+class WbEmerissDispelAction : public Action
+{
+public:
+    WbEmerissDispelAction(PlayerbotAI* botAI) : Action(botAI, "wb emeriss dispel") {}
+    bool Execute(Event event) override;
+};
+
 #endif
