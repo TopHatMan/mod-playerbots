@@ -63,6 +63,10 @@ void RaidWorldBossStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         NextAction("wb taerar tank shade", ACTION_RAID + 3) }));
     triggers.push_back(new TriggerNode("wb taerar shade", {
         NextAction("wb taerar kill shade", ACTION_RAID + 3) }));
+    triggers.push_back(new TriggerNode("wb ysondre nature resistance", {
+        NextAction("wb ysondre nature resistance", ACTION_RAID) }));
+    triggers.push_back(new TriggerNode("wb ysondre druid", {
+        NextAction("wb ysondre kill druid", ACTION_RAID + 3) }));
 }
 
 void RaidWorldBossStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
@@ -92,6 +96,12 @@ void RaidWorldBossStrategy::AppendTargetExclusions(GuidSet& exclusions, TargetVa
     {
         Creature* shade = bot->FindNearestCreature(NPC_SHADE_OF_TAERAR, 80.0f, true);
         if (shade && shade->IsAlive())
+            exclusions.insert(dragon->GetGUID());
+    }
+    else if (dragon->GetEntry() == NPC_YSONDRE)
+    {
+        Creature* druid = bot->FindNearestCreature(NPC_DEMENTED_DRUID, 80.0f, true);
+        if (druid && druid->IsAlive())
             exclusions.insert(dragon->GetGUID());
     }
 }

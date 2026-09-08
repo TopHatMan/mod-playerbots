@@ -330,3 +330,19 @@ bool WbTaerarAntiFearAction::Execute(Event event)
             return false;
     }
 }
+
+bool WbYsondreKillDruidAction::Execute(Event event)
+{
+    Creature* druid = bot->FindNearestCreature(NPC_DEMENTED_DRUID, 80.0f, true);
+    if (!druid || !druid->IsAlive())
+        return false;
+
+    botAI->GetAiObjectContext()->GetValue<GuidVector>("prioritized targets")->Set({ druid->GetGUID() });
+    if (bot->GetVictim() != druid)
+        return Attack(druid);
+
+    if (PlayerbotAI::IsTank(bot) && druid->GetVictim() != bot)
+        return botAI->DoSpecificAction("taunt spell", event, true);
+
+    return false;
+}

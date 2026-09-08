@@ -42,6 +42,8 @@ public:
         creators["wb taerar kill shade"] = &RaidWorldBossActionContext::taerar_kill_shade;
         creators["wb taerar tank shade"] = &RaidWorldBossActionContext::taerar_tank_shade;
         creators["wb taerar anti fear"] = &RaidWorldBossActionContext::taerar_anti_fear;
+        creators["wb ysondre nature resistance"] = &RaidWorldBossActionContext::ysondre_nature;
+        creators["wb ysondre kill druid"] = &RaidWorldBossActionContext::ysondre_druid;
     }
 
 private:
@@ -68,6 +70,8 @@ private:
     static Action* taerar_kill_shade(PlayerbotAI* ai) { return new WbTaerarKillShadeAction(ai); }
     static Action* taerar_tank_shade(PlayerbotAI* ai) { return new WbTaerarTankShadeAction(ai); }
     static Action* taerar_anti_fear(PlayerbotAI* ai) { return new WbTaerarAntiFearAction(ai); }
+    static Action* ysondre_nature(PlayerbotAI* ai) { return new BossNatureResistanceAction(ai, "ysondre"); }
+    static Action* ysondre_druid(PlayerbotAI* ai) { return new WbYsondreKillDruidAction(ai); }
 };
 
 #endif

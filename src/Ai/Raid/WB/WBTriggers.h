@@ -142,4 +142,11 @@ public:
     bool IsActive() override;
 };
 
+class WbYsondreDruidTrigger : public Trigger
+{
+public:
+    WbYsondreDruidTrigger(PlayerbotAI* botAI) : Trigger(botAI, "wb ysondre druid") {}
+    bool IsActive() override;
+};
+
 #endif

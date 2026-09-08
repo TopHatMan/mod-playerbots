@@ -136,4 +136,11 @@ public:
     bool Execute(Event event) override;
 };
 
+class WbYsondreKillDruidAction : public AttackAction
+{
+public:
+    WbYsondreKillDruidAction(PlayerbotAI* botAI) : AttackAction(botAI, "wb ysondre kill druid") {}
+    bool Execute(Event event) override;
+};
+
 #endif

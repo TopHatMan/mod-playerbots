@@ -42,6 +42,8 @@ public:
         creators["wb taerar shade"] = &RaidWorldBossTriggerContext::taerar_shade;
         creators["wb taerar tank shade"] = &RaidWorldBossTriggerContext::taerar_tank_shade;
         creators["wb taerar fear"] = &RaidWorldBossTriggerContext::taerar_fear;
+        creators["wb ysondre nature resistance"] = &RaidWorldBossTriggerContext::ysondre_nature;
+        creators["wb ysondre druid"] = &RaidWorldBossTriggerContext::ysondre_druid;
     }
 
 private:
@@ -69,6 +71,8 @@ private:
     static Trigger* taerar_shade(PlayerbotAI* ai) { return new WbTaerarShadeTrigger(ai); }
     static Trigger* taerar_tank_shade(PlayerbotAI* ai) { return new WbTaerarTankShadeTrigger(ai); }
     static Trigger* taerar_fear(PlayerbotAI* ai) { return new WbTaerarFearTrigger(ai); }
+    static Trigger* ysondre_nature(PlayerbotAI* ai) { return new BossNatureResistanceTrigger(ai, "ysondre"); }
+    static Trigger* ysondre_druid(PlayerbotAI* ai) { return new WbYsondreDruidTrigger(ai); }
 };
 
 #endif

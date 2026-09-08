@@ -106,7 +106,8 @@ float EmeraldDragonMultiplier::GetValue(Action* action)
         dynamic_cast<WbLethonKillShadeAction*>(action) ||
         dynamic_cast<WbTaerarKillShadeAction*>(action) ||
         dynamic_cast<WbTaerarTankShadeAction*>(action) ||
-        dynamic_cast<WbTaerarAntiFearAction*>(action))
+        dynamic_cast<WbTaerarAntiFearAction*>(action) ||
+        dynamic_cast<WbYsondreKillDruidAction*>(action))
         return 1.0f;
 
     if (bot->HasAura(SPELL_MARK_OF_NATURE))

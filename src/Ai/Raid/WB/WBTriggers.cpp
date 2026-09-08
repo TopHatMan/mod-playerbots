@@ -303,3 +303,12 @@ bool WbTaerarFearTrigger::IsActive()
     }
     return bot->HasAuraType(SPELL_AURA_MOD_FEAR);
 }
+
+bool WbYsondreDruidTrigger::IsActive()
+{
+    Unit* boss = FindEmeraldDragon(bot);
+    if (!boss || boss->GetEntry() != NPC_YSONDRE)
+        return false;
+    Creature* druid = bot->FindNearestCreature(NPC_DEMENTED_DRUID, 80.0f, true);
+    return druid && druid->IsAlive();
+}
