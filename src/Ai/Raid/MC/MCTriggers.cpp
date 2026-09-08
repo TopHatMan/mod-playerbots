@@ -87,34 +87,73 @@ bool McGolemaggIsHealerTrigger::IsActive()
     return PlayerbotAI::IsHeal(bot) && AI_VALUE2(Unit*, "find target", "golemagg the incinerator");
 }
 
-static bool IsMajordomoEncounterActive(PlayerbotAI* botAI)
-{
-    Player* bot = botAI->GetBot();
-    std::list<Creature*> creatures;
-    for (uint32 entry : { NPC_MAJORDOMO_EXECUTUS, NPC_FLAMEWAKER_HEALER, NPC_FLAMEWAKER_ELITE })
-    {
-        creatures.clear();
-        bot->GetCreatureListWithEntryInGrid(creatures, entry, 150.0f);
-        if (std::any_of(creatures.begin(), creatures.end(), [](Creature* creature)
-            { return creature && creature->IsAlive() && creature->IsInCombat(); }))
-            return true;
-    }
-    return false;
-}
-
 bool McMajordomoTankAddsTrigger::IsActive()
 {
-    return PlayerbotAI::IsTank(bot) && IsMajordomoEncounterActive(botAI);
+    if (!PlayerbotAI::IsTank(bot) || !IsMajordomoEncounterActive(bot))
+        return false;
+    if (PlayerbotAI::IsMainTank(bot))
+        return FindMajordomo(bot) || SelectMajordomoTankTarget(bot);
+    return SelectMajordomoTankTarget(bot) != nullptr;
 }
 
 bool McMajordomoFocusAddsTrigger::IsActive()
 {
-    return PlayerbotAI::IsDps(bot) && IsMajordomoEncounterActive(botAI);
+    return PlayerbotAI::IsDps(bot) && SelectMajordomoKillTarget(bot) != nullptr;
 }
 
 bool McMajordomoPolymorphHealerTrigger::IsActive()
 {
-    return bot->getClass() == CLASS_MAGE && IsMajordomoEncounterActive(botAI);
+    return bot->getClass() == CLASS_MAGE && IsMajordomoEncounterActive(bot) &&
+           SelectMajordomoSheepTarget(bot) != nullptr;
+}
+
+bool McMajordomoAvoidBlastWaveTrigger::IsActive()
+{
+    if (PlayerbotAI::IsTank(bot) || !IsMajordomoEncounterActive(bot))
+        return false;
+
+    Unit* elite = FindNearestMajordomoElite(bot);
+    if (!elite)
+        return false;
+
+    Unit* killTarget = SelectMajordomoKillTarget(bot);
+    if (killTarget && killTarget->GetEntry() == NPC_FLAMEWAKER_ELITE && killTarget == elite)
+        return false;
+
+    return bot->GetDistance2d(elite) < MAJORDOMO_BLAST_WAVE_DISTANCE;
+}
+
+bool McMajordomoStopForShieldTrigger::IsActive()
+{
+    Unit* boss = FindMajordomo(bot);
+    if (!boss)
+        return false;
+
+    if (boss->HasAura(SPELL_MAGIC_REFLECTION) && PlayerbotAI::IsRanged(bot) && PlayerbotAI::IsDps(bot))
+        return true;
+    if (boss->HasAura(SPELL_DAMAGE_REFLECTION) && PlayerbotAI::IsMelee(bot) && !PlayerbotAI::IsTank(bot))
+        return true;
+    return false;
+}
+
+bool McMajordomoRunToRaidTrigger::IsActive()
+{
+    if (!IsMajordomoEncounterActive(bot))
+        return false;
+
+    if (Group* group = bot->GetGroup())
+    {
+        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+        {
+            Player* member = ref->GetSource();
+            if (!member || member == bot || !member->IsAlive() || member->GetMapId() != bot->GetMapId())
+                continue;
+            if (bot->GetDistance(member) <= MAJORDOMO_COALS_REJOIN_DISTANCE)
+                return false;
+        }
+        return true;
+    }
+    return false;
 }
 
 bool McCoreHoundMarkTrigger::IsActive()

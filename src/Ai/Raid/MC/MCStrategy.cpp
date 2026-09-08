@@ -82,12 +82,22 @@ void RaidMcStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(
         new TriggerNode("mc majordomo shadow resistance",
                         { NextAction("mc majordomo shadow resistance", ACTION_RAID) }));
+    // Sheep spare healers, MT holds Domo, OTs hold elites, DPS burn the unsleeped healer.
+    triggers.push_back(
+        new TriggerNode("mc majordomo run to raid",
+                        { NextAction("mc majordomo run to raid", ACTION_RAID + 5) }));
+    triggers.push_back(
+        new TriggerNode("mc majordomo stop for shield",
+                        { NextAction("mc majordomo stop for shield", ACTION_RAID + 4) }));
+    triggers.push_back(
+        new TriggerNode("mc majordomo avoid blast wave",
+                        { NextAction("mc majordomo avoid blast wave", ACTION_RAID + 4) }));
     triggers.push_back(
         new TriggerNode("mc majordomo tank adds",
                         { NextAction("mc majordomo tank adds", ACTION_RAID + 2) }));
     triggers.push_back(
         new TriggerNode("mc majordomo focus adds",
-                        { NextAction("mc majordomo focus adds", ACTION_RAID + 1) }));
+                        { NextAction("mc majordomo focus adds", ACTION_RAID + 2) }));
     triggers.push_back(
         new TriggerNode("mc majordomo polymorph healer",
                         { NextAction("mc majordomo polymorph healer", ACTION_RAID + 3) }));
@@ -119,6 +129,7 @@ void RaidMcStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
     multipliers.push_back(new McPlayerLedPullMultiplier(botAI));
     multipliers.push_back(new GarrDisableDpsAoeMultiplier(botAI));
     multipliers.push_back(new CoreHoundPackMultiplier(botAI));
+    multipliers.push_back(new MajordomoMultiplier(botAI));
     multipliers.push_back(new BaronGeddonAbilityMultiplier(botAI));
     multipliers.push_back(new GolemaggMultiplier(botAI));
 }
@@ -142,6 +153,22 @@ void RaidMcStrategy::AppendTargetExclusions(GuidSet& exclusions, TargetValueExcl
 
         if ((golemaggAlive && unit->GetEntry() == NPC_CORE_RAGER) || unit->GetEntry() == NPC_MAJORDOMO_EXECUTUS)
             exclusions.insert(guid);
+    }
+
+    if (type == TargetValueExclusionType::Dps && IsMajordomoEncounterActive(botAI->GetBot()))
+    {
+        Unit* killTarget = SelectMajordomoKillTarget(botAI->GetBot());
+        for (ObjectGuid const guid : AI_VALUE(GuidVector, "attackers"))
+        {
+            Unit* unit = botAI->GetUnit(guid);
+            if (!unit)
+                continue;
+            if (unit == killTarget)
+                continue;
+            if (unit->GetEntry() == NPC_FLAMEWAKER_HEALER || unit->GetEntry() == NPC_FLAMEWAKER_ELITE ||
+                unit->GetEntry() == NPC_MAJORDOMO_EXECUTUS || unit->IsPolymorphed())
+                exclusions.insert(guid);
+        }
     }
 
     if (type != TargetValueExclusionType::Dps)

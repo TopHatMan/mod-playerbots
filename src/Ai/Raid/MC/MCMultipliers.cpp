@@ -137,6 +137,56 @@ float CoreHoundPackMultiplier::GetValue(Action* action)
     return 1.0f;
 }
 
+float MajordomoMultiplier::GetValue(Action* action)
+{
+    if (dynamic_cast<McMajordomoTankAddsAction*>(action) ||
+        dynamic_cast<McMajordomoFocusAddsAction*>(action) ||
+        dynamic_cast<McMajordomoPolymorphHealerAction*>(action) ||
+        dynamic_cast<McMajordomoAvoidBlastWaveAction*>(action) ||
+        dynamic_cast<McMajordomoStopForShieldAction*>(action) ||
+        dynamic_cast<McMajordomoRunToRaidAction*>(action) ||
+        dynamic_cast<McMoveFromLavaAction*>(action))
+        return 1.0f;
+
+    if (!IsMajordomoEncounterActive(bot))
+        return 1.0f;
+
+    Unit* boss = FindMajordomo(bot);
+    if (boss && boss->HasAura(SPELL_MAGIC_REFLECTION) && PlayerbotAI::IsRanged(bot) && PlayerbotAI::IsDps(bot))
+    {
+        if (auto* spell = dynamic_cast<CastSpellAction*>(action))
+            if (spell->getThreatType() != Action::ActionThreatType::None)
+                return 0.0f;
+    }
+    if (boss && boss->HasAura(SPELL_DAMAGE_REFLECTION) && PlayerbotAI::IsMelee(bot) && !PlayerbotAI::IsTank(bot))
+    {
+        if (dynamic_cast<AttackAction*>(action) || dynamic_cast<MeleeAction*>(action))
+            return 0.0f;
+    }
+
+    // AoE breaks sheep and stacks the raid into elite Blast Wave.
+    if (IsDpsBotWithAoeAction(bot, action) || EncounterHelpers::IsAoeThreatAction(bot, action))
+        return 0.0f;
+
+    if (PlayerbotAI::IsDps(bot))
+    {
+        Unit* killTarget = SelectMajordomoKillTarget(bot);
+        Unit* current = AI_VALUE(Unit*, "current target");
+        if (killTarget && current && current != killTarget)
+        {
+            if (dynamic_cast<AttackAction*>(action) && !dynamic_cast<McMajordomoFocusAddsAction*>(action))
+                return 0.0f;
+            if (auto* spell = dynamic_cast<CastSpellAction*>(action))
+                if (spell->GetTargetName() == "current target")
+                    return 0.0f;
+        }
+        if (current && (current->GetEntry() == NPC_MAJORDOMO_EXECUTUS || current->IsPolymorphed()))
+            return 0.0f;
+    }
+
+    return 1.0f;
+}
+
 static bool IsAllowedGeddonMovementAction(Action* action)
 {
     if (dynamic_cast<MovementAction*>(action) &&

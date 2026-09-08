@@ -44,4 +44,11 @@ public:
     float GetValue(Action* action) override;
 };
 
+class MajordomoMultiplier : public Multiplier
+{
+public:
+    MajordomoMultiplier(PlayerbotAI* botAI) : Multiplier(botAI, "majordomo multiplier") {}
+    float GetValue(Action* action) override;
+};
+
 #endif

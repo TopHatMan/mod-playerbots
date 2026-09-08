@@ -118,6 +118,30 @@ public:
     bool Execute(Event event) override;
 };
 
+class McMajordomoAvoidBlastWaveAction : public MovementAction
+{
+public:
+    McMajordomoAvoidBlastWaveAction(PlayerbotAI* botAI, std::string const name = "mc majordomo avoid blast wave")
+        : MovementAction(botAI, name) {}
+    bool Execute(Event event) override;
+};
+
+class McMajordomoStopForShieldAction : public Action
+{
+public:
+    McMajordomoStopForShieldAction(PlayerbotAI* botAI, std::string const name = "mc majordomo stop for shield")
+        : Action(botAI, name) {}
+    bool Execute(Event event) override;
+};
+
+class McMajordomoRunToRaidAction : public MovementAction
+{
+public:
+    McMajordomoRunToRaidAction(PlayerbotAI* botAI, std::string const name = "mc majordomo run to raid")
+        : MovementAction(botAI, name) {}
+    bool Execute(Event event) override;
+};
+
 class McCoreHoundMarkAction : public AttackAction
 {
 public:

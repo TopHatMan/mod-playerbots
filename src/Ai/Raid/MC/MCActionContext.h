@@ -41,6 +41,9 @@ public:
         creators["mc majordomo tank adds"] = &RaidMcActionContext::majordomo_tank_adds;
         creators["mc majordomo focus adds"] = &RaidMcActionContext::majordomo_focus_adds;
         creators["mc majordomo polymorph healer"] = &RaidMcActionContext::majordomo_polymorph_healer;
+        creators["mc majordomo avoid blast wave"] = &RaidMcActionContext::majordomo_avoid_blast_wave;
+        creators["mc majordomo stop for shield"] = &RaidMcActionContext::majordomo_stop_for_shield;
+        creators["mc majordomo run to raid"] = &RaidMcActionContext::majordomo_run_to_raid;
     }
 
 private:
@@ -68,6 +71,9 @@ private:
     static Action* majordomo_tank_adds(PlayerbotAI* botAI) { return new McMajordomoTankAddsAction(botAI); }
     static Action* majordomo_focus_adds(PlayerbotAI* botAI) { return new McMajordomoFocusAddsAction(botAI); }
     static Action* majordomo_polymorph_healer(PlayerbotAI* botAI) { return new McMajordomoPolymorphHealerAction(botAI); }
+    static Action* majordomo_avoid_blast_wave(PlayerbotAI* botAI) { return new McMajordomoAvoidBlastWaveAction(botAI); }
+    static Action* majordomo_stop_for_shield(PlayerbotAI* botAI) { return new McMajordomoStopForShieldAction(botAI); }
+    static Action* majordomo_run_to_raid(PlayerbotAI* botAI) { return new McMajordomoRunToRaidAction(botAI); }
 };
 
 #endif

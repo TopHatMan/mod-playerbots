@@ -41,7 +41,15 @@ enum MoltenCoreSpells
 
     // Core Hound Play Dead. Nearby living hounds reignite smoldering ones.
     SPELL_PLAY_DEAD = 19822,
+
+    // Majordomo Executus
+    SPELL_MAGIC_REFLECTION = 20619,
+    SPELL_DAMAGE_REFLECTION = 21075,
+    SPELL_BLAST_WAVE = 20229,
 };
+
+constexpr float MAJORDOMO_BLAST_WAVE_DISTANCE = 12.0f;
+constexpr float MAJORDOMO_COALS_REJOIN_DISTANCE = 35.0f;
 
 constexpr uint32 MAGMA_SPLASH_BACK_OFF_STACKS = 20;
 constexpr float MAGMA_SPLASH_BACK_OFF_DISTANCE = 12.0f;
@@ -82,6 +90,14 @@ struct CoreHoundPackState
 CoreHoundPackState GetCoreHoundPackState(Player* bot);
 Creature* SelectCoreHoundBalanceTarget(Player* bot);
 bool IsFightingCoreHound(Unit const* unit);
+
+bool IsMajordomoEncounterActive(Player* bot);
+std::vector<Unit*> FindMajordomoAdds(Player* bot);
+Unit* SelectMajordomoKillTarget(Player* bot);
+Unit* SelectMajordomoTankTarget(Player* bot);
+Unit* SelectMajordomoSheepTarget(Player* bot);
+Unit* FindMajordomo(Player* bot);
+Unit* FindNearestMajordomoElite(Player* bot);
 }
 
 #endif

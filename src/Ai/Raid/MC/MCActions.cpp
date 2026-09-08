@@ -42,6 +42,9 @@ bool CoreHoundPackState::IsBurnPhase() const
     return true;
 }
 
+namespace MoltenCoreHelpers
+{
+
 CoreHoundPackState GetCoreHoundPackState(Player* bot)
 {
     CoreHoundPackState state;
@@ -135,6 +138,8 @@ Creature* SelectCoreHoundBalanceTarget(Player* bot)
         return nullptr;
 
     return healthiestBand[dpsIndex % healthiestBand.size()];
+}
+
 }
 
 static void StopCoreHoundDamage(PlayerbotAI* botAI, Player* bot)
@@ -429,10 +434,31 @@ bool McGolemaggAssistTankAttackCoreRagerAction::Execute(Event event)
     return false;
 }
 
-static std::vector<Unit*> FindMajordomoAdds(PlayerbotAI* botAI)
+namespace MoltenCoreHelpers
+{
+
+bool IsMajordomoEncounterActive(Player* bot)
+{
+    if (!bot)
+        return false;
+
+    for (uint32 entry : { NPC_MAJORDOMO_EXECUTUS, NPC_FLAMEWAKER_HEALER, NPC_FLAMEWAKER_ELITE })
+    {
+        std::list<Creature*> creatures;
+        bot->GetCreatureListWithEntryInGrid(creatures, entry, 150.0f);
+        if (std::any_of(creatures.begin(), creatures.end(), [](Creature* creature)
+            { return creature && creature->IsAlive() && creature->IsInCombat(); }))
+            return true;
+    }
+    return false;
+}
+
+std::vector<Unit*> FindMajordomoAdds(Player* bot)
 {
     std::vector<Unit*> adds;
-    Player* bot = botAI->GetBot();
+    if (!bot)
+        return adds;
+
     for (uint32 entry : { NPC_FLAMEWAKER_HEALER, NPC_FLAMEWAKER_ELITE })
     {
         std::list<Creature*> creatures;
@@ -452,83 +478,49 @@ static std::vector<Unit*> FindMajordomoAdds(PlayerbotAI* botAI)
     return adds;
 }
 
-bool McMajordomoTankAddsAction::Execute(Event event)
+static std::vector<Unit*> MajordomoAddsOfEntry(Player* bot, uint32 entry)
 {
-    std::vector<Unit*> adds = FindMajordomoAdds(botAI);
-    if (adds.empty())
-    {
-        botAI->GetAiObjectContext()->GetValue<GuidVector>("prioritized targets")->Reset();
-        return false;
-    }
-
-    // Threat resets and teleports regularly throw adds onto the raid. Rescue a
-    // non-tank victim first; otherwise keep a stable per-tank assignment.
-    Unit* target = nullptr;
-    for (Unit* add : adds)
-    {
-        Unit* victim = add->GetVictim();
-        if (!victim || (victim->IsPlayer() && !PlayerbotAI::IsTank(victim->ToPlayer())))
-        {
-            target = add;
-            break;
-        }
-    }
-
-    if (!target)
-    {
-        uint32 tankIndex = 0;
-        for (uint8 index = 0; index < 8; ++index)
-        {
-            if (PlayerbotAI::IsAssistTankOfIndex(bot, index, true))
-            {
-                tankIndex = index;
-                break;
-            }
-        }
-        target = adds[tankIndex % adds.size()];
-    }
-
-    if (bot->GetVictim() != target)
-    {
-        botAI->GetAiObjectContext()->GetValue<GuidVector>("prioritized targets")->Set({ target->GetGUID() });
-        return Attack(target);
-    }
-    botAI->GetAiObjectContext()->GetValue<GuidVector>("prioritized targets")->Set({ target->GetGUID() });
-    if (target->GetVictim() != bot)
-        return botAI->DoSpecificAction("taunt spell", event, true);
-    return false;
+    std::vector<Unit*> result;
+    for (Unit* add : FindMajordomoAdds(bot))
+        if (add->GetEntry() == entry)
+            result.push_back(add);
+    return result;
 }
 
-bool McMajordomoFocusAddsAction::Execute(Event /*event*/)
+static bool IsTankedByATank(Unit* add)
 {
-    std::vector<Unit*> adds = FindMajordomoAdds(botAI);
-    if (adds.empty())
-    {
-        botAI->GetAiObjectContext()->GetValue<GuidVector>("prioritized targets")->Reset();
-        return false;
-    }
-
-    // Never break a mage's polymorph. Among active adds, healers come first and
-    // lowest health wins so the entire raid burns the same target.
-    auto target = std::find_if(adds.begin(), adds.end(), [](Unit* add) { return !add->IsPolymorphed(); });
-    if (target == adds.end())
-        return false;
-    botAI->GetAiObjectContext()->GetValue<GuidVector>("prioritized targets")->Set({ (*target)->GetGUID() });
-    if (bot->GetVictim() == *target)
-        return false;
-    return Attack(*target);
+    Unit* victim = add ? add->GetVictim() : nullptr;
+    Player* player = victim ? victim->ToPlayer() : nullptr;
+    return player && player->IsAlive() && PlayerbotAI::IsTank(player);
 }
 
-bool McMajordomoPolymorphHealerAction::Execute(Event /*event*/)
+Unit* SelectMajordomoKillTarget(Player* bot)
 {
-    std::vector<Unit*> adds = FindMajordomoAdds(botAI);
-    std::vector<Unit*> healers;
-    std::copy_if(adds.begin(), adds.end(), std::back_inserter(healers), [](Unit* add)
-        { return add->GetEntry() == NPC_FLAMEWAKER_HEALER; });
-    if (healers.empty())
-        return false;
-    std::sort(healers.begin(), healers.end(), [](Unit const* left, Unit const* right)
-        { return left->GetGUID() < right->GetGUID(); });
+    std::vector<Unit*> healers = MajordomoAddsOfEntry(bot, NPC_FLAMEWAKER_HEALER);
+    std::vector<Unit*> burnable;
+    for (Unit* healer : healers)
+        if (!healer->IsPolymorphed())
+            burnable.push_back(healer);
+    if (!burnable.empty())
+        return burnable.front();
+
+    std::vector<Unit*> elites = MajordomoAddsOfEntry(bot, NPC_FLAMEWAKER_ELITE);
+    return elites.empty() ? nullptr : elites.front();
+}
+
+Unit* SelectMajordomoSheepTarget(Player* bot)
+{
+    Unit* killTarget = SelectMajordomoKillTarget(bot);
+    std::vector<Unit*> healers = MajordomoAddsOfEntry(bot, NPC_FLAMEWAKER_HEALER);
+    std::vector<Unit*> sheepable;
+    for (Unit* healer : healers)
+    {
+        if (healer == killTarget || healer->IsPolymorphed())
+            continue;
+        sheepable.push_back(healer);
+    }
+    if (sheepable.empty())
+        return nullptr;
 
     uint32 mageIndex = 0;
     if (Group* group = bot->GetGroup())
@@ -538,14 +530,211 @@ bool McMajordomoPolymorphHealerAction::Execute(Event /*event*/)
             Player* member = ref->GetSource();
             if (!member || !member->IsAlive() || member->getClass() != CLASS_MAGE)
                 continue;
+            if (member->GetMapId() != bot->GetMapId())
+                continue;
             if (member == bot)
                 break;
             ++mageIndex;
         }
     }
+    return sheepable[mageIndex % sheepable.size()];
+}
 
-    Unit* target = healers[mageIndex % healers.size()];
-    if (target->IsPolymorphed())
+Unit* SelectMajordomoTankTarget(Player* bot)
+{
+    std::vector<Unit*> elites = MajordomoAddsOfEntry(bot, NPC_FLAMEWAKER_ELITE);
+    if (elites.empty())
+    {
+        // Healers only remaining: hold whatever is punching a non-tank.
+        for (Unit* healer : MajordomoAddsOfEntry(bot, NPC_FLAMEWAKER_HEALER))
+            if (!healer->IsPolymorphed() && !IsTankedByATank(healer))
+                return healer;
+        return nullptr;
+    }
+
+    std::sort(elites.begin(), elites.end(), [](Unit const* left, Unit const* right)
+    {
+        return left->GetGUID() < right->GetGUID();
+    });
+
+    std::vector<Player*> tanks;
+    Player* mainTank = nullptr;
+    std::vector<Player*> assists;
+    if (Group* group = bot->GetGroup())
+    {
+        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+        {
+            Player* member = ref->GetSource();
+            if (!member || !member->IsAlive() || !PlayerbotAI::IsTank(member))
+                continue;
+            if (member->GetMapId() != bot->GetMapId())
+                continue;
+            if (PlayerbotAI::IsMainTank(member))
+                mainTank = member;
+            else
+                assists.push_back(member);
+        }
+    }
+    if (mainTank)
+        tanks.push_back(mainTank);
+    tanks.insert(tanks.end(), assists.begin(), assists.end());
+    if (tanks.empty())
+        tanks.push_back(bot);
+
+    uint32 tankIndex = 0;
+    for (size_t i = 0; i < tanks.size(); ++i)
+    {
+        if (tanks[i] == bot)
+        {
+            tankIndex = static_cast<uint32>(i);
+            break;
+        }
+    }
+
+    Unit* assigned = elites[tankIndex % elites.size()];
+    if (!IsTankedByATank(assigned))
+        return assigned;
+
+    // Assigned elite is held. Rescue any other loose elite before idling.
+    for (Unit* elite : elites)
+        if (!IsTankedByATank(elite))
+            return elite;
+
+    return assigned;
+}
+
+Unit* FindMajordomo(Player* bot)
+{
+    if (!bot)
+        return nullptr;
+
+    std::list<Creature*> creatures;
+    bot->GetCreatureListWithEntryInGrid(creatures, NPC_MAJORDOMO_EXECUTUS, 150.0f);
+    for (Creature* creature : creatures)
+        if (creature && creature->IsAlive() && creature->IsInCombat())
+            return creature;
+    return nullptr;
+}
+
+Unit* FindNearestMajordomoElite(Player* bot)
+{
+    Unit* nearest = nullptr;
+    float best = MAJORDOMO_BLAST_WAVE_DISTANCE;
+    for (Unit* elite : MajordomoAddsOfEntry(bot, NPC_FLAMEWAKER_ELITE))
+    {
+        float const dist = bot->GetDistance2d(elite);
+        if (dist < best)
+        {
+            best = dist;
+            nearest = elite;
+        }
+    }
+    return nearest;
+}
+
+}
+
+bool McMajordomoTankAddsAction::Execute(Event event)
+{
+    Unit* target = nullptr;
+    if (PlayerbotAI::IsMainTank(bot))
+    {
+        target = FindMajordomo(bot);
+        if (!target)
+            target = SelectMajordomoTankTarget(bot);
+    }
+    else
+        target = SelectMajordomoTankTarget(bot);
+
+    if (!target)
+    {
+        botAI->GetAiObjectContext()->GetValue<GuidVector>("prioritized targets")->Reset();
+        return false;
+    }
+
+    botAI->GetAiObjectContext()->GetValue<GuidVector>("prioritized targets")->Set({ target->GetGUID() });
+    if (bot->GetVictim() != target)
+        return Attack(target);
+    if (target->GetEntry() != NPC_MAJORDOMO_EXECUTUS && target->GetVictim() != bot)
+        return botAI->DoSpecificAction("taunt spell", event, true);
+    return false;
+}
+
+bool McMajordomoAvoidBlastWaveAction::Execute(Event /*event*/)
+{
+    Unit* elite = FindNearestMajordomoElite(bot);
+    if (!elite)
+        return false;
+
+    bot->CastStop();
+    bot->AttackStop();
+    float distToTravel = MAJORDOMO_BLAST_WAVE_DISTANCE - bot->GetDistance2d(elite);
+    if (distToTravel <= 0.0f)
+        return true;
+    return MoveAway(elite, distToTravel);
+}
+
+bool McMajordomoStopForShieldAction::Execute(Event /*event*/)
+{
+    Unit* boss = FindMajordomo(bot);
+    if (!boss)
+        return false;
+
+    bot->CastStop();
+    bot->AttackStop();
+    return true;
+}
+
+bool McMajordomoRunToRaidAction::Execute(Event /*event*/)
+{
+    Unit* ally = nullptr;
+    float best = 200.0f;
+    if (Group* group = bot->GetGroup())
+    {
+        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+        {
+            Player* member = ref->GetSource();
+            if (!member || member == bot || !member->IsAlive() || member->GetMapId() != bot->GetMapId())
+                continue;
+            float dist = bot->GetDistance(member);
+            if (dist < best)
+            {
+                best = dist;
+                ally = member;
+            }
+        }
+    }
+    if (!ally)
+        return false;
+
+    bot->CastStop();
+    return MoveTo(ally->GetMapId(), ally->GetPositionX(), ally->GetPositionY(), ally->GetPositionZ(),
+                  false, false, false, true, MovementPriority::MOVEMENT_FORCED);
+}
+
+bool McMajordomoFocusAddsAction::Execute(Event /*event*/)
+{
+    Unit* target = SelectMajordomoKillTarget(bot);
+    if (!target)
+    {
+        botAI->GetAiObjectContext()->GetValue<GuidVector>("prioritized targets")->Reset();
+        return false;
+    }
+
+    botAI->GetAiObjectContext()->GetValue<GuidVector>("prioritized targets")->Set({ target->GetGUID() });
+    Unit* current = AI_VALUE(Unit*, "current target");
+    if ((current == target || bot->GetVictim() == target) && !target->IsPolymorphed())
+        return false;
+
+    bot->CastStop();
+    bot->AttackStop();
+    return Attack(target);
+}
+
+bool McMajordomoPolymorphHealerAction::Execute(Event /*event*/)
+{
+    Unit* target = SelectMajordomoSheepTarget(bot);
+    if (!target)
         return false;
     return botAI->CastSpell("polymorph", target);
 }

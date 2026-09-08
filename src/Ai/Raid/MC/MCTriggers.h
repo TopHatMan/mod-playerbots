@@ -81,6 +81,27 @@ public:
     bool IsActive() override;
 };
 
+class McMajordomoAvoidBlastWaveTrigger : public Trigger
+{
+public:
+    McMajordomoAvoidBlastWaveTrigger(PlayerbotAI* botAI) : Trigger(botAI, "mc majordomo avoid blast wave") {}
+    bool IsActive() override;
+};
+
+class McMajordomoStopForShieldTrigger : public Trigger
+{
+public:
+    McMajordomoStopForShieldTrigger(PlayerbotAI* botAI) : Trigger(botAI, "mc majordomo stop for shield") {}
+    bool IsActive() override;
+};
+
+class McMajordomoRunToRaidTrigger : public Trigger
+{
+public:
+    McMajordomoRunToRaidTrigger(PlayerbotAI* botAI) : Trigger(botAI, "mc majordomo run to raid") {}
+    bool IsActive() override;
+};
+
 class McCoreHoundMarkTrigger : public Trigger
 {
 public:
