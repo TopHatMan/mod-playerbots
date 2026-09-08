@@ -38,6 +38,10 @@ public:
         creators["wb emeriss dispel"] = &RaidWorldBossTriggerContext::emeriss_dispel;
         creators["wb lethon shade"] = &RaidWorldBossTriggerContext::lethon_shade;
         creators["wb lethon nature resistance"] = &RaidWorldBossTriggerContext::lethon_nature;
+        creators["wb taerar nature resistance"] = &RaidWorldBossTriggerContext::taerar_nature;
+        creators["wb taerar shade"] = &RaidWorldBossTriggerContext::taerar_shade;
+        creators["wb taerar tank shade"] = &RaidWorldBossTriggerContext::taerar_tank_shade;
+        creators["wb taerar fear"] = &RaidWorldBossTriggerContext::taerar_fear;
     }
 
 private:
@@ -61,6 +65,10 @@ private:
     static Trigger* emeriss_dispel(PlayerbotAI* ai) { return new WbEmerissDispelTrigger(ai); }
     static Trigger* lethon_shade(PlayerbotAI* ai) { return new WbLethonShadeTrigger(ai); }
     static Trigger* lethon_nature(PlayerbotAI* ai) { return new BossNatureResistanceTrigger(ai, "lethon"); }
+    static Trigger* taerar_nature(PlayerbotAI* ai) { return new BossNatureResistanceTrigger(ai, "taerar"); }
+    static Trigger* taerar_shade(PlayerbotAI* ai) { return new WbTaerarShadeTrigger(ai); }
+    static Trigger* taerar_tank_shade(PlayerbotAI* ai) { return new WbTaerarTankShadeTrigger(ai); }
+    static Trigger* taerar_fear(PlayerbotAI* ai) { return new WbTaerarFearTrigger(ai); }
 };
 
 #endif

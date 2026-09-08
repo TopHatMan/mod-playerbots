@@ -121,4 +121,25 @@ public:
     bool IsActive() override;
 };
 
+class WbTaerarShadeTrigger : public Trigger
+{
+public:
+    WbTaerarShadeTrigger(PlayerbotAI* botAI) : Trigger(botAI, "wb taerar shade") {}
+    bool IsActive() override;
+};
+
+class WbTaerarTankShadeTrigger : public Trigger
+{
+public:
+    WbTaerarTankShadeTrigger(PlayerbotAI* botAI) : Trigger(botAI, "wb taerar tank shade") {}
+    bool IsActive() override;
+};
+
+class WbTaerarFearTrigger : public Trigger
+{
+public:
+    WbTaerarFearTrigger(PlayerbotAI* botAI) : Trigger(botAI, "wb taerar fear") {}
+    bool IsActive() override;
+};
+
 #endif

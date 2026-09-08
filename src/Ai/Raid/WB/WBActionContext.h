@@ -38,6 +38,10 @@ public:
         creators["wb emeriss dispel"] = &RaidWorldBossActionContext::emeriss_dispel;
         creators["wb lethon kill shade"] = &RaidWorldBossActionContext::lethon_shade;
         creators["wb lethon nature resistance"] = &RaidWorldBossActionContext::lethon_nature;
+        creators["wb taerar nature resistance"] = &RaidWorldBossActionContext::taerar_nature;
+        creators["wb taerar kill shade"] = &RaidWorldBossActionContext::taerar_kill_shade;
+        creators["wb taerar tank shade"] = &RaidWorldBossActionContext::taerar_tank_shade;
+        creators["wb taerar anti fear"] = &RaidWorldBossActionContext::taerar_anti_fear;
     }
 
 private:
@@ -60,6 +64,10 @@ private:
     static Action* emeriss_dispel(PlayerbotAI* ai) { return new WbEmerissDispelAction(ai); }
     static Action* lethon_shade(PlayerbotAI* ai) { return new WbLethonKillShadeAction(ai); }
     static Action* lethon_nature(PlayerbotAI* ai) { return new BossNatureResistanceAction(ai, "lethon"); }
+    static Action* taerar_nature(PlayerbotAI* ai) { return new BossNatureResistanceAction(ai, "taerar"); }
+    static Action* taerar_kill_shade(PlayerbotAI* ai) { return new WbTaerarKillShadeAction(ai); }
+    static Action* taerar_tank_shade(PlayerbotAI* ai) { return new WbTaerarTankShadeAction(ai); }
+    static Action* taerar_anti_fear(PlayerbotAI* ai) { return new WbTaerarAntiFearAction(ai); }
 };
 
 #endif

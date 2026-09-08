@@ -7,6 +7,7 @@
 #include "WBTriggers.h"
 #include "EncounterHelpers.h"
 #include "Playerbots.h"
+#include "SpellAuras.h"
 #include "WBHelpers.h"
 
 using namespace WorldBossHelpers;
@@ -262,4 +263,43 @@ bool WbLethonShadeTrigger::IsActive()
         return false;
     Creature* shade = bot->FindNearestCreature(NPC_SPIRIT_SHADE, 80.0f, true);
     return shade && shade->IsAlive();
+}
+
+bool WbTaerarShadeTrigger::IsActive()
+{
+    if (PlayerbotAI::IsTank(bot))
+        return false;
+    Unit* boss = FindEmeraldDragon(bot);
+    if (!boss || boss->GetEntry() != NPC_TAERAR)
+        return false;
+    Creature* shade = bot->FindNearestCreature(NPC_SHADE_OF_TAERAR, 80.0f, true);
+    return shade && shade->IsAlive();
+}
+
+bool WbTaerarTankShadeTrigger::IsActive()
+{
+    if (!PlayerbotAI::IsTank(bot))
+        return false;
+    Unit* boss = FindEmeraldDragon(bot);
+    if (!boss || boss->GetEntry() != NPC_TAERAR)
+        return false;
+    Creature* shade = bot->FindNearestCreature(NPC_SHADE_OF_TAERAR, 80.0f, true);
+    return shade && shade->IsAlive();
+}
+
+bool WbTaerarFearTrigger::IsActive()
+{
+    Unit* boss = FindEmeraldDragon(bot);
+    if (!boss || boss->GetEntry() != NPC_TAERAR)
+        return false;
+    if (bot->getClass() != CLASS_WARRIOR && bot->getClass() != CLASS_PRIEST && bot->getClass() != CLASS_SHAMAN)
+        return false;
+
+    if (boss->HasUnitState(UNIT_STATE_CASTING))
+    {
+        Spell* current = boss->GetCurrentSpell(CURRENT_GENERIC_SPELL);
+        if (current && current->m_spellInfo && current->m_spellInfo->Id == SPELL_BELLOWING_ROAR)
+            return true;
+    }
+    return bot->HasAuraType(SPELL_AURA_MOD_FEAR);
 }

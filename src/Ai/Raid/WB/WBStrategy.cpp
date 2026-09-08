@@ -55,6 +55,14 @@ void RaidWorldBossStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         NextAction("wb lethon nature resistance", ACTION_RAID) }));
     triggers.push_back(new TriggerNode("wb lethon shade", {
         NextAction("wb lethon kill shade", ACTION_RAID + 3) }));
+    triggers.push_back(new TriggerNode("wb taerar nature resistance", {
+        NextAction("wb taerar nature resistance", ACTION_RAID) }));
+    triggers.push_back(new TriggerNode("wb taerar fear", {
+        NextAction("wb taerar anti fear", ACTION_EMERGENCY + 3) }));
+    triggers.push_back(new TriggerNode("wb taerar tank shade", {
+        NextAction("wb taerar tank shade", ACTION_RAID + 3) }));
+    triggers.push_back(new TriggerNode("wb taerar shade", {
+        NextAction("wb taerar kill shade", ACTION_RAID + 3) }));
 }
 
 void RaidWorldBossStrategy::InitMultipliers(std::vector<Multiplier*>& multipliers)
@@ -69,11 +77,21 @@ void RaidWorldBossStrategy::AppendTargetExclusions(GuidSet& exclusions, TargetVa
     if (type != TargetValueExclusionType::Dps)
         return;
 
-    Unit* lethon = FindEmeraldDragon(botAI->GetBot());
-    if (!lethon || lethon->GetEntry() != NPC_LETHON)
+    Player* bot = botAI->GetBot();
+    Unit* dragon = FindEmeraldDragon(bot);
+    if (!dragon)
         return;
 
-    Creature* shade = botAI->GetBot()->FindNearestCreature(NPC_SPIRIT_SHADE, 80.0f, true);
-    if (shade && shade->IsAlive())
-        exclusions.insert(lethon->GetGUID());
+    if (dragon->GetEntry() == NPC_LETHON)
+    {
+        Creature* shade = bot->FindNearestCreature(NPC_SPIRIT_SHADE, 80.0f, true);
+        if (shade && shade->IsAlive())
+            exclusions.insert(dragon->GetGUID());
+    }
+    else if (dragon->GetEntry() == NPC_TAERAR)
+    {
+        Creature* shade = bot->FindNearestCreature(NPC_SHADE_OF_TAERAR, 80.0f, true);
+        if (shade && shade->IsAlive())
+            exclusions.insert(dragon->GetGUID());
+    }
 }

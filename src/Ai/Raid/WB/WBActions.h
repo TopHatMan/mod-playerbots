@@ -115,4 +115,25 @@ public:
     bool Execute(Event event) override;
 };
 
+class WbTaerarKillShadeAction : public AttackAction
+{
+public:
+    WbTaerarKillShadeAction(PlayerbotAI* botAI) : AttackAction(botAI, "wb taerar kill shade") {}
+    bool Execute(Event event) override;
+};
+
+class WbTaerarTankShadeAction : public AttackAction
+{
+public:
+    WbTaerarTankShadeAction(PlayerbotAI* botAI) : AttackAction(botAI, "wb taerar tank shade") {}
+    bool Execute(Event event) override;
+};
+
+class WbTaerarAntiFearAction : public Action
+{
+public:
+    WbTaerarAntiFearAction(PlayerbotAI* botAI) : Action(botAI, "wb taerar anti fear") {}
+    bool Execute(Event event) override;
+};
+
 #endif

@@ -8,6 +8,7 @@
 #include "EncounterHelpers.h"
 #include "Playerbots.h"
 #include "WBHelpers.h"
+#include <algorithm>
 #include <initializer_list>
 
 using namespace WorldBossHelpers;
@@ -250,4 +251,82 @@ bool WbLethonKillShadeAction::Execute(Event /*event*/)
     if (bot->GetVictim() == nearest)
         return false;
     return Attack(nearest);
+}
+
+static std::vector<Creature*> CollectTaerarShades(Player* bot)
+{
+    std::vector<Creature*> shades;
+    std::list<Creature*> list;
+    bot->GetCreatureListWithEntryInGrid(list, NPC_SHADE_OF_TAERAR, 80.0f);
+    for (Creature* shade : list)
+        if (shade && shade->IsAlive())
+            shades.push_back(shade);
+    std::sort(shades.begin(), shades.end(), [](Creature const* left, Creature const* right)
+    {
+        return left->GetGUID() < right->GetGUID();
+    });
+    return shades;
+}
+
+bool WbTaerarKillShadeAction::Execute(Event /*event*/)
+{
+    std::vector<Creature*> shades = CollectTaerarShades(bot);
+    if (shades.empty())
+        return false;
+
+    Creature* target = shades.front();
+    botAI->GetAiObjectContext()->GetValue<GuidVector>("prioritized targets")->Set({ target->GetGUID() });
+    if (bot->GetVictim() == target)
+        return false;
+    return Attack(target);
+}
+
+bool WbTaerarTankShadeAction::Execute(Event event)
+{
+    std::vector<Creature*> shades = CollectTaerarShades(bot);
+    if (shades.empty())
+        return false;
+
+    uint8 index = 0;
+    if (!PlayerbotAI::IsMainTank(bot))
+    {
+        for (uint8 i = 0; i < 4; ++i)
+            if (PlayerbotAI::IsAssistTankOfIndex(bot, i, true))
+            {
+                index = static_cast<uint8>(i + 1);
+                break;
+            }
+    }
+    if (index >= shades.size())
+        index = 0;
+
+    Creature* target = shades[index];
+    if (bot->GetVictim() != target)
+        return Attack(target);
+    if (target->GetVictim() != bot)
+        return botAI->DoSpecificAction("taunt spell", event, true);
+    return false;
+}
+
+bool WbTaerarAntiFearAction::Execute(Event event)
+{
+    switch (bot->getClass())
+    {
+        case CLASS_WARRIOR:
+            return botAI->DoSpecificAction("berserker rage", event, true);
+        case CLASS_PRIEST:
+        {
+            Unit* boss = FindEmeraldDragon(bot);
+            Unit* tank = boss ? boss->GetVictim() : nullptr;
+            if (!tank)
+                tank = bot;
+            if (botAI->HasAura("fear ward", tank))
+                return false;
+            return botAI->CastSpell("fear ward", tank);
+        }
+        case CLASS_SHAMAN:
+            return botAI->DoSpecificAction("tremor totem", event, true);
+        default:
+            return false;
+    }
 }
