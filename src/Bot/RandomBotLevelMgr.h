@@ -63,6 +63,10 @@ private:
     void ApplyBracketWeights(std::vector<LevelBracketConfig>& ranges, std::vector<float> const& weights);
     int GetLevelRangeIndex(uint8 level, TeamId team);
     void AdjustBotToRange(Player* bot, int targetRangeIndex, TeamId team);
+    // Restamp a random bot that sits outside [RandomBotMinLevel, RandomBotMaxLevel]
+    // (leftover TBC/WotLK bracket assignments). Never raises a bot that is already
+    // inside the configured range.
+    bool ClampBotToConfiguredLevel(Player* bot);
     void LoadSocialFriendList();
     int GetOrFlagPlayerBracket(Player* player);
     void RunLevelBracketsDistribution();
@@ -82,9 +86,9 @@ private:
     // mutate percentages at runtime and must never write back into PlayerbotAIConfig.
     std::vector<LevelBracketConfig> _allianceRanges;
     std::vector<LevelBracketConfig> _hordeRanges;
-    uint8 _numRanges = 9;
+    uint8 _numRanges = 7;
     uint8 _randomBotMinLevel = 1;
-    uint8 _randomBotMaxLevel = 80;
+    uint8 _randomBotMaxLevel = 60;
     std::vector<PendingResetEntry> _pendingLevelResets;
     std::vector<uint32> _socialFriendsList;
 

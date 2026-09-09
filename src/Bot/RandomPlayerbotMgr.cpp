@@ -32,6 +32,7 @@
 #include "PlayerbotFactory.h"
 #include "PlayerbotTextMgr.h"
 #include "Playerbots.h"
+#include "SimPopulationMgr.h"
 #include "Position.h"
 #include "RaceMgr.h"
 #include "Random.h"
@@ -411,12 +412,15 @@ void RandomPlayerbotMgr::UpdateAIInternal(uint32 /*elapsed*/, bool /*minimal*/)
         if (availableBotCount < maxAllowedBotCount &&
             (realPlayerIsLogged && DelayLoginBotsTimer != 0 && time(nullptr) >= DelayLoginBotsTimer))
         {
-            AddRandomBots();
+            // SIM-POPULATION: calendar owns login when stock mgr is disabled.
+            if (!SimPopulationMgr::DisableStockRandomMgr())
+                AddRandomBots();
         }
     }
     else if (availableBotCount < maxAllowedBotCount)
     {
-        AddRandomBots();
+        if (!SimPopulationMgr::DisableStockRandomMgr())
+            AddRandomBots();
     }
 
     if (sPlayerbotAIConfig.syncLevelWithPlayers && !players.empty())
@@ -460,7 +464,8 @@ void RandomPlayerbotMgr::UpdateAIInternal(uint32 /*elapsed*/, bool /*minimal*/)
             : 0;
     uint32 loginBots = std::min(loginBatch - std::min(updateBots, loginBatch), maxNewBots);
 
-    if (!availableBots.empty())
+    // SIM-POPULATION: do not login/logout from the Min/Max lottery.
+    if (!availableBots.empty() && !SimPopulationMgr::DisableStockRandomMgr())
     {
         // Update bots
         for (auto bot : availableBots)
@@ -729,6 +734,7 @@ uint32 RandomPlayerbotMgr::AddRandomBots()
     static time_t missingBotsTimer = 0;
     static uint32 lastFallbackAccountCount = 0;
     static bool loggedPoolExhausted = false;
+    static bool loggedOverLevelClamp = false;
 
     if (currentBots.size() < maxAllowedBotCount)
     {
@@ -837,18 +843,19 @@ uint32 RandomPlayerbotMgr::AddRandomBots()
                 info.rRace = fields[2].Get<uint8>();
                 info.level = fields[3].Get<uint8>();
                 info.accountId = accountId;
-                if (info.level < sPlayerbotAIConfig.randomBotMinLevel ||
-                    info.level > sPlayerbotAIConfig.randomBotMaxLevel)
-                {
-                    ++skippedOverLevel;
-                    continue;
-                }
                 if (!sPlayerbotAIConfig.IsRandomBotClassAllowed(info.rClass) ||
                     !sPlayerbotAIConfig.IsRandomBotRaceAllowed(info.rRace))
                 {
                     ++skippedExpansion;
                     continue;
                 }
+                // Leftover TBC/WotLK bracket assignments sit above RandomBotMaxLevel.
+                // Skipping them permanently freezes login at the remaining 1-60 pool
+                // (Phase 4 then writes that count into bot_count). Keep them
+                // schedulable; RandomBotLevelMgr clamps them on login.
+                if (info.level < sPlayerbotAIConfig.randomBotMinLevel ||
+                    info.level > sPlayerbotAIConfig.randomBotMaxLevel)
+                    ++skippedOverLevel;
                 allCharacters.push_back(info);
             } while (result->NextRow());
         };
@@ -894,6 +901,16 @@ uint32 RandomPlayerbotMgr::AddRandomBots()
         else
             lastFallbackAccountCount = 0;
 
+        if (skippedOverLevel && !loggedOverLevelClamp)
+        {
+            LOG_INFO("playerbots",
+                     "Found {} random-bot characters outside {}-{} (leftover bracket/expansion levels). "
+                     "They will log in and be clamped; they no longer shrink the online cap.",
+                     skippedOverLevel, sPlayerbotAIConfig.randomBotMinLevel,
+                     sPlayerbotAIConfig.randomBotMaxLevel);
+            loggedOverLevelClamp = true;
+        }
+
         // Shuffle for class balance
         std::shuffle(allCharacters.begin(), allCharacters.end(), rng);
 
@@ -926,7 +943,8 @@ uint32 RandomPlayerbotMgr::AddRandomBots()
 
         // Organic level brackets are login quotas, never level generators. Prefer
         // persistent characters from ranges that are currently below their desired
-        // online share; no character level, gear, talents, or played time is changed.
+        // online share. In-range characters keep their level; leftover over-cap
+        // characters (old TBC/WotLK brackets) are still scheduled and clamped on login.
         if (sPlayerbotAIConfig.levelBracketsEnabled)
         {
             auto rangeIndex = [](uint8 level, bool alliance) -> int
@@ -963,6 +981,9 @@ uint32 RandomPlayerbotMgr::AddRandomBots()
                 }
                 std::vector<CharacterInfo> ordered;
                 ordered.reserve(candidates.size());
+                uint32 const factionShare = alliance
+                    ? (targetOnlineBotCount * allianceRatio / totalRatio)
+                    : (targetOnlineBotCount - (targetOnlineBotCount * allianceRatio / totalRatio));
                 while (ordered.size() + unmatched.size() < candidates.size())
                 {
                     int bestRange = -1;
@@ -971,7 +992,7 @@ uint32 RandomPlayerbotMgr::AddRandomBots()
                     {
                         if (buckets[i].empty())
                             continue;
-                        int desired = int(std::round(targetOnlineBotCount * (ranges[i].pct / 100.0)));
+                        int desired = int(std::round(factionShare * (ranges[i].pct / 100.0)));
                         int deficit = desired - online[i];
                         if (bestRange < 0 || deficit > bestDeficit)
                         {
@@ -985,6 +1006,10 @@ uint32 RandomPlayerbotMgr::AddRandomBots()
                     buckets[bestRange].pop_back();
                     ++online[bestRange];
                 }
+                // Quotas are a preference, never a ceiling. Leftover in-range
+                // characters still log in until Min/Max is reached.
+                for (auto& bucket : buckets)
+                    ordered.insert(ordered.end(), bucket.begin(), bucket.end());
                 ordered.insert(ordered.end(), unmatched.begin(), unmatched.end());
                 candidates.swap(ordered);
             };
@@ -1062,19 +1087,36 @@ uint32 RandomPlayerbotMgr::AddRandomBots()
             if (time(nullptr) - missingBotsTimer >= 10)
             {
                 uint32 const available = currentBots.size();
-                SetEventValue(0, "bot_count", available,
-                              sPlayerbotAIConfig.randomBotCountChangeMaxInterval);
+                // Never let leftover over-level (bracket) characters freeze the
+                // login target below MinRandomBots. Those chars are clamped on
+                // login; shrinking bot_count to the in-range remainder is the
+                // 322-online hang.
+                if (available >= sPlayerbotAIConfig.minRandomBots || skippedOverLevel == 0)
+                {
+                    SetEventValue(0, "bot_count", available,
+                                  sPlayerbotAIConfig.randomBotCountChangeMaxInterval);
+                }
                 if (!loggedPoolExhausted)
                 {
-                    LOG_WARN("playerbots",
-                             "Only {} eligible random bots are available at or below level {} "
-                             "(expansion max {}). Skipped {} over-level and {} expansion-locked "
-                             "characters. Login target reduced from {} to {}. "
-                             "Increasing RandomBotAccountCount will not help if leftover TBC/WotLK "
-                             "characters are occupying the accounts.",
-                             available, sPlayerbotAIConfig.randomBotMaxLevel,
-                             sPlayerbotAIConfig.GetExpansionMaxLevel(), skippedOverLevel,
-                             skippedExpansion, targetOnlineBotCount, available);
+                    if (skippedOverLevel)
+                        LOG_WARN("playerbots",
+                                 "Only {} random bots are currently scheduled (target {}). "
+                                 "Found {} characters above/below {}-{} — they will log in and "
+                                 "be clamped to the configured cap. {} expansion-locked characters "
+                                 "were skipped.",
+                                 available, targetOnlineBotCount, skippedOverLevel,
+                                 sPlayerbotAIConfig.randomBotMinLevel, sPlayerbotAIConfig.randomBotMaxLevel,
+                                 skippedExpansion);
+                    else
+                        LOG_WARN("playerbots",
+                                 "Only {} eligible random bots are available at or below level {} "
+                                 "(expansion max {}). Skipped {} over-level and {} expansion-locked "
+                                 "characters. Login target reduced from {} to {}. "
+                                 "Increasing RandomBotAccountCount will not help if leftover TBC/WotLK "
+                                 "characters are occupying the accounts.",
+                                 available, sPlayerbotAIConfig.randomBotMaxLevel,
+                                 sPlayerbotAIConfig.GetExpansionMaxLevel(), skippedOverLevel,
+                                 skippedExpansion, targetOnlineBotCount, available);
                     loggedPoolExhausted = true;
                 }
                 missingBotsTimer = 0;

@@ -242,6 +242,8 @@ Still open:
 ### Living world (later, separate commits)
 
 - [x] Full world at server start: SmartPopulation OFF, Min 1000 / Max 3600 log in before anyone connects
+- [x] Guild force-login transplanted out of `mod-npc-chat-llm` into `GuildPresenceMgr` (default off)
+- [x] Population calendar `Sim.*` (`SimPopulationMgr`) — roster + weekly windows + idle kick
 - [ ] AH: bots as customers, never as AHBot GUIDs
 - [ ] One open-world director (RPG + grind + pvp-life + dungeon-sim) on top of `BotActivityMgr`
 - [ ] Performance: `BotActiveAlone`, visibility, less cross-map teleport

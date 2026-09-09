@@ -363,6 +363,44 @@ void RandomBotLevelMgr::AdjustBotToRange(Player* bot, int targetRangeIndex, Team
         factionRanges[targetRangeIndex].lower, factionRanges[targetRangeIndex].upper);
 }
 
+// Pulls a leftover over-cap (or under-min) random bot back into
+// [RandomBotMinLevel, RandomBotMaxLevel]. This is a cap repair, not a boost:
+// a level-1 bot already inside the range is left alone.
+bool RandomBotLevelMgr::ClampBotToConfiguredLevel(Player* bot)
+{
+    if (!bot || !bot->IsInWorld() || !bot->GetSession() || bot->GetSession()->isLogingOut() ||
+        bot->IsDuringRemoveFromWorld())
+        return false;
+
+    if (!sRandomPlayerbotMgr.IsRandomBot(bot))
+        return false;
+
+    uint8 const currentLevel = bot->GetLevel();
+    if (currentLevel >= _randomBotMinLevel && currentLevel <= _randomBotMaxLevel)
+        return false;
+
+    uint8 newLevel = currentLevel > _randomBotMaxLevel ? _randomBotMaxLevel : _randomBotMinLevel;
+    if (bot->getClass() == CLASS_DEATH_KNIGHT)
+    {
+        uint8 const dkMinLevel = static_cast<uint8>(sWorld->getIntConfig(CONFIG_START_HEROIC_PLAYER_LEVEL));
+        if (newLevel < dkMinLevel)
+            newLevel = dkMinLevel;
+        if (newLevel > _randomBotMaxLevel)
+            return false;
+    }
+
+    if (bot->IsMounted())
+        bot->Dismount();
+
+    PlayerbotFactory factory(bot, newLevel);
+    factory.Randomize(false);
+
+    LOG_DEBUG("playerbots",
+        "[RandomBotLevelMgr] Clamped random bot '{}' from level {} to {} (configured range {}-{}).",
+        bot->GetName(), currentLevel, newLevel, _randomBotMinLevel, _randomBotMaxLevel);
+    return true;
+}
+
 // Loads the list of social friend low GUIDs (character_social, flags = 1) into _socialFriendsList.
 void RandomBotLevelMgr::LoadSocialFriendList()
 {
@@ -898,6 +936,12 @@ void RandomBotLevelMgr::OnBotLogin(Player* player)
 {
     if (!sRandomPlayerbotMgr.IsRandomBot(player))
         return;
+
+    // Always repair leftover 61-80 (etc.) characters, even when the opt-in
+    // ResetBotLevel feature is off. Skipping them at login is what froze the
+    // online count at the remaining in-range pool.
+    ClampBotToConfiguredLevel(player);
+
     if (!sPlayerbotAIConfig.resetBotLevelEnabled)
         return;
 
@@ -1059,6 +1103,7 @@ public:
             return;
 
         sPlayerbotAIConfig.LoadRandomBotLevelConfig();
+        sPlayerbotAIConfig.ApplyExpansionLimits();
         RandomBotLevelMgr::instance().LoadConfig();
         LOG_INFO("playerbots", "[RandomBotLevelMgr] Level management config reloaded.");
     }
@@ -1083,8 +1128,6 @@ public:
 
     void OnPlayerLogin(Player* player) override
     {
-        if (!sPlayerbotAIConfig.resetBotLevelEnabled)
-            return;
         RandomBotLevelMgr::instance().OnBotLogin(player);
     }
 

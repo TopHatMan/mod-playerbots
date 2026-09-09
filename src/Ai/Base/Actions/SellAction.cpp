@@ -5,12 +5,19 @@
  */
 
 #include "SellAction.h"
+#include "AuctionHouseMgr.h"
 #include "ChatHelper.h"
+#include "Creature.h"
 #include "Event.h"
+#include "GameTime.h"
 #include "ItemPackets.h"
 #include "ItemUsageValue.h"
 #include "ItemVisitors.h"
+#include "ObjectMgr.h"
 #include "Playerbots.h"
+#include "RandomPlayerbotMgr.h"
+#include "World.h"
+#include <algorithm>
 
 class SellItemsVisitor : public IterateItemsVisitor
 {
@@ -182,4 +189,93 @@ void SellAction::Sell(Item* item)
         bot->PlayDistanceSound(120);
         break;
     }
+}
+
+bool ListAuctionAction::Execute(Event /*event*/)
+{
+    if (!sRandomPlayerbotMgr.IsRandomBot(bot))
+        return false;
+
+    Creature* auctioneer = nullptr;
+    GuidVector npcs = AI_VALUE(GuidVector, "nearest npcs");
+    for (ObjectGuid const guid : npcs)
+    {
+        if (Creature* creature = bot->GetNPCIfCanInteractWith(guid, UNIT_NPC_FLAG_AUCTIONEER))
+        {
+            auctioneer = creature;
+            break;
+        }
+    }
+    if (!auctioneer)
+        return false;
+
+    AuctionHouseEntry const* houseEntry =
+        AuctionHouseMgr::GetAuctionHouseEntryFromFactionTemplate(auctioneer->GetFaction());
+    if (!houseEntry)
+        return false;
+
+    AuctionHouseObject* auctionHouse = sAuctionMgr->GetAuctionsMap(auctioneer->GetFaction());
+    if (!auctionHouse)
+        return false;
+
+    std::vector<Item*> items =
+        AI_VALUE2(std::vector<Item*>, "inventory items", "usage " + std::to_string(ITEM_USAGE_AH));
+    if (items.empty())
+        return false;
+
+    uint32 listed = 0;
+    for (Item* item : items)
+    {
+        if (listed >= 3)
+            break;
+        if (!item || !item->CanBeTraded() || item->IsNotEmptyBag())
+            continue;
+
+        ItemTemplate const* proto = item->GetTemplate();
+        if (!proto || proto->HasFlag(ITEM_FLAG_CONJURED) || !proto->SellPrice)
+            continue;
+
+        uint32 etime = MIN_AUCTION_TIME;
+        uint32 deposit = sAuctionMgr->GetAuctionDeposit(houseEntry, etime, item, item->GetCount());
+        if (!bot->HasEnoughMoney(deposit))
+            continue;
+
+        uint32 price = std::max(proto->SellPrice, 1u) * item->GetCount();
+        uint32 bid = price;
+        uint32 buyout = price + price * urand(30, 80) / 100;
+
+        bot->ModifyMoney(-int32(deposit));
+
+        AuctionEntry* auction = new AuctionEntry;
+        auction->Id = sObjectMgr->GenerateAuctionID();
+        if (sWorld->getBoolConfig(CONFIG_ALLOW_TWO_SIDE_INTERACTION_AUCTION))
+            auction->houseId = AuctionHouseId::Neutral;
+        else
+            auction->houseId = AuctionHouseId(houseEntry->houseId);
+        auction->item_guid = item->GetGUID();
+        auction->item_template = item->GetEntry();
+        auction->itemCount = item->GetCount();
+        auction->owner = bot->GetGUID();
+        auction->startbid = bid;
+        auction->bidder = ObjectGuid::Empty;
+        auction->bid = 0;
+        auction->buyout = buyout;
+        auction->expire_time = GameTime::GetGameTime().count() + etime * sWorld->getRate(RATE_AUCTION_TIME);
+        auction->deposit = deposit;
+        auction->auctionHouseEntry = houseEntry;
+
+        sAuctionMgr->AddAItem(item);
+        auctionHouse->AddAuction(auction);
+        bot->MoveItemFromInventory(item->GetBagSlot(), item->GetSlot(), true);
+
+        CharacterDatabaseTransaction trans = CharacterDatabase.BeginTransaction();
+        item->DeleteFromInventoryDB(trans);
+        item->SaveToDB(trans);
+        auction->SaveToDB(trans);
+        bot->SaveInventoryAndGoldToDB(trans);
+        CharacterDatabase.CommitTransaction(trans);
+        ++listed;
+    }
+
+    return listed > 0;
 }

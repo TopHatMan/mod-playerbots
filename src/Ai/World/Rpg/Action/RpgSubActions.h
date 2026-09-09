@@ -152,6 +152,15 @@ private:
     Event ActionEvent(Event event) override;
 };
 
+class RpgAuctionAction : public RpgSubAction
+{
+public:
+    RpgAuctionAction(PlayerbotAI* botAI, std::string const name = "rpg auction") : RpgSubAction(botAI, name) {}
+
+private:
+    std::string const ActionName() override;
+};
+
 class RpgRepairAction : public RpgSubAction
 {
 public:

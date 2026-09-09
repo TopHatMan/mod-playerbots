@@ -694,7 +694,7 @@ bool PlayerbotAIConfig::Initialize()
     BotActiveAloneForceWhenInZone = sConfigMgr->GetOption<bool>("AiPlayerbot.BotActiveAloneForceWhenInZone", 1);
     BotActiveAloneForceWhenInMap = sConfigMgr->GetOption<bool>("AiPlayerbot.BotActiveAloneForceWhenInMap", 0);
     BotActiveAloneForceWhenIsFriend = sConfigMgr->GetOption<bool>("AiPlayerbot.BotActiveAloneForceWhenIsFriend", 0);
-    BotActiveAloneForceWhenInGuild = sConfigMgr->GetOption<bool>("AiPlayerbot.BotActiveAloneForceWhenInGuild", 1);
+    BotActiveAloneForceWhenInGuild = sConfigMgr->GetOption<bool>("AiPlayerbot.BotActiveAloneForceWhenInGuild", 0);
     botActiveAloneSmartScale = sConfigMgr->GetOption<bool>("AiPlayerbot.botActiveAloneSmartScale", 1);
     botActiveAloneSmartScaleDiffLimitfloor = sConfigMgr->GetOption<uint32>("AiPlayerbot.botActiveAloneSmartScaleDiffLimitfloor", 50);
     botActiveAloneSmartScaleDiffLimitCeiling = sConfigMgr->GetOption<uint32>("AiPlayerbot.botActiveAloneSmartScaleDiffLimitCeiling", 200);
@@ -832,8 +832,14 @@ void PlayerbotAIConfig::LoadRandomBotLevelConfig()
     {
         // Organic brackets select which persistent characters come online.
         // New random bots therefore always begin at level one and progress normally.
+        // This does not reduce MinRandomBots/MaxRandomBots; leftover over-cap
+        // characters are clamped on login rather than skipped.
         disableRandomLevels = true;
         randombotStartingLevel = 1;
+        LOG_INFO("playerbots",
+                 "LevelBrackets enabled: new random bots start at level 1. "
+                 "Online cap remains {}-{}; over-cap characters are clamped, not skipped.",
+                 minRandomBots, maxRandomBots);
     }
     levelBracketsIgnoreGuildWithRealPlayers =
         sConfigMgr->GetOption<bool>("AiPlayerbot.LevelBrackets.IgnoreGuildBotsWithRealPlayers", true);

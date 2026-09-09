@@ -1,0 +1,225 @@
+# WORLD BOSSES — OUTDOOR (40-MAN TUNING)
+
+Raid-wide notes:
+- Contested spawns: expect PvP interference; these strategies assume a clean pull.
+- All four Emerald Dragons share: Noxious Breath (frontal cone dot + sleep — tank swap mechanic), Tail Sweep (rear knockup — never stand behind), and Mark of Nature (players who die to the dragon get a 15-min debuff that puts them to sleep if they re-engage — dead players STAY DEAD for the fight).
+- Deaths are doubly punished on world bosses (Mark of Frost / Mark of Nature / Soul Corruption style anti-zerg mechanics) — play conservatively.
+
+---
+
+### boss: Azuregos (Azshara)
+- raid: World Boss — Azshara
+- raid_size: 40
+- boss_order: 1
+- optional: yes (world boss)
+- encounter_type: gimmick
+- composition: 1-2 tanks; frost resist helpful; magic dispellers
+- key_abilities:
+  - Teleport — periodically teleports ALL nearby players to him and WIPES THREAT (stop dots before each teleport; tank re-establishes)
+  - Manastorm — blizzard-like mana-burn storm on the ground (move)
+  - Chill / Frost Breath — frontal frost damage + slow (frost resist)
+  - Magic Reflection — reflects spells periodically ([CASTER] stop casting when up)
+  - Mark of Frost — players who die get a 15-min debuff: re-engaging Azuregos freezes them solid (dead players stay out)
+  - Cleave — frontal
+- phases: none
+- positioning: [MT] tanks with boss facing away; [MELEE] behind at flank; [RANGED]/[HEALER] spread 8+ yards at max range
+- tank_rules:
+  - IF Teleport fires THEN [MT] re-taunt instantly and rebuild threat; expect zero threat after each teleport
+- healer_rules:
+  - heavy healing on teleported cloth; watch Chill-slowed tanks
+- dps_rules:
+  - [ALL] drop ALL dots ~5s before each Teleport timer (dots on a threat-wiped boss = aggro chaos)
+  - [CASTER] IF Magic Reflection up THEN stop casting
+  - IF teleported THEN move back to position immediately
+- movement_rules:
+  - IF Manastorm on your area THEN move out
+- threat_rules: Teleport = full threat wipe on a timer; dps hold 3-4s after each teleport
+- interrupt_priority: none
+- dispel_priority: none
+- cc_assignments: none
+- kill_order: Azuregos
+- enrage_timer: none (healer mana vs teleport chaos is the attrition)
+- wipe_risks: dots ticking through a teleport (aggro scramble → breath on raid); dead players re-engaging with Mark of Frost
+- bot_behavior_notes: teleport timer = global "cancel dots / stop cast" trigger; tank bot: instant re-taunt routine
+
+---
+
+### boss: Lord Kazzak (Tainted Scar, Blasted Lands)
+- raid: World Boss — Blasted Lands
+- raid_size: 40
+- boss_order: 2
+- optional: yes (world boss)
+- encounter_type: dps-race
+- composition: 1 tank; decursers + magic dispellers; ~3-minute hard enrage (Supreme Mode)
+- key_abilities:
+  - Mark of Kazzak — debuff on a random MANA user: drains mana rapidly; if the target reaches 0 mana (or dies with it) they EXPLODE for massive raid damage (curse — decurse OR the target runs 30+ yards out and empties safely)
+  - Twisted Reflection — magic debuff on random players: Kazzak heals ~25k every time he hits/damages the afflicted (dispel INSTANTLY, especially off the tank)
+  - Shadow Bolt Volley — raid-wide shadow damage (heal through)
+  - Capture Soul — when a player dies, Kazzak heals (do not die)
+  - Void Bolt — heavy nuke on tank
+  - Supreme Mode — at 3 minutes: massive damage = wipe
+- phases: none; 3-minute hard enrage
+- positioning: [MT] tanks center of the scar; [RANGED]/[HEALER] spread 10 yards; mana users stay loosely spread
+- tank_rules:
+  - [MT] defensives for Void Bolt; healers spam
+- healer_rules:
+  - [PRIEST]/[PALADIN] dispel Twisted Reflection INSTANTLY (each tick left up heals the boss)
+  - [MAGE]/[DRUID] decurse Mark of Kazzak immediately — or the target runs out
+- dps_rules:
+  - maximum dps (3-minute window)
+  - IF Mark of Kazzak on you and not decursed THEN run 30+ yards from everyone until it expires/explodes
+- movement_rules:
+  - Mark of Kazzak carrier = immediate isolation move
+- threat_rules: none
+- interrupt_priority: none
+- dispel_priority:
+  - Twisted Reflection (magic) — [PRIEST]/[PALADIN]/[SHAMAN] — INSTANT, tank first
+  - Mark of Kazzak (curse) — [MAGE]/[DRUID] — mana users
+- cc_assignments: none
+- kill_order: Lord Kazzak
+- enrage_timer: 3 minutes (Supreme Mode)
+- wipe_risks: Mark explosion in the raid; Twisted Reflection left up (he out-heals your dps); deaths feeding Capture Soul
+- bot_behavior_notes: dispel bots: Twisted Reflection is the single highest dispel priority in the game; mark-carrier bots: isolation routine
+
+---
+
+### boss: Emeriss (Emerald Dragon — Duskwood/Hinterlands/Feralas/Ashenvale portals)
+- raid: World Boss — Emerald Dragon portals
+- raid_size: 40
+- boss_order: 3
+- optional: yes (world boss)
+- encounter_type: tank-and-spank
+- composition: 2 tanks; nature resist heavily recommended; poison dispels
+- key_abilities:
+  - Noxious Breath (shared dragon mechanic) — frontal cone dot + periodic sleep; stacks — tank swap
+  - Tail Sweep — rear knockup
+  - Corruption of the Earth — at 75% / 50% / 25%: raid-wide 10s shadow/nature dot (heal through, pre-hot)
+  - Volatile Infection — dot on random players (nature — dispel/heal)
+  - Putrid Mushroom — players who DIE spawn a mushroom that pulses AoE nature damage (move away from corpses)
+  - Sleep — AoE sleep clouds (position out)
+- phases: Corruption pulses at 75/50/25%
+- positioning: [MT] tanks facing away; [MELEE] at flank (never behind); [RANGED] spread 8+ yards; dead players' mushrooms — raid drifts away from corpses
+- tank_rules:
+  - swap on Noxious Breath stacks (~2-3); frontals are lethal to non-tanks
+- healer_rules:
+  - pre-HoT before each 75/50/25 Corruption pulse; dispel Volatile Infection
+- dps_rules:
+  - steady dps; [ALL] IF sleeping/mushroom under you THEN move
+- movement_rules:
+  - IF a nearby player dies THEN move 10 yards from their corpse (mushroom)
+- threat_rules: tank swaps on breath stacks; dps hold on swaps
+- interrupt_priority: none
+- dispel_priority:
+  - Volatile Infection (poison) — [DRUID]/[SHAMAN]/[PALADIN]
+- cc_assignments: none
+- kill_order: Emeriss
+- enrage_timer: none
+- wipe_risks: Noxious Breath sleeping the healer group (bad positioning); mushroom fields shredding melee
+- bot_behavior_notes: corpse-proximity avoidance rule; breath-driven tank swap
+
+---
+
+### boss: Lethon (Emerald Dragon)
+- raid: World Boss — Emerald Dragon portals
+- raid_size: 40
+- boss_order: 4
+- optional: yes (world boss)
+- encounter_type: add-control
+- composition: 2 tanks; nature resist; shadow resist helps (Shadow Bolt Volley)
+- key_abilities:
+  - Noxious Breath (shared) — tank swap on stacks
+  - Tail Sweep — rear knockup
+  - Shadow Bolt Volley — raid-wide shadow damage
+  - Sleep — sleep clouds
+  - Draw Spirit — at 75% / 50% / 25%: each player spawns a personal Shade that walks toward Lethon; each shade that reaches him HEALS him; shades are only attackable by... they are killable by anyone but FAST single-target kill is needed (each player kills their own shade — it's slow-moving)
+- phases: Draw Spirit at 75/50/25%
+- positioning: [MT] tanks facing away; [RANGED] spread 8 yards (volley + sleep clouds); shades spawn at each player — kill yours before it walks to the boss
+- tank_rules:
+  - swap on Noxious Breath stacks
+- healer_rules:
+  - heal through Shadow Bolt Volley pulses
+- dps_rules:
+  - IF Draw Spirit fires THEN immediately kill YOUR shade (it beelines to Lethon; every shade that lands = big boss heal)
+  - resume boss after shades clear
+- movement_rules:
+  - IF sleep cloud under you THEN move
+- threat_rules: tank swaps on stacks
+- interrupt_priority: none
+- dispel_priority: none
+- cc_assignments: [MAGE] Frost Nova / [WARRIOR] Piercing Howl on shade packs (slows their walk)
+- kill_order: personal Shades (during Draw Spirit) → Lethon
+- enrage_timer: none (Draw Spirit heals are the attrition)
+- wipe_risks: shades reaching Lethon (heal negates your dps); volley + breath overlap on low raid
+- bot_behavior_notes: shade-owned targeting: on Draw Spirit, each bot swaps to its own shade until dead
+
+---
+
+### boss: Taerar (Emerald Dragon)
+- raid: World Boss — Emerald Dragon portals
+- raid_size: 40
+- boss_order: 5
+- optional: yes (world boss)
+- encounter_type: add-control
+- composition: 2-4 tanks; fear counters ([PRIEST] Fear Ward / [WARRIOR] Berserker Rage / [SHAMAN] Tremor); nature resist
+- key_abilities:
+  - Noxious Breath (shared) — tank swap on stacks
+  - Tail Sweep — rear knockup
+  - Bellowing Roar — AoE fear (frequent — fear the raid into bad positions)
+  - Summon Shades — at 75% / 50% / 25%: Taerar banishes himself and summons 3 Shades of Taerar (smaller dragons with breath + fear): kill all 3, then Taerar returns
+  - Arcane Blast — AoE damage on shades phases
+- phases: shade phases at 75/50/25% (3 shades each time)
+- positioning: main phase: [MT] tanks facing away, fear counters on tank group; shade phase: 3 tanks each grab a shade, spread them apart, raid kills one at a time; [RANGED] spread
+- tank_rules:
+  - swap on Noxious Breath stacks; [WARRIOR] stance-dance fears
+  - shade phase: each tank picks one shade, face away, hold for dps order
+- healer_rules:
+  - fear coverage chaos: pre-position so fear paths don't cross breaths; spam-heal through shade phases
+- dps_rules:
+  - shade phase: kill shades one at a time (marked order); then Taerar
+  - IF feared THEN return to position immediately after
+- movement_rules:
+  - IF Tail Sweep/fear displaces you THEN re-position to flank
+- threat_rules: fears scramble threat; re-taunt after Roar
+- interrupt_priority: none
+- dispel_priority: none
+- cc_assignments: none (shades immune; kill them)
+- kill_order: Shade of Taerar x3 (each shade phase) → Taerar
+- enrage_timer: none
+- wipe_risks: feared raid members eating Noxious Breath; shade phase healer deaths
+- bot_behavior_notes: fear-recovery routine for all bots; shade phase = marked kill-order target swap
+
+---
+
+### boss: Ysondre (Emerald Dragon)
+- raid: World Boss — Emerald Dragon portals
+- raid_size: 40
+- boss_order: 6
+- optional: yes (world boss)
+- encounter_type: add-control
+- composition: 2 tanks; nature resist; dispels
+- key_abilities:
+  - Noxious Breath (shared) — tank swap on stacks
+  - Tail Sweep — rear knockup
+  - Lightning Wave — nature damage cone/wave (spread, nature resist)
+  - Sleep — sleep clouds
+  - Summon Demented Druid Spirit — at 75% / 50% / 25%: summons packs of Demented Druids (adds that heal Ysondre / cast): kill them fast; they can be CC'd ([MAGE] sheep works on some versions — kill is safer)
+- phases: add phases at 75/50/25%
+- positioning: [MT] tanks facing away; [RANGED] spread 8+ yards (Lightning Wave); [MELEE] flank
+- tank_rules:
+  - swap on Noxious Breath stacks; [OT] rounds up Demented Druids
+- healer_rules:
+  - heal through Lightning Wave pulses; dispel relevant dots
+- dps_rules:
+  - IF Demented Druids spawn THEN kill them before they heal the dragon (priority over boss)
+  - resume Ysondre when clear
+- movement_rules:
+  - IF sleep cloud under you THEN move
+- threat_rules: tank swaps on stacks
+- interrupt_priority:
+  - Demented Druid heals — interrupt/kill fast
+- dispel_priority: none
+- cc_assignments: [WARLOCK] Fear stray druids; [MAGE] Frost Nova packs
+- kill_order: Demented Druids (when up) → Ysondre
+- enrage_timer: none
+- wipe_risks: druid adds healing Ysondre through your dps; Lightning Wave on a clumped raid
+- bot_behavior_notes: add-phase target swap for all dps; spread enforcement vs Lightning Wave

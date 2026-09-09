@@ -7,6 +7,7 @@
 #include "RpgTriggers.h"
 #include "BudgetValues.h"
 #include "GuildCreateActions.h"
+#include "ItemUsageValue.h"
 #include "Playerbots.h"
 #include "ServerFacade.h"
 #include "SocialMgr.h"
@@ -145,6 +146,15 @@ bool RpgSellTrigger::IsActive()
         return false;
 
     return true;
+}
+
+bool RpgAuctionTrigger::IsActive()
+{
+    GuidPosition guidP(getGuidP());
+    if (!guidP.HasNpcFlag(UNIT_NPC_FLAG_AUCTIONEER))
+        return false;
+
+    return !AI_VALUE2(std::vector<Item*>, "inventory items", "usage " + std::to_string(ITEM_USAGE_AH)).empty();
 }
 
 bool RpgRepairTrigger::IsActive()

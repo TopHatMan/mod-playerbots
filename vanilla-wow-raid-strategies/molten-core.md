@@ -1,0 +1,411 @@
+# MOLTEN CORE — 40-MAN RAID
+
+Raid-wide notes:
+- Fire resistance gear on main tanks; everyone carries fire protection potions.
+- Bring at least 2 decursers ([MAGE]/[DRUID]) and 2 magic dispellers ([PRIEST]/[PALADIN]/[SHAMAN]) per fight.
+- Core Hound packs: all 5 must die within ~10s of each other or they reignite; [ALL] stop early kills, hold at low HP, execute together.
+
+---
+
+### boss: Lucifron
+- raid: Molten Core
+- raid_size: 40
+- boss_order: 1
+- optional: no
+- encounter_type: add-control
+- composition: 2 tanks, 8-10 healers, rest dps; minimum 3 decursers, 2 magic dispellers
+- key_abilities:
+  - Lucifron's Curse — curse on ~15 players: doubles cost of all abilities/spells for 5 min
+  - Impending Doom — magic debuff: 2000 shadow damage after 10s
+  - Shadow Shock — short-range shadow damage on melee
+  - 2x Flamewaker Protector adds — cleave
+- phases: none; adds die first, then boss
+- positioning: [MT] holds Lucifron at his spawn point; [OT] tanks both adds 20+ yards away facing away from raid; [RANGED]/[HEALER] spread loosely at max range
+- tank_rules:
+  - [MT] keep Lucifron stationary, face away from raid
+  - [OT] pick up both Protectors immediately, hold until dps swaps
+- healer_rules:
+  - [PRIEST]/[PALADIN] dispel Impending Doom before its 10s expires (priority over healing)
+  - [MAGE]/[DRUID] decurse Lucifron's Curse instantly: priority = healers > tanks > casters > others
+- dps_rules:
+  - kill both Protectors first; switch to Lucifron only when adds are dead
+  - [MAGE]/[DRUID] decursing takes priority over damage
+- movement_rules:
+  - [MELEE] IF shadow shock damage spikes THEN back out to 8 yards briefly (only if healing is behind)
+- threat_rules: none special; no aggro resets
+- interrupt_priority: none
+- dispel_priority:
+  - Lucifron's Curse — [MAGE]/[DRUID] — healers and casters first
+  - Impending Doom — [PRIEST]/[PALADIN] — any target before 10s expiry
+- cc_assignments: none needed
+- kill_order: Flamewaker Protector x2 → Lucifron
+- enrage_timer: none
+- wipe_risks: curse left on healers draining mana; Impending Doom ticking to death on low-HP players
+- bot_behavior_notes:
+  - bots with decurse/dispel must run decurse loop at highest priority for this fight
+  - dps bots target-lock adds until dead, then boss
+
+---
+
+### boss: Magmadar
+- raid: Molten Core
+- raid_size: 40
+- boss_order: 2
+- optional: no
+- encounter_type: tank-and-spank
+- composition: 1 tank, 8-10 healers; minimum 2 [HUNTER] with Tranquilizing Shot; Alliance wants 1 [PRIEST] Fear Ward, Horde wants [SHAMAN] Tremor Totem
+- key_abilities:
+  - Frenzy — enrage: +150% attack speed; must be Tranquilizing Shotted
+  - Panic — 8-yard AoE fear every ~30s
+  - Magma Spit — persistent fire patches on the ground
+  - Lava Breath — frontal cone fire dot
+  - Lava Bomb — ranged fireball + dot on random player
+- phases: none
+- positioning: [MT] tanks at wall behind boss spawn; [MELEE] stacked at max melee range behind boss; [RANGED]/[HEALER] spread 8+ yards at max range to minimize Magma Spit overlap
+- tank_rules:
+  - [MT] position boss with back to wall, never turn the boss toward the raid
+  - [WARRIOR] stance-dance Berserker Rage on Panic cast (or hold Fear Ward)
+- healer_rules:
+  - keep [MT] topped before each Panic
+  - [PRIEST] dispel Lava Breath dot from [MT]
+- dps_rules:
+  - [HUNTER] IF Frenzy visible THEN Tranquilizing Shot immediately (rotation of 2+ hunters, never both tranq at once)
+  - [MELEE] stay directly behind boss at max melee range
+  - [ALL] IF standing in fire patch THEN move out at once
+- movement_rules:
+  - IF Magma Spit patch under you THEN sidestep 5 yards, do not run through melee stack
+- threat_rules: no aggro reset; fears can cause tank threat scramble — dps watch threat after each Panic
+- interrupt_priority: none
+- dispel_priority:
+  - Lava Breath (magic dot) — [PRIEST]/[PALADIN] — [MT] only
+- cc_assignments: none
+- kill_order: Magmadar
+- enrage_timer: none (Frenzy is the kill-mechanic if untranquilized)
+- wipe_risks: untranq'd Frenzy shredding tank; feared healers during Frenzy
+- bot_behavior_notes:
+  - hunter bots: tranq on a strict Frenzy-only trigger, stagger casts 1s apart
+  - all bots: ground-effect avoidance radius 5 yards
+
+---
+
+### boss: Gehennas
+- raid: Molten Core
+- raid_size: 40
+- boss_order: 3
+- optional: no
+- encounter_type: add-control
+- composition: 2 tanks; 3+ decursers
+- key_abilities:
+  - Gehennas' Curse — curse: reduces healing received by 75% for 5 min
+  - Shadow Bolt — single-target shadow nuke on random player
+  - Rain of Fire — channeled ground AoE on random location
+  - 2x Flamewaker adds — cleave
+- phases: none
+- positioning: [MT] pulls Gehennas 30+ yards away from adds; [OT] tanks adds at spawn; [RANGED] spread 8 yards
+- tank_rules:
+  - [MT] face Gehennas away; [OT] hold both adds away from raid
+- healer_rules:
+  - [MAGE]/[DRUID] decurse Gehennas' Curse IMMEDIATELY — tanks and healers first; a cursed tank is nearly unhealable
+- dps_rules:
+  - kill adds first, then Gehennas
+  - [ALL] IF Rain of Fire on your position THEN move out instantly
+- movement_rules:
+  - IF Rain of Fire THEN move 8 yards laterally; never retreat through the raid
+- threat_rules: none
+- interrupt_priority: none
+- dispel_priority:
+  - Gehennas' Curse — [MAGE]/[DRUID] — tanks > healers > dps
+- cc_assignments: none
+- kill_order: Flamewaker x2 → Gehennas
+- enrage_timer: none
+- wipe_risks: curse on main tank causing heal-starvation; Rain of Fire casualties
+- bot_behavior_notes:
+  - decurse bots must scan raid frames continuously, this curse is the entire fight
+
+---
+
+### boss: Garr
+- raid: Molten Core
+- raid_size: 40
+- boss_order: 4
+- optional: no
+- encounter_type: add-control
+- composition: 1 [MT] + up to 4 off-tanks OR 2 [WARLOCK] for Banish; 8-10 healers
+- key_abilities:
+  - Antimagic Pulse — dispels one buff from nearby players periodically
+  - Magma Shackles — AoE slow (magic)
+  - 8x Firesworn adds — each explodes on death for ~3000 fire damage + knockup
+- phases: none; adds killed one at a time, then Garr
+- positioning: [MT] tanks Garr 40+ yards from the add group, facing away; off-tanks spread the unbanished Firesworn 15 yards apart; [RANGED]/[HEALER] at max range
+- tank_rules:
+  - [MT] pull Garr far away immediately
+  - [OT] each pick up assigned Firesworn, hold at low threat margin
+  - [WARLOCK] banish assigned adds; re-banish at 1s remaining
+- healer_rules:
+  - pre-shield and pre-HoT the raid before each add death (explosion)
+- dps_rules:
+  - kill Firesworn one at a time in marked order (skull → cross → ...)
+  - [MELEE] IF target add below 20% HP THEN run out to 12 yards before it dies, return after explosion
+  - after all adds dead, kill Garr
+- movement_rules:
+  - [MELEE] leave add at 20% HP; [RANGED] never stand within 12 yards of a dying add
+- threat_rules: none; buffs stripped by Antimagic Pulse is normal — do not waste rebuffing mid-fight
+- interrupt_priority: none
+- dispel_priority:
+  - Magma Shackles — [PRIEST]/[PALADIN] — dispel only if someone must move (otherwise ignore)
+- cc_assignments: [WARLOCK] Banish up to 2-4 Firesworn (rank by setup)
+- kill_order: Firesworn x8 (marked order) → Garr
+- enrage_timer: none
+- wipe_risks: add explosion killing melee stack; two adds dying simultaneously
+- bot_behavior_notes:
+  - dps bots hard-stop on an add at 20% if melee-range; ranged bots finish it
+  - warlock bots maintain Banish as top priority over dps
+
+---
+
+### boss: Baron Geddon
+- raid: Molten Core
+- raid_size: 40
+- boss_order: 5
+- optional: no
+- encounter_type: movement
+- composition: 1 tank, 8-10 healers; magic dispellers
+- key_abilities:
+  - Living Bomb — magic debuff on random player: explodes after 8s for ~3200 fire AoE + launch into the air (fall damage)
+  - Ignite Mana — magic debuff: burns ~400 mana per tick; deadly on casters, harmless on warriors/rogues
+  - Inferno — boss roots and pulses escalating AoE fire damage for 10s
+  - Armageddon — cast on death, cosmetic (kill him anyway)
+- phases: none
+- positioning: fight in the large open area before Geddon's patrol; [MT] tanks at center; designated bomb spot = far corner/wall 30+ yards from raid; [RANGED] spread 8 yards
+- tank_rules:
+  - [MT] keep boss stationary; IF Living Bomb on [MT] THEN stay (tanks survive the blast; raid must be 15+ yards away)
+- healer_rules:
+  - [PRIEST] IF Living Bomb target THEN shield before explosion
+  - dispel Ignite Mana from mana users ONLY (never from warriors/rogues — wasted dispel)
+- dps_rules:
+  - [MELEE] IF Inferno cast THEN run out to 12 yards, re-engage after final pulse
+  - [ALL] IF Living Bomb on you THEN run to bomb spot immediately, remain until explosion, then return
+- movement_rules:
+  - bomb target: move to designated spot; everyone else: do not follow
+  - IF knocked airborne THEN expect fall damage; [PRIEST] shield, eat/healthstone after landing
+- threat_rules: no resets
+- interrupt_priority: none
+- dispel_priority:
+  - Ignite Mana — [PRIEST]/[PALADIN]/[SHAMAN] — mana users only
+  - Living Bomb — NEVER dispel (it detonates on dispel)
+- cc_assignments: none
+- kill_order: Baron Geddon
+- enrage_timer: none
+- wipe_risks: Living Bomb exploding inside the raid; melee dying to Inferno pulses
+- bot_behavior_notes:
+  - bots need a hard-coded bomb_spot waypoint per boss room; Living Bomb debuff = override all other behavior, path to spot
+  - disable dispel on Living Bomb explicitly
+
+---
+
+### boss: Shazzrah
+- raid: Molten Core
+- raid_size: 40
+- boss_order: 6
+- optional: no
+- encounter_type: tank-and-spank
+- composition: 1 tank, 8-10 healers; offensive dispel ([PRIEST] Dispel Magic / [SHAMAN] Purge / [MAGE] Spellsteal n/a — priests and shamans only); decursers
+- key_abilities:
+  - Arcane Explosion — 20-yard AoE arcane damage, frequent
+  - Gate of Shazzrah — blink ~20 yards toward a random player + partial threat wipe
+  - Shazzrah's Curse — curse: +100% magic damage taken
+  - Deaden Magic — self-buff: -50% magic damage taken (magic, dispellable)
+  - Counterspell — silences a caster 10s
+- phases: none
+- positioning: fight in Shazzrah's large room; [MT] tanks center; [MELEE] spread into 2-3 mini-groups to shrink Arcane Explosion overlap; [RANGED]/[HEALER] spread 8+ yards at max range
+- tank_rules:
+  - [MT] IF boss Blinks THEN instantly intercept/taunt back to center
+  - [WARRIOR] keep a taunt ready at all times; never use it rotationally here
+- healer_rules:
+  - expect heavy random arcane damage; use fast heals after each Arcane Explosion
+- dps_rules:
+  - [PRIEST]/[SHAMAN] dispel/purge Deaden Magic on the boss every time it appears (top priority)
+  - [MAGE]/[DRUID] decurse Shazzrah's Curse on raid (all targets, fast)
+  - watch threat after every Blink
+- movement_rules:
+  - IF boss Blinks to your area THEN [MELEE] re-approach from behind, [RANGED] do not chase — reposition only if out of range
+- threat_rules: Gate of Shazzrah partially wipes threat; [DPS] hold dps 2s after each blink until [MT] re-establishes
+- interrupt_priority: none
+- dispel_priority:
+  - Deaden Magic (boss buff) — [PRIEST]/[SHAMAN] — offensive, every cast
+  - Shazzrah's Curse — [MAGE]/[DRUID] — whole raid
+- cc_assignments: none
+- kill_order: Shazzrah
+- enrage_timer: none
+- wipe_risks: Deaden Magic left up stalling dps; blink into healer group chaining Arcane Explosion
+- bot_behavior_notes:
+  - offensive-dispel bots scan boss buffs continuously
+  - tank bots need a "blink-recovery" routine: Intercept > Taunt > drag to home position
+
+---
+
+### boss: Sulfuron Harbinger
+- raid: Molten Core
+- raid_size: 40
+- boss_order: 7
+- optional: no
+- encounter_type: add-control
+- composition: 1 [MT] + 2-4 off-tanks; dedicated interrupters ([ROGUE]/[WARRIOR] per add)
+- key_abilities:
+  - Flame Spear — stacking fire dot on the tank
+  - Hand of Ragnaros — AoE knockback + damage (short range)
+  - Inspire — self-buff: +damage; dispellable... (actually a self-heal-over-time buff; purge it)
+  - 4x Flamewaker Priest adds — cast Dark Mending (big heal) and Shadow Word: Pain
+- phases: none; adds first, then boss
+- positioning: [MT] tanks Sulfuron at the ramp; each [OT] tanks one Flamewaker Priest 15+ yards apart in a line; [RANGED]/[HEALER] behind the melee line
+- tank_rules:
+  - [OT] face adds away; [MT] face Sulfuron away from raid
+- healer_rules:
+  - dispel Shadow Word: Pain from raid
+  - watch [MT] during Hand of Ragnaros knockbacks
+- dps_rules:
+  - kill adds one at a time in marked order
+  - assigned [ROGUE]/[WARRIOR] IF target casts Dark Mending THEN Kick/Pummel (never let a heal land)
+  - after 4 adds dead, kill Sulfuron
+  - [PRIEST]/[SHAMAN] purge Inspire from boss
+- movement_rules:
+  - IF Hand of Ragnaros knocks you THEN return to position behind boss
+- threat_rules: none
+- interrupt_priority:
+  - Dark Mending (Flamewaker Priest) — kick every cast, highest priority
+- dispel_priority:
+  - Inspire (boss self-buff) — [PRIEST]/[SHAMAN] — offensive purge
+  - Shadow Word: Pain — [PRIEST]/[PALADIN] — any target
+- cc_assignments: none (priests immune to sheep; interrupt instead)
+- kill_order: Flamewaker Priest x4 (marked order) → Sulfuron
+- enrage_timer: none
+- wipe_risks: missed Dark Mending interrupt extending fight into healer OOM
+- bot_behavior_notes:
+  - assign each interrupt bot a fixed add target; kick on cast start, not mid-cast
+
+---
+
+### boss: Golemagg the Incinerator
+- raid: Molten Core
+- raid_size: 40
+- boss_order: 8
+- optional: no
+- encounter_type: tank-and-spank
+- composition: 1 [MT] + 2 off-tanks; 8-10 healers
+- key_abilities:
+  - Magma Splash — stacking fire dot applied to melee attackers (stacks on hit)
+  - Pyroblast — heavy fire nuke on random target (only used when no one in melee... main mechanic is Magma Splash + earthquake below 10%)
+  - Golemagg's Trust — his 2 Core Ragers heal to full if damaged while Golemagg lives; they cannot be killed first
+  - Earthquake — below 10% HP: pulsing AoE damage
+- phases: sub-10% soft phase: Earthquake raid damage, burn him down
+- positioning: [MT] tanks Golemagg at his platform edge; 2 [OT] each tank a Core Rager 20+ yards away; [MELEE] behind boss; [RANGED] spread
+- tank_rules:
+  - [OT] hold dogs for the entire fight; do not dps them below ~50% (they self-heal anyway)
+- healer_rules:
+  - heavy [MT] healing; watch melee stack during sub-10% Earthquake
+- dps_rules:
+  - ignore the dogs entirely; all damage on Golemagg
+  - [MELEE] IF Magma Splash stacks feel unhealable (roughly 8+) THEN back out briefly to drop stacks
+  - below 10%: all cooldowns, burn before Earthquake overwhelms
+- movement_rules: none special
+- threat_rules: none
+- interrupt_priority: none
+- dispel_priority: none (Magma Splash is a dot you outrange, not dispel)
+- cc_assignments: none
+- kill_order: Golemagg (dogs die with him / become trivial after)
+- enrage_timer: none
+- wipe_risks: melee with 10+ Magma Splash stacks dying; healers OOM in the sub-10% burn
+- bot_behavior_notes:
+  - dps bots must never target the Core Ragers
+  - melee bots: retreat at stack threshold configurable (default 8)
+
+---
+
+### boss: Majordomo Executus
+- raid: Molten Core
+- raid_size: 40
+- boss_order: 9
+- optional: no
+- encounter_type: council
+- composition: 1 [MT] (on Domo) + 3-4 off-tanks; 2+ [MAGE] for Polymorph
+- key_abilities:
+  - Majordomo is immune to taunt and yields when all 8 adds die — he is never killed
+  - Aegis of Ragnaros / Magic Reflection — rotating shields: spell-reflect and melee-damage-reflect phases
+  - Blast Wave — AoE fire + slow
+  - Teleport — drops a random player onto the coals (heavy fire dot)
+  - 4x Flamewaker Healer (sheepable) + 4x Flamewaker Elite (immune to sheep)
+- phases: ends when all 8 adds die
+- positioning: [MT] tanks Domo away from the add pack; off-tanks hold Elites in a loose line; mages hold sheeped Healers at max range
+- tank_rules:
+  - [MT] build threat on Domo but expect no taunt; never chase if he teleports someone — hold position
+- healer_rules:
+  - IF a player is teleported to the coals THEN top them immediately (dot + return trip)
+- dps_rules:
+  - [MAGE] keep assigned Healers sheeped; re-sheep early
+  - kill order: un-sheeped Healers first, then Elites, breaking sheep one at a time
+  - [CASTER] IF Magic Reflection shield up THEN stop casting until it fades
+  - [MELEE] IF damage-reflect shield up THEN stop attacking (or accept reflect damage with healer warning)
+- movement_rules:
+  - IF teleported onto coals THEN run out of the fire immediately and back to the group
+- threat_rules: Domo is taunt-immune; adds are normal
+- interrupt_priority: none
+- dispel_priority: none
+- cc_assignments: [MAGE] Polymorph 2-4 Flamewaker Healers, maintain for full duration
+- kill_order: Flamewaker Healer x4 (one at a time from sheep) → Flamewaker Elite x4 → fight ends
+- enrage_timer: none
+- wipe_risks: caster deaths to reflected spells; broken sheep mass-healing Elites
+- bot_behavior_notes:
+  - caster bots need a shield-detection stop-cast rule (check boss aura each cast)
+  - mage bots: sheep maintenance beats damage
+
+---
+
+### boss: Ragnaros
+- raid: Molten Core
+- raid_size: 40
+- boss_order: 10
+- optional: no
+- encounter_type: gimmick
+- composition: 1 [MT] (fire resist capped ~315) + 1 [OT]; 2 [WARLOCK] Soulstone rotation; fire protection potions for all
+- key_abilities:
+  - Wrath of Ragnaros — 25-yard knockback + damage around a random melee-range target
+  - Elemental Fire — targets a random ranged player: heavy fire dot + throws nearby players into the lava
+  - Lava Splash — periodic raid-wide fire damage
+  - Magma Blast — if nobody in melee range, blasts the raid (never let this happen)
+  - Submerge — every 3 minutes: Ragnaros despawns 90s and summons 8 Sons of Flame
+  - Sons of Flame — hit extremely hard; burn mana of nearby casters
+- phases:
+  - active phase: 3 minutes of Ragnaros
+  - submerge phase: 90 seconds, 8 Sons of Flame, then Ragnaros re-emerges (repeat until dead)
+- positioning:
+  - [MT] tanks at the lip of the lava pool, back to lava, always in melee range
+  - [MELEE] stacked directly behind Ragnaros at max melee range
+  - [RANGED]/[HEALER] spread in 3-4 small groups 10+ yards apart around the room (minimizes Elemental Fire chain)
+  - submerge: [ALL] collapse to a single marked stack point away from the lava
+- tank_rules:
+  - [MT] NEVER leave melee range (prevents Magma Blast)
+  - IF knocked into lava THEN immediately swim/climb back; [OT] taunts until [MT] returns
+  - [OT] on submerge: pick up Sons of Flame with [WARLOCK] banish support
+- healer_rules:
+  - pre-shield [MT] before each Wrath of Ragnaros
+  - heavy raid healing during submerge (sons melee + Lava Splash)
+- dps_rules:
+  - [MELEE] IF Wrath of Ragnaros is casting (timer) THEN run out to 12 yards, return after the knockback
+  - active phase: burn Ragnaros; submerge: kill Sons of Flame fast ([WARLOCK] Banish 1-2, [MAGE] Frost Nova/Blizzard at the stack point)
+  - [HUNTER]/[WARLOCK] keep dots OFF the boss as submerge approaches
+- movement_rules:
+  - IF Elemental Fire on you THEN you and nearby players will be thrown — group-mates sidestep the target
+  - IF in lava THEN move to shore immediately; healers top lava swimmers
+  - submerge trigger: [ALL] run to stack point before submerge completes
+- threat_rules: no full threat wipe, but tank knockbacks cause temporary OT tanking; dps hold after each Wrath until [MT] is back
+- interrupt_priority: none
+- dispel_priority:
+  - Elemental Fire dot — [PRIEST]/[PALADIN] — dispel the target
+- cc_assignments: [WARLOCK] Banish 1-2 Sons of Flame per submerge
+- kill_order: Ragnaros (active) → Sons of Flame (submerge) → Ragnaros
+- enrage_timer: none (fight is a 3-minute-cycle endurance test)
+- wipe_risks: Magma Blast from empty melee range; Sons of Flame reaching healers; Elemental Fire chain-throwing a whole ranged group into lava
+- bot_behavior_notes:
+  - melee bots need a Wrath timer-based retreat routine (out at cast, in after knockback)
+  - all bots: lava avoidance + "get out of lava" recovery routine
+  - submerge trigger collapses all bots to one waypoint; sons phase = AoE mode

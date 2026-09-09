@@ -1,0 +1,310 @@
+# BLACKWING LAIR — 40-MAN RAID
+
+Raid-wide notes:
+- Onyxia Scale Cloak is MANDATORY for Firemaw, Ebonroc, Flamegor, and Nefarian (Shadow Flame breath kills uncloaked players).
+- [HUNTER] Tranquilizing Shot rotations are required on Flamegor and Chromaggus.
+- Bring free action potions and restorative potions; nature/fire resist potions help on drakes.
+
+---
+
+### boss: Razorgore the Untamed
+- raid: Blackwing Lair
+- raid_size: 40
+- boss_order: 1
+- optional: no
+- encounter_type: gimmick
+- composition: 1 [MT], 2+ off-tanks/kite tanks; 1 designated orb-controller (usually a paladin or hunter for survivability); heavy AoE
+- key_abilities:
+  - P1 Control Orb — a player channels Mind Control on Razorgore and uses his Destroy Egg ability on all 30 eggs
+  - P1 adds — Blackwing Legionnaires (melee), Blackwing Mages (fire volley), Death Talon Dragonspawn (kill on sight: they attack the controller)
+  - P2 Fireball Volley — raid-wide fire damage
+  - P2 Conflagration — disorients the main tank and burns nearby players
+- phases:
+  - P1: control Razorgore via orb, destroy all 30 eggs while raid controls add spawns
+  - P2: Razorgore breaks free at 0 eggs; tank and burn
+- positioning: P1: raid split — melee group holds the door/ramps (kill Legionnaires), ranged/mages AoE mage-adds, one group protects the controller at the orb platform; P2: [MT] tanks center, raid spread 8 yards
+- tank_rules:
+  - P1: off-tanks pick up Legionnaires and Dragonspawn; never let anything reach the controller
+  - P2: [MT] grab Razorgore instantly; after Conflagration disorient, [OT] taunts until [MT] recovers
+- healer_rules:
+  - P1: heal the controller and tanks; P2: raid-wide healing for Fireball Volley
+- dps_rules:
+  - P1 kill order: Blackwing Mages (AoE them down) > Death Talon Dragonspawn > Legionnaires (kite/CC excess)
+  - [HUNTER]/[ROGUE] kite unkillable overflow around the room edges
+  - P2: burn Razorgore
+- movement_rules:
+  - P2: IF Conflagration on tank THEN nearby players step away from the tank
+- threat_rules: P1 add aggro is proximity-based; do not over-pull; P2 tank disorient causes temporary aggro loss
+- interrupt_priority: none critical
+- dispel_priority: none
+- cc_assignments: [WARLOCK] Fear kite Legionnaires; [MAGE] Frost Nova at chokepoints
+- kill_order: P1: Mages → Dragonspawn → Legionnaires; P2: Razorgore
+- enrage_timer: none (P1 fails if controller dies or Razorgore dies while controlled — keep him healed/alive during control)
+- wipe_risks: controller killed; adds overwhelming the orb platform; Razorgore dying during MC (wipe)
+- bot_behavior_notes:
+  - designate one bot as controller with a fixed waypoint loop: nearest egg → Destroy Egg → next egg
+  - add-control bots: intercept pathing toward the controller, not toward dps
+
+---
+
+### boss: Vaelastrasz the Corrupt
+- raid: Blackwing Lair
+- raid_size: 40
+- boss_order: 2
+- optional: no
+- encounter_type: dps-race
+- composition: 3-4 tanks in a burn order; 10+ healers; all consumables; ~3-minute hard enrage
+- key_abilities:
+  - Essence of the Red — infinite mana/rage/energy for 3 minutes (fight timer)
+  - Burning Adrenaline — debuff on a random mana user every 15s: +100% damage, instant casts, but HP burns to 0 in 20s (death follows); also applied to current tank every 45s
+  - Fire Nova — pulsing raid-wide fire damage
+  - Flame Breath — frontal cone
+  - Tail Sweep — rear knockback
+- phases: none; single burn phase
+- positioning: [MT] tanks Vael at the wall (head to wall); [MELEE] on sides; [RANGED] spread; designated "BA spot" 30+ yards away for Burning Adrenaline victims
+- tank_rules:
+  - tank chain: [MT] → [OT2] → [OT3] as each receives Burning Adrenaline (the BA'd tank dies in 20s)
+  - IF Burning Adrenaline on current tank THEN next tank in chain taunts and takes over positioning
+- healer_rules:
+  - dump-heal the active tank; spam raid heals through Fire Nova; do not waste mana saving a BA victim at the end (they will die)
+- dps_rules:
+  - maximum sustained dps; all cooldowns at pull
+  - IF Burning Adrenaline on you THEN run to the BA spot and unload instant-cast nukes until you die
+  - [ROGUE] vanish/[HUNTER] feign to manage threat — pulling aggro here wipes the raid via breath
+- movement_rules:
+  - IF Burning Adrenaline THEN move to BA spot immediately, keep casting while running
+- threat_rules: threat is THE mechanic; [MT] chain must be flawless; dps ride just under tank threat
+- interrupt_priority: none
+- dispel_priority: none (Burning Adrenaline is undispellable)
+- cc_assignments: none
+- kill_order: Vaelastrasz
+- enrage_timer: ~3 minutes (Essence of the Red expiry)
+- wipe_risks: tank chain breaking (untanked breath on raid); dps pulling aggro; insufficient dps before enrage
+- bot_behavior_notes:
+  - BA bots: waypoint to BA spot + cast-while-dying routine
+  - tank bots: scripted taunt-swap sequence on BA aura detection
+
+---
+
+### boss: Broodlord Lashlayer
+- raid: Blackwing Lair
+- raid_size: 40
+- boss_order: 3
+- optional: no
+- encounter_type: tank-and-spank
+- composition: 2 tanks; standard healing
+- key_abilities:
+  - Mortal Strike — reduces healing on the tank by 50%
+  - Blast Wave — AoE fire + slow
+  - Knock Away — single-target knockback that REDUCES threat significantly
+  - Cleave — frontal
+- phases: none
+- positioning: tank him in the suppression room or pulled back to the corner; [MT] against wall; [MELEE] behind; [RANGED] spread
+- tank_rules:
+  - [MT] tank against the wall so Knock Away does not reposition the boss
+  - [OT] build threat continuously; IF [MT] threat drops too far from Knock Away THEN [OT] takes over naturally
+- healer_rules:
+  - big heals during Mortal Strike windows; shield the tank on MS application
+- dps_rules:
+  - steady dps under threat ceiling; [MELEE] stay behind boss
+- movement_rules: none special
+- threat_rules: Knock Away threat reduction means threat is unstable — all dps throttle; never out-aggro during MS window
+- interrupt_priority: none
+- dispel_priority: none
+- cc_assignments: none
+- kill_order: Broodlord Lashlayer
+- enrage_timer: none
+- wipe_risks: threat chaos after Knock Away combined with Mortal Strike killing the tank
+- bot_behavior_notes: tank bots treat this as a two-tank shared-threat fight, not a taunt-swap fight (Knock Away is not taunt-driven)
+
+---
+
+### boss: Firemaw
+- raid: Blackwing Lair
+- raid_size: 40
+- boss_order: 4
+- optional: no
+- encounter_type: gimmick
+- composition: 2 tanks; Onyxia Scale Cloak on EVERYONE; fire resist helps
+- key_abilities:
+  - Shadow Flame — frontal cone shadow nuke (lethal without Onyxia Scale Cloak)
+  - Flame Buffet — stacking fire debuff on anyone in line of sight: +damage per stack; drops only by breaking LoS for ~20s
+  - Wing Buffet — frontal knockback with large threat reduction
+  - Incinerate? no — (Firemaw: shadow flame, flame buffet, wing buffet)
+- phases: none
+- positioning: tank Firemaw in the doorway/corner alcove; [MT] alone in LoS of the boss with dedicated healers; [DPS] wait out of LoS, step in to dps until ~4-6 Flame Buffet stacks, then step out of LoS to drop stacks; healer groups rotate similarly
+- tank_rules:
+  - [MT] holds boss in alcove; [OT] stands ready: IF Wing Buffet knocks/reduces [MT] threat THEN [OT] taunts to keep boss planted
+  - [MT] also drops stacks via brief LoS at very high stacks (coordinated with OT taunt)
+- healer_rules:
+  - rotate healing assignments so no healer stacks Flame Buffet above ~6; drop stacks behind the corner
+- dps_rules:
+  - IF Flame Buffet stacks >= 5 THEN break LoS until debuff expires, then re-engage
+  - never stand in front of the boss
+- movement_rules:
+  - LoS rotation is the whole fight: in to dps, out to reset
+- threat_rules: Wing Buffet threat reduction on [MT]; [OT] must stay second on threat and taunt on buffet
+- interrupt_priority: none
+- dispel_priority: none
+- cc_assignments: none
+- kill_order: Firemaw
+- enrage_timer: none
+- wipe_risks: uncloaked player one-shot by Shadow Flame; players eating 8+ Flame Buffet stacks
+- bot_behavior_notes:
+  - stack-count-driven LoS routine for every bot (threshold default 5)
+  - cloak check: refuse to engage without Onyxia Scale Cloak equipped
+
+---
+
+### boss: Ebonroc
+- raid: Blackwing Lair
+- raid_size: 40
+- boss_order: 5
+- optional: no
+- encounter_type: tank-and-spank
+- composition: 2-3 tanks; Onyxia Scale Cloak mandatory
+- key_abilities:
+  - Shadow Flame — frontal breath (cloak required)
+  - Shadow of Ebonroc — debuff on current tank: Ebonroc heals massively every time he hits that tank
+  - Wing Buffet — threat reduction
+- phases: none
+- positioning: tank in his corner; [MELEE] behind; [RANGED] spread
+- tank_rules:
+  - IF Shadow of Ebonroc on current tank THEN the next tank in rotation taunts IMMEDIATELY (2-3 tank taunt rotation)
+  - never let Ebonroc hit a debuffed tank — every hit heals him ~25k
+- healer_rules:
+  - burst healing on taunt transitions
+- dps_rules:
+  - steady dps; do not rip aggro during taunt swaps
+- movement_rules: none
+- threat_rules: Wing Buffet reduces threat; taunt rotation is driven by the debuff, not threat
+- interrupt_priority: none
+- dispel_priority: none (Shadow of Ebonroc is not dispellable — it is out-taunted)
+- cc_assignments: none
+- kill_order: Ebonroc
+- enrage_timer: none
+- wipe_risks: missed taunt on Shadow of Ebonroc → boss out-heals all dps
+- bot_behavior_notes: tank bots watch own debuff bar; taunt fires on debuff application, not on a timer
+
+---
+
+### boss: Flamegor
+- raid: Blackwing Lair
+- raid_size: 40
+- boss_order: 6
+- optional: no
+- encounter_type: tank-and-spank
+- composition: 2 tanks; 2+ [HUNTER] tranq rotation; Onyxia Scale Cloak mandatory
+- key_abilities:
+  - Shadow Flame — frontal breath (cloak)
+  - Wing Buffet — threat reduction
+  - Frenzy — enrage: massive attack speed; Tranquilizing Shot removes
+  - Fire Nova — raid-wide fire pulses while frenzied
+- phases: none
+- positioning: as per Firemaw/Ebonroc — tank in corner, melee behind, ranged spread
+- tank_rules:
+  - taunt rotation after Wing Buffet to keep boss positioned
+- healer_rules:
+  - raid healing ramps during untranq'd Frenzy windows
+- dps_rules:
+  - [HUNTER] strict tranq rotation: IF Frenzy THEN Tranquilizing Shot (designated order, no overlap)
+  - steady dps
+- movement_rules: none
+- threat_rules: Wing Buffet threat reduction; manage as usual
+- interrupt_priority: none
+- dispel_priority: none
+- cc_assignments: none
+- kill_order: Flamegor
+- enrage_timer: none
+- wipe_risks: two hunters tranq-ing early/simultaneously leaving Frenzy up with no tranq available
+- bot_behavior_notes: hunter bots: sequenced tranq (hunter A first, hunter B backup at +1.5s if Frenzy persists)
+
+---
+
+### boss: Chromaggus
+- raid: Blackwing Lair
+- raid_size: 40
+- boss_order: 7
+- optional: no
+- encounter_type: gimmick
+- composition: 2 tanks; 2+ [HUNTER] tranq; full dispel coverage (curse/magic/poison/disease all required); nature resist helpful
+- key_abilities:
+  - Brood Affliction (5 colors) — Red: fire dot (heals Chromaggus if target dies... burns mana?); Blue: slow + mana drain (magic); Green: nature dot (poison); Black: +fire damage taken (curse); Bronze: 4s stun (only removable by Hourglass Sand)
+  - Breaths (rotating 2 per lockout from 5): Corrosive Acid, Frost Burn, Ignite Flesh, Incinerate, Time Lapse — Time Lapse stuns the raid and WIPES THREAT
+  - Enrage — at ~20%: attack speed up; tranq-able Frenzy also occurs periodically
+  - Mutation — a player with all 5 Brood Afflictions transforms into a hostile drakonid
+- phases: sub-20% enrage burn
+- positioning: LoS fight around the doorway/pillar; [MT] alone in view with healer group A; [DPS]/[HEALER] pop out to attack/dispel only between breaths, then LoS again; [OT] builds threat in view
+- tank_rules:
+  - [OT] stays visible to boss continuously to be second on threat (Time Lapse insurance)
+  - IF Time Lapse breath THEN [OT] becomes tank after the stun; [MT] rebuilds
+- healer_rules:
+  - dispel rotation: [MAGE]/[DRUID] curses, [PRIEST]/[PALADIN] magic, [DRUID]/[SHAMAN] poison, [PRIEST] disease — clear afflictions constantly so nobody reaches 5 stacks
+  - use Hourglass Sand for Bronze stun on key roles
+- dps_rules:
+  - dps only while LoS-safe between breaths; never stand in view during a breath cast
+  - IF a raid member mutates (drakonid) THEN [MAGE] sheep them; kill only if sheep fails
+  - [HUNTER] tranq the periodic Frenzy; save cooldowns for 20% enrage burn
+- movement_rules:
+  - IF breath casting THEN break LoS behind the pillar/doorway until it fires
+- threat_rules: Time Lapse = full threat wipe; [DPS] stop all damage during/after Time Lapse until tanks rebuild
+- interrupt_priority: none
+- dispel_priority:
+  - Brood Affliction: Black (curse) — [MAGE]/[DRUID]
+  - Brood Affliction: Blue (magic) — [PRIEST]/[PALADIN]
+  - Brood Affliction: Green (poison) — [DRUID]/[SHAMAN]/[PALADIN]
+  - Brood Affliction: Red (disease) — [PRIEST]/[SHAMAN]/[PALADIN]
+  - Brood Affliction: Bronze — Hourglass Sand item (not dispellable)
+- cc_assignments: [MAGE] Polymorph mutated players
+- kill_order: Chromaggus
+- enrage_timer: none (20% soft enrage: burn)
+- wipe_risks: dispel coverage collapse → mutations; dps ripping aggro after Time Lapse
+- bot_behavior_notes:
+  - breath-detection LoS routine for all non-tank bots
+  - threat rule: hard dps stop on Time Lapse aura application
+
+---
+
+### boss: Nefarian
+- raid: Blackwing Lair
+- raid_size: 40
+- boss_order: 8
+- optional: no
+- encounter_type: gimmick
+- composition: 2 tanks; Onyxia Scale Cloak MANDATORY on everyone; full class representation expected for class calls
+- key_abilities:
+  - P1: 42 Drakonids in 2 colors (kill them; red=fire dot immune-ish, blue=frost, green=nature, black=shadow, bronze=drain) + Nefarian shadowbolts + fears from Lord Victor Nefarius
+  - P2: Nefarian lands — Shadow Flame breath (cloak), Cleave, Tail Sweep, Bellowing Roar (fear), Veil of Shadow (-75% healing curse on tank... actually -healing curse), and CLASS CALLS every ~30s
+  - Class calls: Warrior: forced Berserker Stance +30% damage taken; Priest: direct heals apply a stacking dot — STOP direct heals; Mage: Wild Polymorph randoms (Ice Block/stop cast near raid); Warlock: 2 Infernals spawn per warlock (kill); Rogue: teleported in front of boss + rooted (turn boss/heal them); Hunter: ranged weapon broken (swap to spare); Druid: stuck in Cat Form; Paladin: Blessing of Protection on Nefarian (wait it out / melee only); Shaman: Corrupted Totems spawn attacking the raid (kill totems)
+  - P3 (20%): all Drakonid corpses resurrect as Bone Constructs — AoE them
+- phases:
+  - P1: add waves until all 42 dead
+  - P2: Nefarian + class calls
+  - P3 (20%): Bone Constructs + Nefarian
+- positioning: P1: raid splits to both doors, kill drakonids near the center; P2: [MT] tanks Nefarian at the throne facing away; [ROGUE] pre-position near boss during rogue call expectation; raid spread for calls; P3: collapse to throne for AoE
+- tank_rules:
+  - P1: pick up drakonids at both doors
+  - P2: [MT] face Nefarian away from raid; on ROGUE call, hold boss still — healers top the rooted rogues
+  - P3: [MT] keeps Nefarian; [OT] rounds up Bone Constructs for AoE
+- healer_rules:
+  - PRIEST CALL: [PRIEST] stop ALL direct heals (dot will kill the tank) — [DRUID]/[PALADIN]/[SHAMAN] cover healing
+  - dispel Veil of Shadow curse off the tank instantly ([MAGE]/[DRUID])
+- dps_rules:
+  - P1: kill drakonids fast, mind color immunities (mages use the non-immune school)
+  - MAGE CALL: stop casting until call resolves / Ice Block out of polymorph zone
+  - WARLOCK CALL: kill Infernals immediately
+  - SHAMAN CALL: kill Corrupted Totems instantly (they attack the raid)
+  - P3: [ALL] AoE Bone Constructs down, then finish Nefarian
+- movement_rules:
+  - IF feared THEN return to position; rogues rooted in front — healers focus them
+- threat_rules: fears cause threat scrambles; [DPS] throttle after each Roar
+- interrupt_priority: none
+- dispel_priority:
+  - Veil of Shadow (curse on tank) — [MAGE]/[DRUID] — immediate
+- cc_assignments: none
+- kill_order: P1 drakonids → Nefarian (calls permitting) → P3 Bone Constructs → Nefarian
+- enrage_timer: none
+- wipe_risks: priest call killing the tank; uncloaked Shadow Flame deaths; P3 construct overwhelm
+- bot_behavior_notes:
+  - class-call state machine: on call event, bots switch behavior profile (priests: disable direct heals; hunters: equip spare weapon; mages: stop-cast; shamans: target own totems)
+  - hunter bots should carry a spare ranged weapon and auto-swap on call

@@ -6,6 +6,7 @@
 
 #include "TravelMgr.h"
 #include "AreaDefines.h"
+#include <algorithm>
 #include "CellImpl.h"
 #include "ChatHelper.h"
 #include "Corpse.h"
@@ -66,22 +67,65 @@ static Capital const* FindCapitalByBanker(uint16 bankerEntry)
     return nullptr;
 }
 
-static int GetCityWeight(uint32 zoneId)
+bool TravelMgr::IsVanillaEndgameZone(uint32 zoneId)
 {
     switch (zoneId)
     {
-        case AREA_STORMWIND_CITY:  return sPlayerbotAIConfig.weightTeleToStormwind;
-        case AREA_IRONFORGE:       return sPlayerbotAIConfig.weightTeleToIronforge;
-        case AREA_DARNASSUS:       return sPlayerbotAIConfig.weightTeleToDarnassus;
-        case AREA_THE_EXODAR:      return sPlayerbotAIConfig.weightTeleToExodar;
-        case AREA_ORGRIMMAR:       return sPlayerbotAIConfig.weightTeleToOrgrimmar;
-        case AREA_UNDERCITY:       return sPlayerbotAIConfig.weightTeleToUndercity;
-        case AREA_THUNDER_BLUFF:   return sPlayerbotAIConfig.weightTeleToThunderBluff;
-        case AREA_SILVERMOON_CITY: return sPlayerbotAIConfig.weightTeleToSilvermoonCity;
-        case AREA_SHATTRATH_CITY:  return sPlayerbotAIConfig.weightTeleToShattrathCity;
-        case AREA_DALARAN:         return sPlayerbotAIConfig.weightTeleToDalaran;
+        case AREA_BLASTED_LANDS:
+        case AREA_WESTERN_PLAGUELANDS:
+        case AREA_BURNING_STEPPES:
+        case AREA_EASTERN_PLAGUELANDS:
+        case AREA_SEARING_GORGE:
+        case AREA_THE_HINTERLANDS:
+        case AREA_WINTERSPRING:
+        case AREA_SILITHUS:
+        case 361: // Felwood
+        case 490: // Un'Goro Crater
+            return true;
+        default:
+            return false;
     }
-    return 0;
+}
+
+static int GetCityWeight(uint32 zoneId, Player* bot = nullptr)
+{
+    int weight = 0;
+    switch (zoneId)
+    {
+        case AREA_STORMWIND_CITY:  weight = sPlayerbotAIConfig.weightTeleToStormwind; break;
+        case AREA_IRONFORGE:       weight = sPlayerbotAIConfig.weightTeleToIronforge; break;
+        case AREA_DARNASSUS:       weight = sPlayerbotAIConfig.weightTeleToDarnassus; break;
+        case AREA_THE_EXODAR:      weight = sPlayerbotAIConfig.weightTeleToExodar; break;
+        case AREA_ORGRIMMAR:       weight = sPlayerbotAIConfig.weightTeleToOrgrimmar; break;
+        case AREA_UNDERCITY:       weight = sPlayerbotAIConfig.weightTeleToUndercity; break;
+        case AREA_THUNDER_BLUFF:   weight = sPlayerbotAIConfig.weightTeleToThunderBluff; break;
+        case AREA_SILVERMOON_CITY: weight = sPlayerbotAIConfig.weightTeleToSilvermoonCity; break;
+        case AREA_SHATTRATH_CITY:  weight = sPlayerbotAIConfig.weightTeleToShattrathCity; break;
+        case AREA_DALARAN:         weight = sPlayerbotAIConfig.weightTeleToDalaran; break;
+        default: return 0;
+    }
+
+    // Max-level bots pack Stormwind/Ironforge and Orgrimmar/Undercity.
+    // Darnassus and Thunder Bluff stay as quiet alts.
+    if (bot && bot->GetLevel() >= sPlayerbotAIConfig.randomBotMaxLevel)
+    {
+        switch (zoneId)
+        {
+            case AREA_STORMWIND_CITY:
+            case AREA_IRONFORGE:
+            case AREA_ORGRIMMAR:
+            case AREA_UNDERCITY:
+                weight = std::max(weight, 8);
+                break;
+            case AREA_DARNASSUS:
+            case AREA_THUNDER_BLUFF:
+                weight = 1;
+                break;
+            default:
+                break;
+        }
+    }
+    return weight;
 }
 
 WorldPosition::WorldPosition(std::string const str)
@@ -4529,7 +4573,7 @@ std::vector<WorldLocation> TravelMgr::GetCityLocations(Player* bot)
     std::vector<uint32> weightedCities;
     for (uint32 zoneId : validBankerCities)
     {
-        int weight = GetCityWeight(zoneId);
+        int weight = GetCityWeight(zoneId, bot);
         if (weight <= 0)
             continue;
 

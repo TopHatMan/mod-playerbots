@@ -255,6 +255,8 @@ std::string const RpgSellAction::ActionName() { return "sell"; }
 
 Event RpgSellAction::ActionEvent(Event /*event*/) { return Event("rpg action", "vendor"); }
 
+std::string const RpgAuctionAction::ActionName() { return "auction"; }
+
 std::string const RpgRepairAction::ActionName() { return "repair"; }
 
 bool RpgTrainAction::isUseful()

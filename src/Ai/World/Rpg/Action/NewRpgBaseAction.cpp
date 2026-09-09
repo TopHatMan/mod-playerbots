@@ -6,6 +6,8 @@
 
 #include "NewRpgBaseAction.h"
 #include "BroadcastHelper.h"
+#include "Item.h"
+#include "ItemUsageValue.h"
 #include "ChatHelper.h"
 #include "Creature.h"
 #include "GameObject.h"
@@ -759,6 +761,26 @@ ObjectGuid NewRpgBaseAction::ChooseNpcOrGameObjectToInteract(bool questgiverOnly
     if (questgiverOnly)
         return ObjectGuid();
 
+    bool const hasAhItems =
+        !AI_VALUE2(std::vector<Item*>, "inventory items", "usage " + std::to_string(ITEM_USAGE_AH)).empty();
+    bool const canSell = AI_VALUE(bool, "can sell");
+    std::vector<ObjectGuid> preferred;
+    for (ObjectGuid const& guid : possibleTargets)
+    {
+        WorldObject* object = ObjectAccessor::GetCreatureOrPetOrVehicle(*bot, guid);
+        Creature* creature = object ? object->ToCreature() : nullptr;
+        if (!creature || !creature->IsInWorld())
+            continue;
+        if (distanceLimit && bot->GetDistance(creature) > distanceLimit)
+            continue;
+        if (hasAhItems && creature->HasNpcFlag(UNIT_NPC_FLAG_AUCTIONEER))
+            preferred.push_back(guid);
+        else if (canSell && creature->HasNpcFlag(UNIT_NPC_FLAG_VENDOR))
+            preferred.push_back(guid);
+    }
+    if (!preferred.empty())
+        return preferred[urand(0, preferred.size() - 1)];
+
     if (possibleTargets.empty())
         return ObjectGuid();
 
@@ -971,7 +993,10 @@ WorldPosition NewRpgBaseAction::SelectRandomGrindPos(Player* bot)
         hiRange /= 3;
         loRange /= 3;
     }
-    std::vector<WorldLocation> lo_prepared_locs, hi_prepared_locs;
+    bool const maxLevel = bot->GetLevel() >= sPlayerbotAIConfig.randomBotMaxLevel;
+    if (maxLevel)
+        loRange = 8000.0f;
+    std::vector<WorldLocation> lo_prepared_locs, hi_prepared_locs, endgame_locs;
 
     bool inCity = false;
     if (AreaTableEntry const* zone = sAreaTableStore.LookupEntry(bot->GetZoneId()))
@@ -985,11 +1010,16 @@ WorldPosition NewRpgBaseAction::SelectRandomGrindPos(Player* bot)
         if (bot->GetMapId() != loc.GetMapId())
             continue;
 
-        if (bot->GetExactDist(loc) > 2500.0f)
+        if (bot->GetExactDist(loc) > loRange)
             continue;
 
-        if (!inCity && bot->GetMap()->GetZoneId(bot->GetPhaseMask(), loc.GetPositionX(), loc.GetPositionY(),
-                                                loc.GetPositionZ()) != bot->GetZoneId())
+        uint32 locZone = bot->GetMap()->GetZoneId(bot->GetPhaseMask(), loc.GetPositionX(), loc.GetPositionY(),
+                                                  loc.GetPositionZ());
+        bool const endgame = TravelMgr::IsVanillaEndgameZone(locZone);
+        if (maxLevel && endgame)
+            endgame_locs.push_back(loc);
+
+        if (!inCity && !maxLevel && locZone != bot->GetZoneId())
             continue;
 
         if (bot->GetExactDist(loc) < hiRange)
@@ -997,10 +1027,16 @@ WorldPosition NewRpgBaseAction::SelectRandomGrindPos(Player* bot)
             hi_prepared_locs.push_back(loc);
         }
 
-        if (bot->GetExactDist(loc) < loRange)
-        {
-            lo_prepared_locs.push_back(loc);
-        }
+        lo_prepared_locs.push_back(loc);
+    }
+
+    if (maxLevel && !endgame_locs.empty() && urand(1, 100) <= 70)
+    {
+        uint32 idx = urand(0, endgame_locs.size() - 1);
+        WorldPosition dest = endgame_locs[idx];
+        LOG_DEBUG("playerbots", "[New RPG] Bot {} select endgame grind pos Map:{} X:{} Y:{} Z:{}",
+                  bot->GetName(), dest.GetMapId(), dest.GetPositionX(), dest.GetPositionY(), dest.GetPositionZ());
+        return dest;
     }
     WorldPosition dest{};
     if (urand(1, 100) <= 50 && !hi_prepared_locs.empty())
@@ -1084,15 +1120,26 @@ bool NewRpgBaseAction::RandomChangeStatus(std::vector<NewRpgStatus> candidateSta
 {
     std::vector<NewRpgStatus> availableStatus;
     uint32 probSum = 0;
+    bool const maxLevel = bot->GetLevel() >= sPlayerbotAIConfig.randomBotMaxLevel;
     for (NewRpgStatus status : candidateStatus)
     {
-        if (sPlayerbotAIConfig.RpgStatusProbWeight[status] == 0)
+        uint32 weight = sPlayerbotAIConfig.RpgStatusProbWeight[status];
+        if (maxLevel)
+        {
+            if (status == RPG_GO_GRIND)
+                weight += 25;
+            else if (status == RPG_GO_CAMP)
+                weight += 20;
+            else if (status == RPG_DO_QUEST)
+                weight /= 2;
+        }
+        if (weight == 0)
             continue;
 
         if (CheckRpgStatusAvailable(status))
         {
             availableStatus.push_back(status);
-            probSum += sPlayerbotAIConfig.RpgStatusProbWeight[status];
+            probSum += weight;
         }
     }
     // Safety check. Default to "rest" if all RPG weights = 0
@@ -1107,7 +1154,17 @@ bool NewRpgBaseAction::RandomChangeStatus(std::vector<NewRpgStatus> candidateSta
     NewRpgStatus chosenStatus = RPG_STATUS_END;
     for (NewRpgStatus status : availableStatus)
     {
-        accumulate += sPlayerbotAIConfig.RpgStatusProbWeight[status];
+        uint32 weight = sPlayerbotAIConfig.RpgStatusProbWeight[status];
+        if (maxLevel)
+        {
+            if (status == RPG_GO_GRIND)
+                weight += 25;
+            else if (status == RPG_GO_CAMP)
+                weight += 20;
+            else if (status == RPG_DO_QUEST)
+                weight /= 2;
+        }
+        accumulate += weight;
         if (accumulate >= rand)
         {
             chosenStatus = status;

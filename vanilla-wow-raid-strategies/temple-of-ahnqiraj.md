@@ -1,0 +1,367 @@
+# TEMPLE OF AHN'QIRAJ (AQ40) — 40-MAN RAID
+
+Raid-wide notes:
+- Nature resist gear is mandatory for Huhuran (~200+ NR on soakers) and helpful on Viscidus.
+- Frost damage is mandatory for Viscidus (mages spec Frostbolt; melee bring frost oils).
+- Free Action Potions help on trash; Greater Nature Protection potions for Huhuran.
+
+---
+
+### boss: The Prophet Skeram
+- raid: Temple of Ahn'Qiraj
+- raid_size: 40
+- boss_order: 1
+- optional: no
+- encounter_type: gimmick
+- composition: 3 tanks (one per platform); 2+ [MAGE] for Polymorph on MC'd players; interrupters
+- key_abilities:
+  - True Fulfillment — mind control on a random player (+300% damage): CC the victim, do not kill
+  - Arcane Explosion — heavy AoE if 4+ players near him
+  - Earth Shock — tank nuke (interruptible)
+  - Blink — teleports between his 3 platforms (drops threat each blink)
+  - Split — at 75% / 50% / 25% creates 2 mirror images (illusions die fast; all three cast/MC)
+- phases: split events at 75/50/25%
+- positioning: 3 platforms — one tank + one healer + interrupter staged at EACH platform at all times; [RANGED] spread 10 yards on the ground floor; [MELEE] chase the active platform but never cluster 4+
+- tank_rules:
+  - IF Skeram blinks to your platform THEN pick him up instantly and interrupt Earth Shock
+- healer_rules:
+  - platform healers stay at their post; ground healers top raid
+- dps_rules:
+  - [MAGE] sheep MC'd players instantly (they will kill people)
+  - on Split: kill the 2 images first (they have low HP; the real one is the one with highest HP)
+  - keep melee count near boss below 4 (Arcane Explosion trigger)
+- movement_rules:
+  - [MELEE] rotate between platforms on blink; use the stairs, avoid clumping
+- threat_rules: every Blink = full threat drop; re-taunt at the new platform; dps hold 2s
+- interrupt_priority:
+  - Earth Shock — interrupt every cast (saves tanks)
+- dispel_priority: none
+- cc_assignments: [MAGE] Polymorph all MC'd players (True Fulfillment)
+- kill_order: images (during splits) → Skeram
+- enrage_timer: none
+- wipe_risks: MC'd mage/warlock killing healers; 4+ melee triggering Arcane Explosion chains
+- bot_behavior_notes:
+  - platform assignment is static per bot; blink = tank at destination platform takes over
+  - MC detection → nearest mage bot casts Polymorph on the MC target
+
+---
+
+### boss: Bug Trio (Lord Kri, Princess Yauj, Vem)
+- raid: Temple of Ahn'Qiraj
+- raid_size: 40
+- boss_order: 2
+- optional: no
+- encounter_type: council
+- composition: 3 tanks (one per bug); interrupters for Yauj; nature resist helps
+- key_abilities:
+  - Lord Kri — Poison Volley (raid-wide nature dot); on death leaves a huge toxic pool (don't stand in it)
+  - Princess Yauj — AoE Fear; Great Heal (self-heal — INTERRUPT); on death spawns small bugs
+  - Vem — charges; enrages when others die
+  - shared mechanic: killing one heals the others to full — kill one at a time, fully, before switching
+- phases: none; sequential kills
+- positioning: three tanks spread the bugs 40 yards apart (Kri far from raid — death pool); [RANGED] spread; fear-dispel coverage on the Yauj group
+- tank_rules:
+  - [MT-Kri] pull Kri far away; [MT-Yauj] hold Yauj mid; [MT-Vem] hold Vem near entrance
+- healer_rules:
+  - heal through Poison Volley; cleanse nature dots
+  - fear counters: Fear Ward/Tremor on Yauj tanks/healers
+- dps_rules:
+  - kill order: Kri → Yauj → Vem (standard, easiest)
+  - interrupt every Yauj Great Heal
+  - IF Kri dies THEN do not stand in his death pool
+- movement_rules:
+  - IF feared THEN return to your bug's group
+  - avoid Kri death pool permanently
+- threat_rules: fears scramble threat on Yauj; re-taunt
+- interrupt_priority:
+  - Great Heal (Yauj) — every cast
+- dispel_priority:
+  - Poison Volley dot (poison) — [DRUID]/[SHAMAN]/[PALADIN]
+- cc_assignments: none
+- kill_order: Kri → Yauj → Vem
+- enrage_timer: none
+- wipe_risks: Yauj heal landing; feared raid into Kri's pool
+- bot_behavior_notes: strict target-lock per bug group; interrupt bot parked on Yauj
+
+---
+
+### boss: Battleguard Sartura
+- raid: Temple of Ahn'Qiraj
+- raid_size: 40
+- boss_order: 3
+- optional: no
+- encounter_type: gimmick
+- composition: 2-3 tanks; stun-heavy melee ([ROGUE] Cheap/Kidney Shot, [PALADIN] Hammer of Justice); 8-10 healers
+- key_abilities:
+  - Whirlwind — lethal 360-degree damage; after each whirlwind she FIXATES a random player and chases (immune to taunt while fixated)
+  - 3x Royal Guard adds — same whirlwind/fixate behavior; off-tank and kill first
+  - Enrage — 10 minutes
+- phases: none
+- positioning: [ALL] spread 8+ yards; tanks pin adds against walls; kill adds one at a time
+- tank_rules:
+  - [OT] tank the 3 Royal Guards against walls; taunt whenever possible between fixates
+  - tanks taunt Sartura on fixate transitions to reposition
+- healer_rules:
+  - heal fixated players preemptively; melee only get healed when they step out of whirlwind range
+- dps_rules:
+  - kill order: Royal Guards first (one at a time), then Sartura
+  - [MELEE] IF whirlwind starts THEN run out to 10 yards; re-engage after
+  - [ROGUE]/[PALADIN] chain stuns on the current kill target to lock it down
+  - IF fixated THEN kite away from the raid; never run through the group
+- movement_rules:
+  - fixated = kite; whirlwind = out; stunned target = burn
+- threat_rules: immune to taunt during fixate; threat resets on fixate swaps
+- interrupt_priority: none
+- dispel_priority: none
+- cc_assignments: stun rotation on kill target (Cheap Shot → Kidney Shot → Hammer of Justice → repeat)
+- kill_order: Royal Guard x3 → Sartura
+- enrage_timer: 10 minutes
+- wipe_risks: fixated player running through raid (whirlwind blender); stunned-target deaths when stun chain breaks
+- bot_behavior_notes:
+  - fixate routine: fixated bot kites on a circular path; others keep dps
+  - melee bots: whirlwind proximity retreat rule (10-yard radius)
+
+---
+
+### boss: Fankriss the Unyielding
+- raid: Temple of Ahn'Qiraj
+- raid_size: 40
+- boss_order: 4
+- optional: no
+- encounter_type: add-control
+- composition: 2-3 tanks; strong AoE
+- key_abilities:
+  - Mortal Wound — stacking -10% healing debuff on tank (tank swap at ~3 stacks)
+  - Entangle — roots random players + nature dot (dispel)
+  - Summon Spawn of Fankriss — periodically spawns a large bug add that enrages shortly after spawning (kill it within ~10s or it one-shots people)
+  - Hatchling swarms — small bugs from the three tunnels (AoE)
+- phases: none
+- positioning: [MT] tanks Fankriss center; [RANGED] spread between tunnels to AoE hatchlings; [MELEE] behind boss, ready to swap to Spawns
+- tank_rules:
+  - IF Mortal Wound >= 3 stacks THEN next tank taunts
+  - [OT] grabs Spawns of Fankriss immediately on spawn
+- healer_rules:
+  - dispel Entangle (magic) fast; heal the rooted players (dot ticks hard)
+- dps_rules:
+  - priority: Spawn of Fankriss (always, instantly — burn it before enrage) > hatchlings (AoE) > boss
+  - [MAGE]/[WARLOCK] AoE hatchling waves at tunnel mouths
+- movement_rules:
+  - IF Entangled THEN healers focus you; dps continue if in range
+- threat_rules: tank swaps on stacks; dps throttle on swaps
+- interrupt_priority: none
+- dispel_priority:
+  - Entangle (magic) — [PRIEST]/[PALADIN] — rooted players
+- cc_assignments: [MAGE] Frost Nova hatchling packs
+- kill_order: Spawn of Fankriss → hatchlings → Fankriss
+- enrage_timer: none
+- wipe_risks: enraged Spawn one-shotting cloth; Entangle + hatchling overlap killing rooted players
+- bot_behavior_notes: spawn-of-fankriss = highest-priority target flag for all dps bots (immediate swap)
+
+---
+
+### boss: Viscidus
+- raid: Temple of Ahn'Qiraj
+- raid_size: 40
+- boss_order: 5
+- optional: yes (skippable but usually killed for loot)
+- encounter_type: gimmick
+- composition: 1 tank; EVERY mage frost-specced; [SHAMAN] Frost Shock; melee with frost oils/weapons; nature resist gear + poison dispels
+- key_abilities:
+  - Poison Bolt Volley — raid-wide nature dot (dispel/NR gear)
+  - Toxin Clouds — ground clouds (move)
+  - Freeze mechanic — Viscidus is only damaged meaningfully when FROZEN: ~200 frost hits to freeze (stage: "begins to slow" → "freezing up" → "frozen solid"); while FROZEN, he must be hit with MELEE to shatter (stage: "begins to crack" → "looks ready to shatter" → shatter)
+  - Shatter — he explodes into 8-20 globs; each glob killed = -5% of his HP; globs that reach the center reform Viscidus
+- phases: repeating cycle: frost-dps → frozen → melee shatter → glob phase (kill globs) → reform
+- positioning: [MT] holds Viscidus center; [RANGED] ring around him; globs phase: [ALL] intercept globs converging on center
+- tank_rules:
+  - hold boss center; globs phase: help kill globs
+- healer_rules:
+  - dispel Poison Bolt Volley constantly; NR gear cuts healing load
+- dps_rules:
+  - Phase A: ONLY frost damage (Frostbolt rank 1 spam is fine — hits count, not damage); stop when "frozen solid"
+  - Phase B: [ALL] (including casters wand/melee) hit the frozen boss until shatter — melee hits count
+  - Phase C: kill as many globs as possible (AoE + focused); globs move to center — intercept
+  - repeat; ~3 shatter cycles to kill
+- movement_rules:
+  - IF toxin cloud under you THEN move
+  - glob phase: position between globs and the center
+- threat_rules: threat trivial; focus is mechanics
+- interrupt_priority: none
+- dispel_priority:
+  - Poison Bolt Volley (poison) — [DRUID]/[SHAMAN]/[PALADIN] — constant rotation
+- cc_assignments: [MAGE] Frost Nova globs near center; [SHAMAN] Frost Shock globs
+- kill_order: globs (during shatter) → Viscidus (frost phase)
+- enrage_timer: none (healer mana is the soft timer)
+- wipe_risks: too few globs killed per shatter (fight never progresses); healers OOM to poison volleys
+- bot_behavior_notes:
+  - state machine: FROST_DPS → MELEE_SHATTER → KILL_GLOBS → repeat, driven by boss emotes
+  - frost-only damage filter during Phase A (non-frost attacks do nothing)
+
+---
+
+### boss: Princess Huhuran
+- raid: Temple of Ahn'Qiraj
+- raid_size: 40
+- boss_order: 6
+- optional: no
+- encounter_type: dps-race
+- composition: 2 tanks; 2+ [HUNTER] tranq rotation; 15 designated "soakers" (melee + hunters) with ~200+ nature resist; Greater Nature Protection potions
+- key_abilities:
+  - Poison Bolt Volley — hits the 15 NEAREST players for massive nature damage; below 30% she spams it (soakers absorb it so healers/ranged survive)
+  - Wyvern Sting — AoE sleep on the 15 nearest (poison); if dispelled, the dispeller takes a big nuke — let it expire OR dispel carefully
+  - Noxious Poison — dot + silence on random player (dispel)
+  - Acid Spit — stacking dot on tank (tank swap at high stacks)
+  - Frenzy — Tranquilizing Shot
+  - Enrage at 30% — volley spam begins (the burn phase)
+- phases: pre-30%: controlled; sub-30%: volley-spam burn race
+- positioning: [MT] tanks center; 15 soakers (melee + hunters) in close; [RANGED]/[HEALER] OUTSIDE the 15-nearest radius at all times
+- tank_rules:
+  - swap on Acid Spit stacks (~4+); tranq-supported
+- healer_rules:
+  - pre-30%: heal soakers through Wyvern Sting wake-ups
+  - sub-30%: chain-heal soaker group nonstop; this is a pure throughput check
+  - dispel Noxious Poison immediately
+- dps_rules:
+  - [HUNTER] tranq rotation on Frenzy
+  - save ALL cooldowns for 30%; burn her before volleys kill the soakers
+  - [RANGED] never step inside the soaker radius (becoming 16th nearest redirects a volley)
+- movement_rules:
+  - sub-30%: soakers hold position; everyone else max range
+- threat_rules: none special
+- interrupt_priority: none
+- dispel_priority:
+  - Noxious Poison (poison) — immediate
+  - Wyvern Sting — do NOT dispel on soakers pre-30% (nuke hits dispeller); heal through it
+- cc_assignments: none
+- kill_order: Huhuran
+- enrage_timer: 30% volley spam = soft enrage (kill in ~60-90s)
+- wipe_risks: soaker deaths cascading volleys into the raid; slow sub-30% burn
+- bot_behavior_notes:
+  - radius rule: non-soaker bots enforce min-distance from boss > soaker radius
+  - cooldown sync: all dps cooldowns fire at 30%
+
+---
+
+### boss: Twin Emperors (Emperor Vek'lor & Emperor Vek'nilash)
+- raid: Temple of Ahn'Qiraj
+- raid_size: 40
+- boss_order: 7
+- optional: no
+- encounter_type: council+swap
+- composition: 2 [WARRIOR] tanks + 1-2 [WARLOCK] tanks (Searing Pain, high HP/shadow resist); split healer teams; ~15-minute enrage
+- key_abilities:
+  - Twin Teleport — every ~30-35s the twins swap positions and clear threat (closest player gets initial aggro)
+  - Shared health pool / mutual heal — if within 60 yards they heal each other massively (keep them apart)
+  - Vek'nilash (melee twin) — IMMUNE TO MAGIC; Uppercut (knockback), Unbalancing Strike (-defense debuff on tank)
+  - Vek'lor (caster twin) — IMMUNE TO PHYSICAL; Shadow Bolt spam, Blizzard (ground AoE — move), Arcane Burst (knockback if anyone close), Explode Bug — mutates a nearby scarab that detonates (run)
+- phases: none; 30s teleport cycle
+- positioning: two wall positions ~60+ yards apart, one twin each side; [WARLOCK] tank holds Vek'lor at range with Searing Pain; [WARRIOR] tanks Vek'nilash against the wall; after each teleport, tanks SWAP TARGETS (the twin that arrives becomes yours)
+- tank_rules:
+  - [WARLOCK] tank: maintain Searing Pain threat on Vek'lor; stand 15-20 yards away (avoid Arcane Burst)
+  - [WARRIOR]: after teleport, the arriving twin is Vek'nilash — grab him instantly, back to wall
+  - never drag twins within 60 yards of each other
+- healer_rules:
+  - split teams per side; [WARLOCK]-tank healers: heavy single-target spam (Shadow Bolt hits hard)
+- dps_rules:
+  - physical dps → Vek'nilash ONLY; caster dps → Vek'lor ONLY (immunities are absolute)
+  - IF Blizzard on your side THEN move out immediately
+  - IF a bug starts glowing (explode bug) THEN run away from it
+  - hold dps 2-3s after each teleport until tanks secure threat
+- movement_rules:
+  - teleport cycle: dps physically run to the new location of their assigned twin
+  - avoid Blizzard patches; avoid glowing bugs
+- threat_rules: every teleport = full threat wipe; proximity aggro to closest player (tanks pre-position on the landing spot)
+- interrupt_priority: none (Shadow Bolt is tanked, not kicked)
+- dispel_priority: none
+- cc_assignments: none
+- kill_order: shared HP — both die together; dps split by immunity
+- enrage_timer: ~15 minutes
+- wipe_risks: twins healing each other (bad positioning); explode bugs killing melee; warlock tank death on Vek'lor side
+- bot_behavior_notes:
+  - teleport timer drives a full dps rotation to the other side
+  - warlock-tank bot: Searing Pain spam, positional anchor, shadow resist gear check
+  - caster/melee target filters by twin immunity (hard rule)
+
+---
+
+### boss: Ouro (optional)
+- raid: Temple of Ahn'Qiraj
+- raid_size: 40
+- boss_order: 8
+- optional: yes
+- encounter_type: movement
+- composition: 2-3 tanks; standard healing; nature resist helps
+- key_abilities:
+  - Sand Blast — 180-degree frontal cone: massive nature damage + 5s stun + FULL THREAT WIPE on those hit; aimed at highest-threat player (tank rotation to eat it)
+  - Sweep — rear knockback (melee: approach from sides)
+  - Submerge — burrows when nobody in melee range; summons Scarab adds + moving dirt-mound Quakes (avoid mounds)
+  - Enrage — long timer (~20 min... effectively: keep melee in range to prevent submerges)
+- phases: surfaced (tank rotation) / submerged (scarab + quake phase)
+- positioning: [MT] tanks with boss facing away; [MELEE] at his SIDES (not behind — Sweep); [RANGED]/[HEALER] spread in a semicircle at max range; NEVER let melee range go empty (he submerges)
+- tank_rules:
+  - taunt rotation so a FRESH tank eats each Sand Blast (threat wipe makes the next tank the target): [MT] eats blast → [OT] has threat → blast hits [OT] → repeat
+  - IF submerged THEN help kill scarabs; intercept on re-emerge
+- healer_rules:
+  - big heals on the Sand Blast target; raid heal Sweep knockbacks
+- dps_rules:
+  - [MELEE] stay at flanks; never behind
+  - submerged phase: kill scarabs; avoid dirt mounds (they erupt)
+- movement_rules:
+  - IF Sand Blast incoming and you are not the designated soaker THEN sidestep out of the frontal cone
+  - avoid dirt mounds during submerge
+- threat_rules: Sand Blast = full threat wipe on those hit; dps hold after each blast until tank re-establishes
+- interrupt_priority: none
+- dispel_priority: none
+- cc_assignments: [MAGE] Frost Nova scarabs
+- kill_order: scarabs (submerge) → Ouro
+- enrage_timer: ~20 minutes (effectively none)
+- wipe_risks: Sand Blast hitting the raid; empty melee range → submerge chain
+- bot_behavior_notes:
+  - melee bots: flank-only positional rule
+  - tank bots: scripted blast-soak rotation with threat-wipe awareness
+
+---
+
+### boss: C'Thun
+- raid: Temple of Ahn'Qiraj
+- raid_size: 40
+- boss_order: 9
+- optional: no (final boss)
+- encounter_type: gimmick
+- composition: 2-3 tanks; 10-12 healers; balanced melee/ranged; nature/shadow/frost resist potions; ~everyone on voice/timer discipline
+- key_abilities:
+  - P1 Eye of C'Thun: Eye Beam — chains to nearby players, DOUBLING damage per jump (spread 10 yards — a chained beam wipes); Dark Glare — every ~45s: red beam sweeps 180 degrees; instant death if touched (run); Claw Tentacles — melee adds that knockback (kill); Eye Tentacles — spawn on random players, channel Mind Flay (interrupt/kill fast)
+  - P1 entry: the pull itself is the hardest part — Eye Beam fires at the first player in line of sight; raid enters in a single-file "train" with 10-yard spacing
+  - P2 Body of C'Thun (after eye dies): Giant Claw Tentacle — tank-and-kill melee add; Giant Eye Tentacle — interrupt + kill fast (channels Eye Beam); Stomach — random players are swallowed: inside are 2 Flesh Tentacles (kill them = C'Thun weakened 45s, takes +100% damage, stops summoning); digestive acid stacks force you out (~5 stacks, exit via the stomach platform jump-out)
+  - Weakened phase — 45s: all dps on C'Thun's body
+- phases: P1 (eye) → P2 (body) with repeating weaken cycles: kill flesh tentacles → weakened burn → tentacles resume → repeat
+- positioning:
+  - P1: raid spreads into a "wagon wheel" — 8 pre-assigned clock positions, 10+ yards apart, each group holding its sector; melee groups kill Claw Tentacles at their sector
+  - P2: loosely spread around the room edge; converge on Giant tentacles as called
+- tank_rules:
+  - P1: tanks dps Claw Tentacles; P2: [MT]/[OT] tank Giant Claw Tentacles (they hit hard, knockback — tank against the wall of the room)
+- healer_rules:
+  - P1: heal Eye Beam victims (single-target burst); P2: stomach team (a healer gets swallowed too — self-manage)
+- dps_rules:
+  - P1: kill order — Eye Tentacles (interrupt Mind Flay first) > Claw Tentacles > Eye of C'Thun
+  - [ALL] IF Dark Glare spawns THEN run clockwise/counterclockwise (per raid call) staying ahead of the beam until it ends — never cross the beam
+  - P2: kill Giant Eye Tentacle ASAP (interrupt its channel), then Giant Claw; if swallowed: kill Flesh Tentacles inside, exit before 5 acid stacks
+  - Weakened: [ALL] max dps on C'Thun, all cooldowns
+- movement_rules:
+  - ENTRY: single-file train, 10-yard gaps, straight to assigned sector
+  - Dark Glare: full-raid rotation run; resume sectors after
+  - spread 10 yards at all times vs Eye Beam
+- threat_rules: tentacle aggro is proximity — pick up fast; C'Thun body has no threat table
+- interrupt_priority:
+  - Mind Flay (Eye Tentacles) — interrupt/kill immediately
+  - Giant Eye Tentacle channel — interrupt on spawn
+- dispel_priority: none critical
+- cc_assignments: [WARLOCK] Fear/Banish stray small tentacles as overflow control
+- kill_order: P1: Eye Tentacles → Claw Tentacles → Eye; P2: Giant Eye → Giant Claw → Flesh Tentacles (stomach) → C'Thun (weakened)
+- enrage_timer: none (attrition: healer mana)
+- wipe_risks: chained Eye Beam on pull (bad spacing); Dark Glare deaths; stomach players dying to acid; slow Giant Eye kills
+- bot_behavior_notes:
+  - sector assignment per bot (clock position); strict 10-yard spacing enforcement
+  - Dark Glare = scripted circular run routine for all bots
+  - stomach routine: swallowed bots target Flesh Tentacles, then path to exit at 4-5 stacks
+  - weakened phase = global cooldown-burn trigger

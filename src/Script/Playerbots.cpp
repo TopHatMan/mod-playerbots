@@ -25,7 +25,9 @@
 #include "PlayerbotAIConfig.h"
 #include "PlayerbotCommandScript.h"
 #include "PlayerbotGuildMgr.h"
+#include "GuildPresenceMgr.h"
 #include "PlayerbotSpellRepository.h"
+#include "SimPopulationMgr.h"
 #include "PlayerbotWorldThreadProcessor.h"
 #include "RandomPlayerbotMgr.h"
 #include "ScriptMgr.h"
@@ -216,6 +218,9 @@ public:
 
     void OnPlayerAfterUpdate(Player* player, uint32 diff) override
     {
+        if (player && player->GetSession() && !player->GetSession()->IsBot())
+            GuildPresenceMgr::EnsureGuildBotsOnline(player);
+
         PlayerbotAI* const botAI = PlayerbotsMgr::instance().GetPlayerbotAI(player);
 
         if (botAI != nullptr)
@@ -419,6 +424,8 @@ public:
         sPlayerbotAIConfig.Initialize();
         BotTalk::LoadConfig();
         BotActivityMgr::LoadConfig();
+        GuildPresenceMgr::LoadConfig();
+        SimPopulationMgr::LoadConfig();
 
         LOG_INFO("server.loading", ">> Loaded playerbots config in {} ms", GetMSTimeDiffToNow(oldMSTime));
         LOG_INFO("server.loading", " ");
@@ -433,6 +440,7 @@ public:
     {
         PlayerbotWorldThreadProcessor::instance().Update(diff);
         BotActivityMgr::Update();
+        SimPopulationMgr::Update(diff);
         sRandomPlayerbotMgr.UpdateAI(diff);  // World thread only
     }
 };
@@ -637,6 +645,7 @@ void AddPlayerbotsScripts()
     AddPlayerbotsSecureLoginScripts();
     AddPlayerbotsSelfBotAfkScripts();
     AddPlayerbotsCommandscripts();
+    AddSimCommandScripts();
     PlayerBotsGuildValidationScript();
     AddSC_MagtheridonBotScripts();
     AddSC_TempestKeepBotScripts();

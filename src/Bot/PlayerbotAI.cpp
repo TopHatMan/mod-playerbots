@@ -8,6 +8,7 @@
 #include "AiFactory.h"
 #include "AreaDefines.h"
 #include "BotActivityMgr.h"
+#include "GuildPresenceMgr.h"
 #include "BotTalk.h"
 #include "BudgetValues.h"
 #include "ChannelMgr.h"
@@ -4721,7 +4722,9 @@ bool PlayerbotAI::AllowActive(ActivityType activityType)
         return true;
 
     // bot is in a guild that contains a real player
-    if (sPlayerbotAIConfig.BotActiveAloneForceWhenInGuild)
+    // SIM-POPULATION: suppressed when Sim.DisableGuildForcePresence=1
+    if (sPlayerbotAIConfig.BotActiveAloneForceWhenInGuild &&
+        !GuildPresenceMgr::IsForcePresenceSuppressed())
     {
         if (IsInRealGuild())  // checks cache list
             return true;

@@ -112,6 +112,7 @@ void RaidBwlStrategy::AppendTargetExclusions(GuidSet& exclusions, TargetValueExc
     if (type != TargetValueExclusionType::Dps && type != TargetValueExclusionType::Attacker)
         return;
 
+    AiObjectContext* context = botAI->GetAiObjectContext();
     Unit* razorgore = AI_VALUE2(Unit*, "find target", "razorgore the untamed");
     if (!razorgore)
         return;

@@ -881,6 +881,7 @@ public:
     std::vector<WorldLocation> GetCityLocations(Player* bot);
     std::vector<uint32> GetFlightNodesInZone(uint32 zoneId, TeamId team, uint32 excludeNode = 0) const;
     bool SelectAuctioneerByMap(Player* bot, NpcLocation& outAuctioneer);
+    static bool IsVanillaEndgameZone(uint32 zoneId);
     std::vector<WorldLocation> const& GetLocsPerLevelCache(uint8 level) { return locsPerLevelCache[level]; }
 
     template <class D, class W, class URBG>

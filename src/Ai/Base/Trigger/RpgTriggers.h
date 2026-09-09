@@ -122,6 +122,14 @@ public:
     bool IsActive() override;
 };
 
+class RpgAuctionTrigger : public RpgTrigger
+{
+public:
+    RpgAuctionTrigger(PlayerbotAI* botAI, std::string const name = "rpg auction") : RpgTrigger(botAI, name) {}
+
+    bool IsActive() override;
+};
+
 class RpgRepairTrigger : public RpgTrigger
 {
 public:

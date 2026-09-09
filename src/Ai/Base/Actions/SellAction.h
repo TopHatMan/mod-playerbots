@@ -23,4 +23,11 @@ public:
     void Sell(Item* item);
 };
 
+class ListAuctionAction : public InventoryAction
+{
+public:
+    ListAuctionAction(PlayerbotAI* botAI, std::string const name = "auction") : InventoryAction(botAI, name) {}
+    bool Execute(Event event) override;
+};
+
 #endif

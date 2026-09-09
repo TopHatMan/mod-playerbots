@@ -6,6 +6,8 @@
 
 #include "NewRpgAction.h"
 #include "AreaDefines.h"
+#include "Creature.h"
+#include "Event.h"
 #include "BroadcastHelper.h"
 #include "ChatHelper.h"
 #include "DBCStores.h"
@@ -402,6 +404,13 @@ bool NewRpgWanderNpcAction::Execute(Event /*event*/)
         if (!data.lastReach)
         {
             data.lastReach = getMSTime();
+            if (Creature* creature = object->ToCreature())
+            {
+                if (creature->HasNpcFlag(UNIT_NPC_FLAG_AUCTIONEER))
+                    botAI->DoSpecificAction("auction", Event(), true);
+                else if (creature->HasNpcFlag(UNIT_NPC_FLAG_VENDOR))
+                    botAI->DoSpecificAction("sell", Event("rpg", "vendor"), true);
+            }
             if (bot->CanInteractWithQuestGiver(object))
                 InteractWithNpcOrGameObjectForQuest(data.npcOrGo);
             return true;

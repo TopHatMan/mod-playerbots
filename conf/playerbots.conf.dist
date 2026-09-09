@@ -96,9 +96,11 @@
 #   Personal loot = bots grouped WITH you (dungeon-sim PersonalLoot)
 #   Dungeon-sim   = bots WITHOUT you (autonomous run awards)
 #
-# Full world at server start (copy these or the realm stays empty)
-#   AiPlayerbot.MinRandomBots                     = 1000
-#   AiPlayerbot.MaxRandomBots                     = 3600
+# Population calendar (Sim.*) owns who is online when Sim.Enable=1.
+# Stamp existing rndbot GUIDs with `.sim seed N`. Min/MaxRandomBots become
+# unused spawners while Sim.DisableStockRandomMgr=1.
+#   Sim.Enable = 1
+#   Sim.ConcurrentCap = 150
 #   AiPlayerbot.SmartPopulation.Enabled           = 0
 #   AiPlayerbot.DisabledWithoutRealPlayer         = 0
 ####################################################################################################
@@ -124,6 +126,31 @@ AiPlayerbot.RandomBotAutologin = 1
 # Defaults: 1000 (min), 3600 (max). Startup fill uses Max.
 AiPlayerbot.MinRandomBots = 1000
 AiPlayerbot.MaxRandomBots = 3600
+
+####################################################################################################
+# POPULATION SIM (personas + weekly calendar)
+#
+# Replaces the Min/Max random-bot lottery and guild-always-online.
+# Auto-seeds from existing rndbot/addclass GUIDs up to RosterTarget on its own
+# (no manual step needed); `.sim seed N` also works to force/top up sooner.
+# The tick then logs seeded GUIDs in/out on a clock. Concurrent cap default
+# 150 (hard safety 300).
+#
+# Commands: .sim status | clock | debug Name | seed N | pause Name | resume Name
+#           .sim focus Name level | .sim guildpresence
+####################################################################################################
+Sim.Enable = 1
+Sim.RosterTarget = 2000
+Sim.ConcurrentCap = 150
+Sim.StartupStaggerSec = 600
+Sim.TickSec = 20
+Sim.IdleKickSec = 120
+Sim.CountAltbotsAgainstCap = 0
+Sim.DefaultFocus = level
+Sim.AllowChurn = 0
+Sim.RealmMaxLevel = 60
+Sim.DisableStockRandomMgr = 1
+Sim.DisableGuildForcePresence = 1
 
 # Randombot accounts
 # Set to 0 to automatically calculate needed accounts based on MaxRandomBots, EnablePeriodicOnlineOffline
@@ -207,6 +234,14 @@ AiPlayerbot.AllowAccountBots = 1
 
 # Allow/deny inviting altbots in the player's guild
 AiPlayerbot.AllowGuildBots = 1
+
+# Keep rndbot/addclass guild members online while a real guild member is online.
+# Transplanted from NpcChat.Bot.GuildPresence (mod-npc-chat-llm). Default OFF:
+# the Sim.* calendar owns world presence. Named `.bot add` still works above.
+AiPlayerbot.GuildPresence.Enable = 0
+AiPlayerbot.GuildPresence.ScanIntervalSec = 10
+AiPlayerbot.GuildPresence.MaxLoginsPerScan = 20
+AiPlayerbot.GuildPresence.IncludeAddClass = 1
 
 # Allow linking accounts for shared altbot control
 AiPlayerbot.AllowTrustedAccountBots = 1
@@ -889,9 +924,11 @@ AiPlayerbot.RandomBotXPRate = 1.0
 # changed values on the standard ".reload config" GM command.
 #
 #   - Level Brackets: controls which existing, persistent random-bot characters are selected for
-#     login. Under-filled configured ranges are preferred. It never changes a character's level,
-#     equipment, talents, played time, or progression. When enabled, newly created random bots are
-#     forced to start at level 1 and must level naturally.
+#     login. Under-filled configured ranges are preferred. New random bots start at level 1 and
+#     level naturally. Brackets never reduce MinRandomBots/MaxRandomBots: leftover characters
+#     above RandomBotMaxLevel (old TBC/WotLK bracket assignments, or the standalone
+#     mod-player-bot-level-brackets module) are logged in and clamped down to the cap instead of
+#     being skipped. If that old module is still installed, set BotLevelBrackets.Enabled = 0.
 #
 #   - Level Reset: when a random bot reaches a configured max level, resets it back down to a lower
 #     level via a full PlayerbotFactory randomize, with an optional percent chance (optionally
@@ -911,7 +948,8 @@ AiPlayerbot.RandomBotXPRate = 1.0
 ##############################################
 
 # Enables the level brackets feature.
-# Default: 0 (disabled)
+# Default: 0 (disabled). Login quotas are a preference only and never freeze the
+# online population at a single bracket's percentage.
 AiPlayerbot.LevelBrackets.Enabled = 0
 
 # The frequency (in seconds) at which the bot level distribution check is performed.
@@ -1301,6 +1339,7 @@ AiPlayerbot.BotActiveAloneDurationSeconds = 30
 # InMap     - A real player is on the same continent (e.g. Eastern Kingdoms).
 # IsFriend  - A real player has this bot on their friends list.
 # InGuild   - This bot is in a guild that has a real player in it.
+#             Default 0. Sim.DisableGuildForcePresence also suppresses this.
 #
 # Bots are also always forced active (not configurable) when:
 #   in combat, inside a dungeon/raid/BG, in a BG or LFG queue,
@@ -1310,7 +1349,7 @@ AiPlayerbot.BotActiveAloneForceWhenInRadius = 150
 AiPlayerbot.BotActiveAloneForceWhenInZone = 1
 AiPlayerbot.BotActiveAloneForceWhenInMap = 0
 AiPlayerbot.BotActiveAloneForceWhenIsFriend = 0
-AiPlayerbot.BotActiveAloneForceWhenInGuild = 1
+AiPlayerbot.BotActiveAloneForceWhenInGuild = 0
 
 # SmartScale — automatically reduces active bots when the server is struggling.
 # Monitors the server's update time (how long each server tick takes in milliseconds).

@@ -1,0 +1,221 @@
+# RUINS OF AHN'QIRAJ (AQ20) — 20-MAN RAID
+
+Raid-wide notes:
+- 2 tanks, 5-6 healers, 12-13 dps.
+- Nature resist gear helps on Ayamiss and Ossirian; poison dispels throughout.
+
+---
+
+### boss: Kurinnaxx
+- raid: Ruins of Ahn'Qiraj
+- raid_size: 20
+- boss_order: 1
+- optional: no
+- encounter_type: tank-and-spank
+- composition: 2 tanks, 5 healers
+- key_abilities:
+  - Mortal Wound — stacking debuff on tank: -10% healing received per stack (forces tank swap ~5 stacks)
+  - Sand Trap — spawns under random players: silence + -75% hit chance while standing in it (MOVE)
+  - Thrash — double attack
+  - Frenzy — at 30%: attack speed up
+- phases: sub-30% soft enrage
+- positioning: wide arena — [MT] tanks center; [RANGED]/[HEALER] spread 8+ yards; everyone pre-spread for Sand Trap
+- tank_rules:
+  - IF Mortal Wound stacks >= 5 THEN other tank taunts; swap back when stacks expire
+- healer_rules:
+  - watch silences from Sand Trap; pre-position away from tank cluster
+- dps_rules:
+  - [ALL] IF Sand Trap spawns under you THEN move out instantly
+  - burn cooldowns at 30% for the Frenzy
+- movement_rules:
+  - Sand Trap = instant relocation; never fight through the silence
+- threat_rules: taunt-swap fight; dps throttle briefly on swaps
+- interrupt_priority: none
+- dispel_priority: none
+- cc_assignments: none
+- kill_order: Kurinnaxx
+- enrage_timer: 30% Frenzy (soft)
+- wipe_risks: tank with 8+ Mortal Wound stacks dying unhealable; silenced healer deaths
+- bot_behavior_notes: tank bots: taunt-swap on stack count; all bots: ground-effect avoidance
+
+---
+
+### boss: General Rajaxx
+- raid: Ruins of Ahn'Qiraj
+- raid_size: 20
+- boss_order: 2
+- optional: no
+- encounter_type: add-control
+- composition: 2 tanks, 5 healers; the escort NPCs (Kaldorei soldiers + Lieutenant General Andorov) MUST be kept alive — they carry the fight
+- key_abilities:
+  - 7 waves of Qiraji adds with an officer each — officers buff adds; kill order matters
+  - Rajaxx: Thundercrash — AoE knockup + heavy damage; Deaggro — threat drops on knockup
+  - Andorov's Aura — if the NPC officer lives, the raid gets healing/damage buffs
+- phases: 7 add waves → Rajaxx
+- positioning: fight near the NPC squad so Andorov's aura covers the raid; [MT]/[OT] split wave adds; [RANGED] behind
+- tank_rules:
+  - pick up officer first in each wave, face away
+  - Rajaxx: re-taunt after every Thundercrash knockup
+- healer_rules:
+  - heal the NPC soldiers too (they tank for you); keep Andorov alive at all costs
+- dps_rules:
+  - kill order per wave: officer-adjacent casters → swarmguards → officer → remaining adds
+  - AoE heavy; [MAGE]/[WARLOCK] shine
+  - Rajaxx: burn, watch threat after Thundercrash
+- movement_rules:
+  - IF Thundercrash launches you THEN return to position and re-establish threat roles
+- threat_rules: Thundercrash knocks everyone up and scrambles threat; re-taunt mandatory
+- interrupt_priority: none
+- dispel_priority: none
+- cc_assignments: [WARLOCK] Fear stray swarmguards away from NPCs
+- kill_order: wave adds (casters first) → Rajaxx
+- enrage_timer: none
+- wipe_risks: NPC squad wiped (lose aura and their dps); add overwhelm mid-wave
+- bot_behavior_notes: bots should treat friendly NPCs as protect-targets; intercept adds pathing to NPCs
+
+---
+
+### boss: Moam
+- raid: Ruins of Ahn'Qiraj
+- raid_size: 20
+- boss_order: 3
+- optional: no
+- encounter_type: dps-race
+- composition: 1-2 tanks, 5 healers; 1 [WARLOCK] (Drain Mana) + [HUNTER] (Viper Sting) highly recommended; ~90s add phase
+- key_abilities:
+  - Arcane Eruption — at 100% mana he explodes for massive raid damage (his mana RISES over time; drain it)
+  - Drain Mana — he drains the raid's mana to fuel himself
+  - Summon Mana Fiends — at ~90s: 3 Arcane Fiends (elementals) that cast Arcane Explosion; [WARLOCK] Banish/CC them
+  - Trample — melee knockback
+  - 6-minute enrage
+- phases: pre-90s: burn + drain his mana; post-90s: fiend phase — kill/CC fiends while finishing him
+- positioning: [MT] tanks at his platform; [RANGED] spread 8 yards (fiend explosions)
+- tank_rules:
+  - hold boss; no swaps needed
+- healer_rules:
+  - conserve mana (he drains it); use efficient heals
+- dps_rules:
+  - [HUNTER] keep Viper Sting up permanently; [WARLOCK] Drain Mana + Curse assignment
+  - IF Moam mana approaching 100% THEN all-out mana drain + dps
+  - post-90s: [WARLOCK] Banish 1-2 fiends; kill remaining fiend(s), then finish Moam
+- movement_rules:
+  - IF Arcane Fiend targeting your area THEN move away from its explosion radius
+- threat_rules: none
+- interrupt_priority: none
+- dispel_priority: none
+- cc_assignments: [WARLOCK] Banish Mana Fiends (up to 2); [MAGE] can Frost Nova to slow
+- kill_order: Mana Fiends (post-90s, if not banished) → Moam
+- enrage_timer: ~6 minutes; mana-based Arcane Eruption is the real timer
+- wipe_risks: Arcane Eruption at full mana; uncontrolled fiends chain-exploding
+- bot_behavior_notes: hunter/warlock bots: mana-drain maintenance beats personal dps; warlock: banish priority on fiend spawn
+
+---
+
+### boss: Buru the Gorger
+- raid: Ruins of Ahn'Qiraj
+- raid_size: 20
+- boss_order: 4
+- optional: no
+- encounter_type: gimmick
+- composition: 1 tank (barely tanks — fixate fight), 5 healers; heavy movement
+- key_abilities:
+  - Fixate — "Buru's eyes fixate on <player>": he chases that player, immune to taunt; speed increases over time (Gathering Speed)
+  - Dismember — bleed on whoever he reaches
+  - Eggs — destroying an egg damages Buru (~chunk of his HP) but spawns Hive'Zara Hatchlings (kill them)
+  - P2 (20%): his shell breaks — soft enrage: massive damage, must be burned/kited
+- phases: egg phase (100-20%): kite + pop eggs to damage him; P2 burn (20-0%)
+- positioning: kite path around his arena; raid spread along the path; next target egg pre-assigned
+- tank_rules:
+  - tanks cannot hold him; [WARRIOR] help kill hatchlings, spam Hamstring on hatchlings
+- healer_rules:
+  - heal the fixated player preemptively; heal Dismember bleeds
+- dps_rules:
+  - designated egg-popper destroys ONE egg at a time on the raid leader's call (each egg = big boss damage)
+  - [ALL] kill Hatchlings from each egg before popping the next
+  - P2: everyone burn; fixated player kites
+- movement_rules:
+  - IF fixated THEN kite Buru along the loop away from the raid; never run him through the group
+  - IF speed outpaces you THEN hand off: another player pulls his attention (he re-fixates periodically)
+- threat_rules: immune to taunt; fixate-driven
+- interrupt_priority: none
+- dispel_priority: none
+- cc_assignments: [MAGE] Frost Nova hatchlings; [HUNTER] Frost Trap on hatchling spawn points
+- kill_order: Hatchlings (always) → Buru (via eggs, then direct in P2)
+- enrage_timer: P2 shell-break soft enrage
+- wipe_risks: fixated player caught (2-shot on cloth); popping 2+ eggs → hatchling overwhelm
+- bot_behavior_notes: fixate-driven kite routine with a fixed arena loop waypoint path; egg-pop only on explicit "hatchlings clear" state
+
+---
+
+### boss: Ayamiss the Hunter
+- raid: Ruins of Ahn'Qiraj
+- raid_size: 20
+- boss_order: 5
+- optional: no
+- encounter_type: add-control
+- composition: 2 tanks, 5 healers; nature resist gear recommended; enough ranged for P1 (she is airborne — melee cannot hit her)
+- key_abilities:
+  - P1 (airborne): Stinger Spray — nature AoE; Paralyze — poison stun on a random player (dispel); Larva spawn — grubs crawl toward players; if one reaches its target it becomes an elite (kill grubs fast)
+  - P2 (ground, 70%): Poison Stinger — stacking nature dot on the raid (heal through, nature resist); melee-able
+- phases: P1 air until 70%; P2 ground
+- positioning: P1: [RANGED] spread and nuke; [MELEE] intercept grubs; P2: [MT] tanks her, [MELEE] behind, [RANGED] spread
+- tank_rules:
+  - P1: off-tanks grab spawned elites if any; P2: [MT] tank-and-spank
+- healer_rules:
+  - P1: dispel Paralyze instantly (poison); P2: heavy raid healing vs stacking dot
+- dps_rules:
+  - P1: [RANGED] on Ayamiss; [MELEE] kill grubs before they reach anyone
+  - P2: burn her; continue grub control if any remain
+- movement_rules:
+  - IF grub targeting you THEN call it out and let melee kill it; keep dps-ing
+- threat_rules: P2 tank pickup on landing; hold dps 2s
+- interrupt_priority: none
+- dispel_priority:
+  - Paralyze (poison) — [DRUID]/[SHAMAN]/[PALADIN] — immediate
+- cc_assignments: none
+- kill_order: grubs (always first) → Ayamiss
+- enrage_timer: none
+- wipe_risks: grubs maturing into elites; P2 poison stacks outpacing healing without nature resist
+- bot_behavior_notes: melee bots default target = grubs in P1; ranged bots on boss
+
+---
+
+### boss: Ossirian the Unscarred
+- raid: Ruins of Ahn'Qiraj
+- raid_size: 20
+- boss_order: 6
+- optional: no
+- encounter_type: gimmick
+- composition: 2 tanks, 5 healers; 1 designated crystal-scout ([HUNTER] with Eagle Eye / a rogue)
+- key_abilities:
+  - Supreme Mode — his default state: massive damage + stats; REMOVED by clicking an Ossirian Crystal (also applies a school-specific weakness: +100% damage from one school)
+  - Enveloping Winds — cyclone stun on a random player (magic — dispel)
+  - War Stomp — AoE knockback + damage
+  - Tornadoes — moving whirlwinds in the arena (avoid)
+  - Curse of Tongues — on casters (decurse)
+  - Enrage — if no crystal applied, he eventually wipes the raid
+- phases: none; repeating crystal-kite cycle
+- positioning: pull Ossirian to the first crystal (near the entrance ramp); kite him crystal-to-crystal around the arena; [SCOUT] locates the next spawn; [RANGED] spread, avoid tornadoes
+- tank_rules:
+  - [MT] kite Ossirian toward the next called crystal; he hits like a truck in Supreme — never tank him long without a crystal debuff
+  - [OT] stays near [MT] for War Stomp recovery taunts
+- healer_rules:
+  - dispel Enveloping Winds immediately; decurse Curse of Tongues on casters
+- dps_rules:
+  - designated clicker activates each crystal on arrival (applies weakness — casters should MATCH the school called: fire/frost/arcane/shadow/holy... use the called school)
+  - dps hard during weakness windows; hold during transitions
+- movement_rules:
+  - [ALL] avoid tornado paths; [MT] kite only along the called crystal route
+  - IF cycloned THEN healers prioritize you on landing
+- threat_rules: threat normal; knockbacks disrupt melee — re-engage from behind
+- interrupt_priority: none
+- dispel_priority:
+  - Enveloping Winds (magic) — [PRIEST]/[PALADIN] — immediate
+  - Curse of Tongues (curse) — [MAGE]/[DRUID] — casters
+- cc_assignments: none
+- kill_order: Ossirian (through crystal weakness windows)
+- enrage_timer: Supreme Mode endurance = de-facto enrage
+- wipe_risks: no crystal for 30+ seconds → tank crushed; raid eating War Stomp + tornado overlap
+- bot_behavior_notes:
+  - crystal waypoints dynamic: scout bot reports next crystal location; all bots path accordingly
+  - clicker bot: interact-object routine on arrival; casters swap to the called school

@@ -1,0 +1,375 @@
+# ZUL'GURUB — 20-MAN RAID
+
+Raid-wide notes:
+- 2 tanks, 5-6 healers, 12-13 dps is standard.
+- Kill order of the 5 High Priests matters for Hakkar: each living priest grants Hakkar one of their abilities. Standard: kill ALL priests before Hakkar.
+- Poison dispels and nature resist potions are valuable throughout.
+
+---
+
+### boss: High Priestess Jeklik
+- raid: Zul'Gurub
+- raid_size: 20
+- boss_order: 1
+- optional: no
+- encounter_type: add-control
+- composition: 2 tanks, 5 healers; 1-2 interrupters; 1 [MAGE] for bat AoE
+- key_abilities:
+  - P1 (bat form): Sonic Burst — AoE silence + damage; Bat swarms — summoned bats (AoE them); Great Heal — big self-heal (INTERRUPT)
+  - P2 (troll form, 50%): Firebats — casters that throw fire (kill); Swoop — knockback charge
+- phases: P1 bat form until 50%; P2 troll form
+- positioning: [MT] tanks center of her room; [RANGED] spread 8 yards (Sonic Burst); [MELEE] behind boss
+- tank_rules:
+  - [MT] hold boss center; [OT] grab bats in P2
+- healer_rules:
+  - watch silenced windows; pre-HoT tank before Sonic Burst
+- dps_rules:
+  - [ROGUE]/[WARRIOR] interrupt EVERY Great Heal in P1 (a landed heal wastes 30+ seconds of dps)
+  - [MAGE] AoE bat swarms in P1; kill firebats fast in P2
+- movement_rules:
+  - IF bat swarm spawns THEN [RANGED] move away from swarm path
+- threat_rules: Swoop in P2 causes brief tank displacement; taunt back
+- interrupt_priority:
+  - Great Heal — kick every cast, top priority
+- dispel_priority: none
+- cc_assignments: none
+- kill_order: bat adds → Jeklik (P1) → firebats → Jeklik (P2)
+- enrage_timer: none
+- wipe_risks: missed Great Heal interrupts; silenced healer deaths
+- bot_behavior_notes: interrupt bots hold Kick/Pummel for Great Heal only; never waste on other casts
+
+---
+
+### boss: High Priest Venoxis
+- raid: Zul'Gurub
+- raid_size: 20
+- boss_order: 2
+- optional: no
+- encounter_type: add-control
+- composition: 2 tanks, 5 healers; poison dispel ([DRUID]/[SHAMAN]/[PALADIN])
+- key_abilities:
+  - Venom Spit — poison dot on random players (dispel)
+  - Poison Cloud — persistent ground cloud where he stands (move him out)
+  - Holy Nova / Renew — self-heals (interrupt)
+  - 4x snake adds — cleave + poison
+  - P2 (snake form, ~50%): bigger melee + Poison Cloud continues
+- phases: P1 troll form with adds; P2 snake form at ~50%
+- positioning: [MT] tanks Venoxis away from the group and KITES him out of every Poison Cloud; [OT] holds snake adds; [RANGED] spread
+- tank_rules:
+  - [MT] IF Poison Cloud drops THEN drag boss out of the cloud immediately (boss standing in it gains... the cloud damages players — move boss so melee aren't in it)
+  - [OT] hold adds until killed
+- healer_rules:
+  - dispel Venom Spit fast; heavy poison damage in P2
+- dps_rules:
+  - kill snake adds first
+  - interrupt Venoxis heals (Holy Nova/renew casts)
+  - [MELEE] never stand in Poison Cloud — follow the boss as he is moved
+- movement_rules:
+  - IF Poison Cloud under you THEN move 8 yards
+- threat_rules: none
+- interrupt_priority:
+  - Holy Nova / heal casts — kick every time
+- dispel_priority:
+  - Venom Spit (poison) — [DRUID]/[SHAMAN]/[PALADIN] — any target
+- cc_assignments: none
+- kill_order: snake adds → Venoxis
+- enrage_timer: none
+- wipe_risks: melee standing in Poison Cloud; un-dispelled Venom Spit stacks
+- bot_behavior_notes: tank bot needs a "drag out of ground effect" routine; melee bots tether to boss position, not a fixed waypoint
+
+---
+
+### boss: High Priestess Mar'li
+- raid: Zul'Gurub
+- raid_size: 20
+- boss_order: 3
+- optional: no
+- encounter_type: add-control
+- composition: 2 tanks, 5 healers; 1-2 interrupters
+- key_abilities:
+  - Drain Life — channeled: drains tank HP and heals her (INTERRUPT or break by... it is interruptible)
+  - Poison Bolt Volley — AoE poison (dispel)
+  - Enveloping Web — roots the current tank (she then runs at the SECOND-highest threat — [OT] must taunt/pick up)
+  - 4x spider adds — respawning; kill fast
+  - Spider form phases — transformations during fight
+- phases: alternates troll/spider form; behavior identical, keep executing
+- positioning: [MT] tanks center; [OT] stands near [MT] ready for web swaps; [RANGED] spread
+- tank_rules:
+  - IF [MT] is Enveloped in Web THEN [OT] taunts immediately; roles reverse each web
+- healer_rules:
+  - dispel Poison Bolt Volley poison; watch webbed tank
+- dps_rules:
+  - kill spider adds as they spawn (they overwhelm otherwise)
+  - interrupt Drain Life every cast
+- movement_rules: none special
+- threat_rules: Enveloping Web = forced tank swap; dps watch threat on transitions
+- interrupt_priority:
+  - Drain Life — interrupt immediately (channeled: any damage tick... kick on channel start)
+- dispel_priority:
+  - Poison Bolt Volley (poison) — [DRUID]/[SHAMAN]/[PALADIN]
+- cc_assignments: none
+- kill_order: spider adds → Mar'li
+- enrage_timer: none
+- wipe_risks: no OT pickup on web → boss one-shots a cloth wearer; Drain Life healing her through your dps
+- bot_behavior_notes: OT bot: taunt trigger = "tank has Enveloping Web aura"
+
+---
+
+### boss: Bloodlord Mandokir
+- raid: Zul'Gurub
+- raid_size: 20
+- boss_order: 4
+- optional: no
+- encounter_type: gimmick
+- composition: 2 tanks, 5 healers
+- key_abilities:
+  - Threatening Gaze — "Mandokir is watching you": if the watched player takes ANY hostile action (attack/cast/heal), Mandokir charges and one-shots them; the watched player must STOP everything (~5s)
+  - Ohgan — his raptor add; if killed, Mandokir enrages (still kill it first — standard)
+  - Charge — charges distant players
+  - Whirlwind/Cleave — melee AoE
+  - Level up — Mandokir gains a level each time he kills a player (he gets stronger; deaths snowball)
+  - Fear — AoE fear
+- phases: none
+- positioning: kill Ohgan first (tank both together); [MT] tanks Mandokir at his platform; [RANGED] spread to reduce charge value
+- tank_rules:
+  - [MT] on Mandokir, [OT] on Ohgan; after Ohgan dies, [OT] off-tanks/soaks charges
+  - IF Mandokir charges away THEN taunt him back
+- healer_rules:
+  - watched healer: stop healing; other healers cover
+- dps_rules:
+  - kill Ohgan first, then Mandokir
+  - IF "Mandokir is watching you" THEN stop all attacks, casts, and heals until the gaze drops — moving is fine, acting is death
+- movement_rules:
+  - IF feared THEN return; do not stand at max range alone (charge bait)
+- threat_rules: gaze victims drop out of combat actions; threat is stable otherwise
+- interrupt_priority: none
+- dispel_priority: none
+- cc_assignments: none
+- kill_order: Ohgan → Mandokir
+- enrage_timer: soft — every player death levels him up
+- wipe_risks: gaze victims panic-casting and dying; repeated deaths leveling him out of control
+- bot_behavior_notes:
+  - implement Threatening Gaze as a hard stop-cast/stop-attack trigger on the debuff; resume on debuff expiry
+  - feared bots return to formation automatically
+
+---
+
+### boss: High Priest Thekal
+- raid: Zul'Gurub
+- raid_size: 20
+- boss_order: 5
+- optional: no
+- encounter_type: council
+- composition: 2-3 tanks, 5 healers; 2 interrupters; 1 [MAGE] or [ROGUE] for CC
+- key_abilities:
+  - Zealot Lor'Khan — healer add: casts Great Heal (INTERRUPT), magic dispellable shield
+  - Zealot Zath — rogue add: Blind, Gouge, high melee ([MAGE] sheep or off-tank)
+  - Resurrection — the two zealots resurrect each other unless all three die within ~10 seconds
+  - P2 (Thekal tiger form, after adds die): Frenzy — massive attack speed; Force Punch — knockback; Tiger adds
+- phases: P1: Thekal + 2 zealots (must all die within 10s window); P2: Thekal alone, frenzied
+- positioning: P1: split — [MT] on Thekal, [OT] on Lor'Khan, third tank/[WARLOCK] fear or [MAGE] sheep on Zath; groups 15 yards apart; P2: stack behind Thekal
+- tank_rules:
+  - P1: hold your assigned target; P2: [MT] tanks tiger facing away
+- healer_rules:
+  - P2: spam-heal [MT] through Frenzy; use cooldowns early in P2
+- dps_rules:
+  - P1: burn Lor'Khan and Zath to ~15% HP, hold; then execute all three (Thekal included) inside 10 seconds
+  - interrupt EVERY Lor'Khan heal
+  - P2: all cooldowns, burn Thekal before Frenzy grinds the tank down
+- movement_rules:
+  - IF Force Punch knocks you THEN return to position behind boss
+- threat_rules: P2 Frenzy + knockback can scramble threat; taunt after punches
+- interrupt_priority:
+  - Great Heal (Lor'Khan) — every cast
+- dispel_priority: none critical
+- cc_assignments: [MAGE] Polymorph Zath OR [WARLOCK] chain-fear Zath; refresh early
+- kill_order: P1: Lor'Khan + Zath to 15% → execute Lor'Khan → Zath → Thekal (within 10s); P2: Thekal
+- enrage_timer: P2 Frenzy is a soft enrage
+- wipe_risks: zealot resurrect (staggered deaths); P2 tank death during Frenzy
+- bot_behavior_notes:
+  - dps bots: hold-dps mode at 15% add HP until execute call
+  - synchronized execute: master bot triggers all dps to swap targets simultaneously
+
+---
+
+### boss: High Priestess Arlokk
+- raid: Zul'Gurub
+- raid_size: 20
+- boss_order: 6
+- optional: no
+- encounter_type: add-control
+- composition: 2 tanks, 5 healers
+- key_abilities:
+  - Mark of Arlokk — marks a random player; all panther adds swarm the marked player
+  - Vanish — she disappears, drops threat, reappears hitting a random player ([MT] re-taunt)
+  - Gouge — disorients the tank
+  - Panther adds — continuously spawning stealthed panthers
+- phases: none
+- positioning: [MT] tanks her center; marked player runs TO the [OT]'s group so panthers funnel to a tank
+- tank_rules:
+  - IF she Vanishes THEN scan for her reappearance target and taunt instantly
+  - [OT] picks up panther adds, especially the wave going to the marked player
+- healer_rules:
+  - top the marked player; heavy damage while panthers swarm
+- dps_rules:
+  - kill panthers when 3+ are up (AoE); otherwise dps Arlokk
+  - do not chase her on Vanish — wait for re-taunt
+- movement_rules:
+  - IF Mark of Arlokk on you THEN move to the [OT] position immediately
+- threat_rules: Vanish = full threat drop; re-taunt mandatory
+- interrupt_priority: none
+- dispel_priority: none
+- cc_assignments: none
+- kill_order: panther waves (as needed) → Arlokk
+- enrage_timer: none
+- wipe_risks: marked cloth wearer dying before OT pickup; post-Vanish healer deaths
+- bot_behavior_notes:
+  - marked bots path to OT waypoint on debuff
+  - MT bot: taunt on boss reappearance after Vanish (target-of-target scan)
+
+---
+
+### boss: Jin'do the Hexxer
+- raid: Zul'Gurub
+- raid_size: 20
+- boss_order: 7
+- optional: no
+- encounter_type: gimmick
+- composition: 2 tanks, 5 healers; assigned totem-killers
+- key_abilities:
+  - Brain Wash Totem — mind-controls a random player until the totem dies
+  - Powerful Healing Ward — heals Jin'do until killed
+  - Delusions of Jin'do — curse: the cursed player sees hostile Shades; shades left alive heal Jin'do / multiply
+  - Hex — turns the tank into a frog (threat drop)
+- phases: none
+- positioning: [MT] tanks Jin'do center; [RANGED] spread; totem-killers react instantly
+- tank_rules:
+  - IF tank is Hexed THEN [OT] taunts until Hex expires
+- healer_rules:
+  - decurse... Delusions is a curse — [MAGE]/[DRUID] decurse AFTER the player kills their shades (or leave it: only cursed players can see/kill shades)
+  - standard: assign one [PRIEST]/[PALADIN] to be permacursed shade-killer? No — shades attack everyone; cursed player must kill them. Leave the curse on dps, decurse healers/tanks
+- dps_rules:
+  - target priority: Brain Wash Totem > Healing Ward > your Shades > Jin'do
+  - IF Delusions of Jin'do on you THEN kill your Shades immediately (only you can hit them)
+  - kill Brain Wash Totem the instant it spawns (it MCs a raid member)
+- movement_rules: none
+- threat_rules: Hex on tank = threat drop; [OT] covers
+- interrupt_priority: none
+- dispel_priority:
+  - Delusions of Jin'do (curse) — [MAGE]/[DRUID] — decurse tanks and healers only; dps keep it and kill shades
+- cc_assignments: none (MC'd players freed by killing the totem)
+- kill_order: Brain Wash Totem → Powerful Healing Ward → Shades → Jin'do
+- enrage_timer: none
+- wipe_risks: Healing Ward left alive (he heals indefinitely); ignored shades overrunning the raid
+- bot_behavior_notes:
+  - totem-detection: any Brain Wash/Healing totem = instant target swap for all dps bots
+  - shade rule: cursed dps bots swap to shades until clear
+
+---
+
+### boss: Gahz'ranka (optional, summoned via fishing quest)
+- raid: Zul'Gurub
+- raid_size: 20
+- boss_order: 8
+- optional: yes
+- encounter_type: tank-and-spank
+- composition: 1-2 tanks, 5 healers
+- key_abilities:
+  - Frost Breath — frontal cone slow + damage
+  - Gahz'ranka Slam — knockback; can throw players into the water
+  - Piranhas (water) — players knocked into water take stacking damage from frenzy fish
+- phases: none
+- positioning: [MT] tanks Gahz'ranka with the boss's back to the water? NO — position so the RAID has backs to land/walls; knockbacks throw you AWAY from boss, so stand with water behind boss, land behind you
+- tank_rules:
+  - [MT] face boss toward the water, tank with back to shore
+- healer_rules:
+  - watch knocked-back players; piranha damage needs immediate healing
+- dps_rules:
+  - IF knocked into water THEN get out immediately (piranhas stack a dot)
+- movement_rules:
+  - never fight at the water's edge; give yourself land-side knockback room
+- threat_rules: Slam can drop the tank's position; re-taunt if boss turns
+- interrupt_priority: none
+- dispel_priority: none
+- cc_assignments: none
+- kill_order: Gahz'ranka
+- enrage_timer: none
+- wipe_risks: multiple players knocked into piranha water simultaneously
+- bot_behavior_notes: water = hazard zone; add "exit water" recovery routine
+
+---
+
+### boss: Edge of Madness (optional, rotating: Gri'lek / Hazza'rah / Renataki / Wushoolay)
+- raid: Zul'Gurub
+- raid_size: 20
+- boss_order: 9
+- optional: yes
+- encounter_type: gimmick
+- composition: 1-2 tanks, 5 healers; one boss active per lockout (rotates weekly)
+- key_abilities (by boss):
+  - Gri'lek — fixates and chases random players (kite); stuns; immune to taunt during chase
+  - Hazza'rah — summons 4 Nightmare Illusion adds (kill); AoE sleep
+  - Renataki — rogue: Vanish + Ambush random players (heal through); high burst
+  - Wushoolay — Chain Lightning / Lightning Cloud (spread); Storm cloud ground effect (move)
+- phases: none
+- positioning: spread by default; Gri'lek: chase target kites around the room, everyone else dps
+- tank_rules:
+  - Gri'lek: taunt to cover between fixates; the fixated player kites
+  - Renataki: pick her up instantly after each Vanish
+- healer_rules:
+  - top ambush/fixate targets fast
+- dps_rules:
+  - Hazza'rah: kill Illusions first
+  - Wushoolay: spread 8 yards, move out of clouds
+- movement_rules:
+  - IF fixated by Gri'lek THEN kite him around the arena edge; do not stop
+  - IF lightning cloud under you THEN move
+- threat_rules: Gri'lek ignores threat while fixated; Renataki drops threat on Vanish
+- interrupt_priority: none
+- dispel_priority:
+  - sleep effects (Hazza'rah) — [PRIEST]/[PALADIN] — dispel
+- cc_assignments: none
+- kill_order: adds (Hazza'rah) → boss
+- enrage_timer: none
+- wipe_risks: Gri'lek chase target standing still; Renataki ambush on low-HP cloth
+- bot_behavior_notes: per-boss behavior profile keyed on boss ID; kite routine for fixate
+
+---
+
+### boss: Hakkar the Soulflayer
+- raid: Zul'Gurub
+- raid_size: 20
+- boss_order: 10
+- optional: no (final boss — assumes all 5 priests dead; if any priest lives, Hakkar gains their abilities)
+- encounter_type: gimmick
+- composition: 2 tanks, 5 healers; 1-2 designated "son handlers"; ~10-minute enrage
+- key_abilities:
+  - Blood Siphon — every 90s: stuns the raid 5s and drains life, HEALING Hakkar per player drained; negated if players carry the poison debuff from Son of Hakkar clouds
+  - Corrupted Blood — shadow dot that spreads player-to-player (spread out; heal through)
+  - Mind Control — MCs a player (usually the tank) briefly
+  - Son of Hakkar — spawns periodically; on death leaves a green poison cloud: standing in it applies a dot that makes your blood poisonous → Hakkar's Siphon damages HIM instead
+  - Enrage — ~10 minutes
+- phases: repeating 90s cycle: sons spawn → kill son → stand in cloud → Blood Siphon → repeat
+- positioning: [MT] tanks Hakkar center; [RANGED] spread 8 yards (Corrupted Blood spread); [OT] intercepts Sons of Hakkar and kills them NEAR the raid so clouds are accessible
+- tank_rules:
+  - [OT] kill each Son of Hakkar close to (but not inside) the raid cluster
+  - IF [MT] is mind-controlled THEN [OT] taunts until MC breaks
+- healer_rules:
+  - heal through Corrupted Blood and the poison cloud dot (the dot is REQUIRED — do not dispel it)
+- dps_rules:
+  - priority: Son of Hakkar (when raid lacks poison debuff) > Hakkar
+  - IF poison debuff about to expire before next Siphon THEN stand in the next son's cloud to refresh
+- movement_rules:
+  - [ALL] IF Blood Siphon is ~10s away and you lack the poison debuff THEN step into the green cloud, take 1-2 ticks, step out
+  - spread again after Siphon resolves
+- threat_rules: MC of tank causes temporary chaos; [OT] covers
+- interrupt_priority: none
+- dispel_priority:
+  - NEVER dispel the son-poison debuff — it is the win condition
+- cc_assignments: none
+- kill_order: Son of Hakkar (strategic) → Hakkar
+- enrage_timer: ~10 minutes hard enrage
+- wipe_risks: Siphon healing Hakkar because the raid lacked poison debuff; enrage timeout from slow sons
+- bot_behavior_notes:
+  - debuff-driven cloud routine: bots check for poison debuff before each Siphon timer and step into nearest son cloud if missing
+  - dispel bots: blacklist the son-poison debuff explicitly
