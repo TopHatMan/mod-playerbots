@@ -133,14 +133,19 @@ AiPlayerbot.MaxRandomBots = 3600
 # Replaces the Min/Max random-bot lottery and guild-always-online.
 # Auto-seeds from existing rndbot/addclass GUIDs up to RosterTarget on its own
 # (no manual step needed); `.sim seed N` also works to force/top up sooner.
-# The tick then logs seeded GUIDs in/out on a clock. Concurrent cap default
-# 150 (hard safety 300).
+# TargetOnline is the normal desired concurrent population. MinimumOnline is
+# an emergency reserve floor used when the current persona windows overlap
+# poorly. Both values are bounded by ConcurrentCap. The roster is persistent
+# and can be much larger than the online population.
+# The tick then logs seeded GUIDs in/out on a clock.
 #
 # Commands: .sim status | clock | debug Name | seed N | pause Name | resume Name
 #           .sim focus Name level | .sim guildpresence
 ####################################################################################################
 Sim.Enable = 1
-Sim.RosterTarget = 2000
+Sim.RosterTarget = 10000
+Sim.TargetOnline = 150
+Sim.MinimumOnline = 120
 Sim.ConcurrentCap = 150
 Sim.StartupStaggerSec = 600
 Sim.TickSec = 20

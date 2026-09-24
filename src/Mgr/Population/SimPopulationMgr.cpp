@@ -35,7 +35,9 @@ namespace
 struct SimCfg
 {
     bool enable = false;
-    uint32 rosterTarget = 2000;
+    uint32 rosterTarget = 10000;
+    uint32 targetOnline = 150;
+    uint32 minimumOnline = 120;
     uint32 concurrentCap = 150;
     uint32 startupStaggerSec = 600;
     uint32 tickSec = 20;
@@ -53,6 +55,7 @@ struct SimAccount
     uint32 simId = 0;
     std::string persona;
     std::string status;
+    int32 timezoneOffsetMin = 0;
 };
 
 struct SimChar
@@ -88,6 +91,7 @@ std::unordered_map<uint32, SimChar> chars;       // guid
 std::unordered_map<uint32, std::vector<SimSched>> schedules; // simId
 std::unordered_map<uint32, time_t> idleSince;
 std::unordered_map<uint32, time_t> pendingLogout;
+std::unordered_map<uint32, time_t> floorUntil;
 std::unordered_map<uint32, time_t> lastFocusApply;
 std::unordered_set<uint32> sessionLogged; // guid with open actual_login
 
@@ -174,7 +178,22 @@ bool WantedNow(SimChar const& ch, time_t now, std::string* outKind, int* outStar
     tm local = LocalNow(now);
     int dow = local.tm_wday; // 0=Sun
     int nowMin = local.tm_hour * 60 + local.tm_min;
-    uint8 bit = uint8(1u << dow);
+    auto ait = accounts.find(ch.simId);
+    int32 const timezoneOffset = ait != accounts.end() ? ait->second.timezoneOffsetMin : 0;
+    int localTotal = nowMin + timezoneOffset;
+    int localDayOffset = 0;
+    while (localTotal < 0)
+    {
+        localTotal += 1440;
+        --localDayOffset;
+    }
+    while (localTotal >= 1440)
+    {
+        localTotal -= 1440;
+        ++localDayOffset;
+    }
+    int localDow = (dow + localDayOffset + 7) % 7;
+    uint8 bit = uint8(1u << localDow);
 
     auto sit = schedules.find(ch.simId);
     if (sit == schedules.end())
@@ -185,7 +204,7 @@ bool WantedNow(SimChar const& ch, time_t now, std::string* outKind, int* outStar
     {
         if (!(sch.dowMask & bit))
             continue;
-        int jitter = JitterOffset(ch.guid, dow, sch.jitterMin);
+        int jitter = JitterOffset(ch.guid, localDow, sch.jitterMin);
         int start = sch.loginTodMin + jitter;
         while (start < 0)
             start += 1440;
@@ -212,6 +231,7 @@ void LoadRoster()
     accounts.clear();
     chars.clear();
     schedules.clear();
+    floorUntil.clear();
 
     if (QueryResult accRes = PlayerbotsDatabase.Query(
             "SELECT sim_id, persona, status FROM pb_sim_account"))
@@ -225,6 +245,18 @@ void LoadRoster()
             a.status = f[2].Get<std::string>();
             accounts[a.simId] = a;
         } while (accRes->NextRow());
+    }
+
+    if (QueryResult tzRes = PlayerbotsDatabase.Query(
+            "SELECT sim_id, timezone_offset_min FROM pb_sim_account_timezone"))
+    {
+        do
+        {
+            Field* f = tzRes->Fetch();
+            auto it = accounts.find(f[0].Get<uint32>());
+            if (it != accounts.end())
+                it->second.timezoneOffsetMin = f[1].Get<int32>();
+        } while (tzRes->NextRow());
     }
 
     if (QueryResult chRes = PlayerbotsDatabase.Query(
@@ -297,6 +329,14 @@ char const* DefaultFocusFor(std::string const& persona)
     if (persona == "night" && roll_chance_i(40))
         return "pvp";
     return cfg.defaultFocus.c_str();
+}
+
+int32 PickTimezoneOffset(uint32 index, uint32 total)
+{
+    static constexpr int32 offsets[] = {-360, -300, -240, -180, -120, -60, 0, 60, 120, 180};
+    if (!total)
+        return 0;
+    return offsets[index % (sizeof(offsets) / sizeof(offsets[0]))];
 }
 
 void InsertSchedule(uint32 simId, uint8 dowMask, int32 loginMin, int32 durationMin, int32 jitterMin, char const* kind)
@@ -516,6 +556,51 @@ void TickLoginLogout(time_t now)
         wantedSet.insert(kv.first);
         wanted.push_back({-KindPriority(kind), kv.first});
     }
+
+    // A calendar describes preferred play times, but it must not make the
+    // realm look empty between overlapping persona windows. Keep a stable,
+    // deterministic reserve online until the next floor refresh. These are
+    // still real roster characters and retain their persona; this is only a
+    // presence backstop when the scheduled pool is too small.
+    for (auto it = floorUntil.begin(); it != floorUntil.end();)
+    {
+        if (it->second <= now)
+            it = floorUntil.erase(it);
+        else
+            ++it;
+    }
+
+    for (auto const& kv : floorUntil)
+    {
+        if (!wantedSet.count(kv.first))
+        {
+            wantedSet.insert(kv.first);
+            wanted.push_back({0, kv.first});
+        }
+    }
+
+    uint32 onlineBeforeFloor = CountOnlineSim(cfg.countAltbotsAgainstCap);
+    uint32 floor = std::min(cfg.minimumOnline, cfg.concurrentCap);
+    if (onlineBeforeFloor < floor)
+    {
+        uint32 needed = floor - onlineBeforeFloor;
+        for (auto const& kv : chars)
+        {
+            if (!needed || wantedSet.count(kv.first) || !IsSimCharActive(kv.second))
+                continue;
+
+            ObjectGuid guid = ObjectGuid::Create<HighGuid::Player>(kv.first);
+            if (ObjectAccessor::FindConnectedPlayer(guid) || sRandomPlayerbotMgr.GetPlayerBot(guid))
+                continue;
+
+            // Keep the reserve for a meaningful interval so it does not
+            // oscillate in and out on every 20-second manager tick.
+            floorUntil[kv.first] = now + 15 * 60;
+            wantedSet.insert(kv.first);
+            wanted.push_back({-1, kv.first});
+            --needed;
+        }
+    }
     std::sort(wanted.begin(), wanted.end());
 
     // Logout not-wanted (30s grace in combat / instance).
@@ -574,7 +659,8 @@ void TickLoginLogout(time_t now)
             }
         }
 
-        if (online >= cfg.concurrentCap)
+        uint32 desiredOnline = std::min(cfg.targetOnline, cfg.concurrentCap);
+        if (online >= desiredOnline)
         {
             RecordSession(guidLow, "cap");
             continue;
@@ -651,10 +737,14 @@ namespace SimPopulationMgr
 void LoadConfig()
 {
     cfg.enable = sConfigMgr->GetOption<bool>("Sim.Enable", true);
-    cfg.rosterTarget = sConfigMgr->GetOption<uint32>("Sim.RosterTarget", 2000);
+    cfg.rosterTarget = sConfigMgr->GetOption<uint32>("Sim.RosterTarget", 10000);
+    cfg.targetOnline = sConfigMgr->GetOption<uint32>("Sim.TargetOnline", 150);
+    cfg.minimumOnline = sConfigMgr->GetOption<uint32>("Sim.MinimumOnline", 120);
     cfg.concurrentCap = sConfigMgr->GetOption<uint32>("Sim.ConcurrentCap", 150);
     if (cfg.concurrentCap > 300)
         cfg.concurrentCap = 300;
+    cfg.targetOnline = std::min(cfg.targetOnline, cfg.concurrentCap);
+    cfg.minimumOnline = std::min(cfg.minimumOnline, cfg.targetOnline);
     cfg.startupStaggerSec = sConfigMgr->GetOption<uint32>("Sim.StartupStaggerSec", 600);
     cfg.tickSec = std::max<uint32>(5, sConfigMgr->GetOption<uint32>("Sim.TickSec", 20));
     cfg.idleKickSec = sConfigMgr->GetOption<uint32>("Sim.IdleKickSec", 120);
@@ -806,6 +896,9 @@ uint32 Seed(uint32 count)
             "INSERT INTO pb_sim_character (guid, sim_id, role, focus, status) "
             "VALUES ({}, {}, 'main', '{}', 'active')",
             pool[i].guid, simId, focus);
+        PlayerbotsDatabase.DirectExecute(
+            "INSERT INTO pb_sim_account_timezone (sim_id, timezone_offset_min) VALUES ({}, {})",
+            simId, PickTimezoneOffset(uint32(chars.size()) + i, std::max(take, cfg.rosterTarget)));
         SeedSchedules(simId, persona);
         ++stamped;
     }
@@ -841,9 +934,10 @@ std::string StatusText()
 
     std::ostringstream out;
     out << "Sim.Enable=" << (cfg.enable ? 1 : 0)
-        << " roster=" << chars.size()
+        << " roster=" << chars.size() << "/" << cfg.rosterTarget
         << " active=" << active
         << " online=" << online
+        << " target=" << cfg.targetOnline << " floor=" << cfg.minimumOnline
         << " capCounted=" << onlineCap << "/" << cfg.concurrentCap
         << " stagger=" << cfg.startupStaggerSec
         << " stockMgr=" << (DisableStockRandomMgr() ? "disabled" : "on")
@@ -853,6 +947,11 @@ std::string StatusText()
     out << "\n focus:";
     for (auto const& kv : focusCount)
         out << ' ' << kv.first << '=' << kv.second;
+    if (chars.size() < cfg.rosterTarget)
+        out << "\n WARN: roster is below target; only existing eligible rndbot/addclass characters can be rotated."
+            << " Seed more characters or lower Sim.RosterTarget.";
+    if (chars.size() < cfg.minimumOnline)
+        out << "\n WARN: roster is smaller than Sim.MinimumOnline; the online floor cannot be maintained.";
     if (sPlayerbotAIConfig.randomBotFixedLevel)
         out << "\n WARN: RandomBotFixedLevel=1 (fights leveling)";
     if (sPlayerbotAIConfig.disableRandomLevels)
