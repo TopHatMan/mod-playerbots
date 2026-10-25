@@ -19,6 +19,7 @@
 #include "PlayerbotAI.h"
 #include "PlayerbotAIConfig.h"
 #include "Playerbots.h"
+#include "PlayerbotsDatabase.h"
 #include "Random.h"
 #include "RandomPlayerbotMgr.h"
 
