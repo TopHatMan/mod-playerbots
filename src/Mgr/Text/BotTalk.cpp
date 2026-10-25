@@ -134,12 +134,12 @@ namespace BotTalk
 {
 void LoadConfig()
 {
-    cfg.enable = sConfigMgr->GetOption<bool>("AiPlayerbot.BotTalk.Enable", false);
-    cfg.groupChance = sConfigMgr->GetOption<uint32>("AiPlayerbot.BotTalk.GroupChance", 18);
-    cfg.worldChance = sConfigMgr->GetOption<uint32>("AiPlayerbot.BotTalk.WorldChance", 8);
-    cfg.cooldownMin = sConfigMgr->GetOption<uint32>("AiPlayerbot.BotTalk.CooldownMin", 20);
-    cfg.cooldownMax = sConfigMgr->GetOption<uint32>("AiPlayerbot.BotTalk.CooldownMax", 55);
-    cfg.preferPartyWhenGrouped = sConfigMgr->GetOption<bool>("AiPlayerbot.BotTalk.PreferPartyWhenGrouped", true);
+    cfg.enable = sConfigMgr->GetOption<bool>("Playerbots.BotTalk.Enable", false);
+    cfg.groupChance = sConfigMgr->GetOption<uint32>("Playerbots.BotTalk.GroupChance", 18);
+    cfg.worldChance = sConfigMgr->GetOption<uint32>("Playerbots.BotTalk.WorldChance", 8);
+    cfg.cooldownMin = sConfigMgr->GetOption<uint32>("Playerbots.BotTalk.CooldownMin", 20);
+    cfg.cooldownMax = sConfigMgr->GetOption<uint32>("Playerbots.BotTalk.CooldownMax", 55);
+    cfg.preferPartyWhenGrouped = sConfigMgr->GetOption<bool>("Playerbots.BotTalk.PreferPartyWhenGrouped", true);
     if (cfg.cooldownMax < cfg.cooldownMin)
         cfg.cooldownMax = cfg.cooldownMin;
     cfgLoaded = true;

@@ -37,7 +37,7 @@ Unit* PartyMemberToResurrect::Calculate()
     Player* bestOther = nullptr;
     float bestRealDist = 99999.f;
     float bestOtherDist = 99999.f;
-    float const maxDist = std::max(sPlayerbotAIConfig.spellDistance * 3.0f, 80.0f);
+    float const maxDist = std::max(sPlayerbotAIConfig.SpellDistance * 3.0f, 80.0f);
 
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {

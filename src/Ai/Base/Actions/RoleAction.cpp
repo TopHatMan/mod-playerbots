@@ -39,7 +39,7 @@ std::string CurrentSpecName(Player* bot)
     std::string const current = Lower(AiFactory::GetPlayerSpecName(bot));
     for (int specNo = 0; specNo < MAX_SPECNO; ++specNo)
     {
-        std::string const name = sPlayerbotAIConfig.premadeSpecName[cls][specNo];
+        std::string const name = sPlayerbotAIConfig.PremadeSpecName[cls][specNo];
         if (name.empty())
             continue;
         if (Lower(name).find(current) != std::string::npos)
@@ -180,7 +180,7 @@ std::string RoleAction::PickPveSpecName(uint8 cls, std::string const& role) cons
 
     for (int specNo = 0; specNo < MAX_SPECNO; ++specNo)
     {
-        if (sPlayerbotAIConfig.premadeSpecName[cls][specNo] == needle)
+        if (sPlayerbotAIConfig.PremadeSpecName[cls][specNo] == needle)
             return needle;
     }
     return needle;
@@ -204,7 +204,7 @@ std::string RoleAction::ApplyRole(std::string param)
     int found = -1;
     for (int specNo = 0; specNo < MAX_SPECNO; ++specNo)
     {
-        std::string const name = sPlayerbotAIConfig.premadeSpecName[cls][specNo];
+        std::string const name = sPlayerbotAIConfig.PremadeSpecName[cls][specNo];
         if (name.empty())
             continue;
         if (Lower(name) == Lower(specName) || Lower(name).find(Lower(specName)) != std::string::npos)

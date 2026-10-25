@@ -190,7 +190,7 @@ bool RpgTrainTrigger::IsActive()
 
 bool RpgHealTrigger::IsActive()
 {
-    if (!botAI->HasStrategy("heal", BOT_STATE_COMBAT))
+    if (!PlayerbotAI::IsHeal(bot))
         return false;
 
     GuidPosition guidP(getGuidP());

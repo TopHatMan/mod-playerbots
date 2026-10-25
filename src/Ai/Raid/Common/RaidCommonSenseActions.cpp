@@ -262,7 +262,7 @@ bool RaidRebirthAction::Execute(Event event)
 
     bot->SetSelection(target->GetGUID());
     float const dist = ServerFacade::instance().GetDistance2d(bot, target);
-    if (dist > sPlayerbotAIConfig.spellDistance || !bot->IsWithinLOSInMap(target))
+    if (dist > sPlayerbotAIConfig.SpellDistance || !bot->IsWithinLOSInMap(target))
     {
         bot->GetMotionMaster()->MovePoint(0, target->GetPositionX(), target->GetPositionY(), target->GetPositionZ());
         return true;

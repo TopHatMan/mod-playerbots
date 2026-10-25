@@ -66,9 +66,9 @@ namespace BotActivityMgr
 {
 void LoadConfig()
 {
-    cfg.playerGroupReserve = sConfigMgr->GetOption<bool>("AiPlayerbot.BotActivity.PlayerGroupReserve", true);
+    cfg.playerGroupReserve = sConfigMgr->GetOption<bool>("Playerbots.BotActivity.PlayerGroupReserve", true);
     cfg.playerGroupReconcileSeconds =
-        sConfigMgr->GetOption<uint32>("AiPlayerbot.BotActivity.PlayerGroupReconcileSeconds", 15);
+        sConfigMgr->GetOption<uint32>("Playerbots.BotActivity.PlayerGroupReconcileSeconds", 15);
     if (!cfg.playerGroupReconcileSeconds)
         cfg.playerGroupReconcileSeconds = 15;
     cfgLoaded = true;

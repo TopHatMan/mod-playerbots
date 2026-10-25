@@ -11,6 +11,7 @@
 #include "ChatHelper.h"
 #include "Creature.h"
 #include "GameObject.h"
+#include "GatherNodeMgr.h"
 #include "GossipDef.h"
 #include "GridTerrainData.h"
 #include "IVMapMgr.h"
@@ -51,14 +52,15 @@ bool NewRpgBaseAction::MoveFarTo(WorldPosition dest)
     if (bot->IsInFlight())
         return true;
 
-    if (dest != botAI->rpgInfo.moveFarPos)
+    bool newDest = dest != botAI->rpgInfo.moveFarPos;
+    if (newDest)
     {
         // clear stuck information if it's a new dest
         botAI->rpgInfo.SetMoveFarTo(dest);
     }
 
     // performance optimization
-    if (IsWaitingForLastMove(MovementPriority::MOVEMENT_NORMAL))
+    if (!newDest && IsWaitingForLastMove(MovementPriority::MOVEMENT_NORMAL))
     {
         return false;
     }
@@ -81,6 +83,12 @@ bool NewRpgBaseAction::MoveFarTo(WorldPosition dest)
     // finish. The stuck counter below continues to track real
     // progress toward dest and triggers teleport recovery if the
     // committed paths genuinely aren't closing the gap.
+    //
+    // A changed destination (e.g. the gather state switching to a
+    // live node it passes, or a quest POI change) skips this gate:
+    // letting the old spline finish would keep walking the bot
+    // toward a target it no longer has.
+    if (!newDest)
     {
         LastMovement& lastMove = AI_VALUE(LastMovement&, "last movement");
         if (bot->isMoving() && lastMove.lastMoveToMapId == bot->GetMapId())
@@ -698,6 +706,9 @@ bool NewRpgBaseAction::SearchQuestGiverAndAcceptOrReward()
     if (ObjectGuid npcOrGo = ChooseNpcOrGameObjectToInteract(true, 80.0f))
     {
         WorldObject* object = ObjectAccessor::GetWorldObject(*bot, npcOrGo);
+        if (!object)
+            return false;
+
         if (bot->CanInteractWithQuestGiver(object))
         {
             InteractWithNpcOrGameObjectForQuest(npcOrGo);
@@ -993,7 +1004,7 @@ WorldPosition NewRpgBaseAction::SelectRandomGrindPos(Player* bot)
         hiRange /= 3;
         loRange /= 3;
     }
-    bool const maxLevel = bot->GetLevel() >= sPlayerbotAIConfig.randomBotMaxLevel;
+    bool const maxLevel = bot->GetLevel() >= sPlayerbotAIConfig.RandomBotMaxLevel;
     if (maxLevel)
         loRange = 8000.0f;
     std::vector<WorldLocation> lo_prepared_locs, hi_prepared_locs, endgame_locs;
@@ -1120,7 +1131,7 @@ bool NewRpgBaseAction::RandomChangeStatus(std::vector<NewRpgStatus> candidateSta
 {
     std::vector<NewRpgStatus> availableStatus;
     uint32 probSum = 0;
-    bool const maxLevel = bot->GetLevel() >= sPlayerbotAIConfig.randomBotMaxLevel;
+    bool const maxLevel = bot->GetLevel() >= sPlayerbotAIConfig.RandomBotMaxLevel;
     for (NewRpgStatus status : candidateStatus)
     {
         uint32 weight = sPlayerbotAIConfig.RpgStatusProbWeight[status];
@@ -1243,6 +1254,11 @@ bool NewRpgBaseAction::RandomChangeStatus(std::vector<NewRpgStatus> candidateSta
             }
             return false;
         }
+        case RPG_DO_GATHER:
+        {
+            botAI->rpgInfo.ChangeToDoGather();
+            return true;
+        }
         case RPG_IDLE:
         {
             botAI->rpgInfo.ChangeToIdle();
@@ -1312,6 +1328,18 @@ bool NewRpgBaseAction::CheckRpgStatusAvailable(NewRpgStatus status)
                 }
             }
             return false;
+        }
+        case RPG_DO_GATHER:
+        {
+            if (!botAI->HasSkill(SKILL_HERBALISM) && !botAI->HasSkill(SKILL_MINING))
+                return false;
+
+            // No point farming with (nearly) full bags - the loot pipeline
+            // can't store the harvest (see StoreLootAction).
+            if (AI_VALUE(uint8, "bag space") > 80)
+                return false;
+
+            return sGatherNodeMgr.HasUsableNodes(bot);
         }
         case RPG_TRAVEL_FLIGHT:
         {

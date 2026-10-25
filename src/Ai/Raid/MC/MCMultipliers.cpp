@@ -34,7 +34,7 @@ static bool HasRealPlayerEngaged(Player* bot)
     for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
     {
         Player* member = ref->GetSource();
-        if (!member || !member->GetSession() || member->GetSession()->IsBot() ||
+        if (!member || !member->GetSession() || member->GetSession()->IsHeadless() ||
             member->GetMapId() != bot->GetMapId())
             continue;
 

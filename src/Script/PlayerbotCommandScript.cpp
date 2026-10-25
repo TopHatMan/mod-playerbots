@@ -38,7 +38,7 @@ namespace OrganicGuildPopulation
     static bool IsRandomBotAccount(uint32 accountId)
     {
         std::string prefix = Lower(sConfigMgr->GetOption<std::string>(
-            "AiPlayerbot.RandomBotAccountPrefix", "rndbot"));
+            "Playerbots.RandomBotAccountPrefix", "rndbot"));
         if (prefix.empty())
             return false;
         QueryResult result = LoginDatabase.Query("SELECT username FROM account WHERE id = {} LIMIT 1", accountId);
@@ -53,7 +53,7 @@ namespace OrganicGuildPopulation
 
         QueryResult result = CharacterDatabase.Query(
             "SELECT c.guid,c.account FROM characters c INNER JOIN guild_member gm ON gm.guid=c.guid "
-            "WHERE gm.guildid={} AND c.level={}", caller->GetGuildId(), sPlayerbotAIConfig.randomBotMaxLevel);
+            "WHERE gm.guildid={} AND c.level={}", caller->GetGuildId(), sPlayerbotAIConfig.RandomBotMaxLevel);
         if (!result)
             return 0;
 
@@ -193,8 +193,8 @@ public:
 
         if (!strcmp(args, "toggle"))
         {
-            sPlayerbotAIConfig.perfMonEnabled = !sPlayerbotAIConfig.perfMonEnabled;
-            if (sPlayerbotAIConfig.perfMonEnabled)
+            sPlayerbotAIConfig.PerfMonEnabled = !sPlayerbotAIConfig.PerfMonEnabled;
+            if (sPlayerbotAIConfig.PerfMonEnabled)
                 LOG_INFO("playerbots", "Performance monitor enabled");
             else
                 LOG_INFO("playerbots", "Performance monitor disabled");

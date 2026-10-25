@@ -841,7 +841,7 @@ uint32 Seed(uint32 count)
     if (!rosterLoaded)
         LoadRoster();
 
-    std::vector<uint32> const& accountsList = sPlayerbotAIConfig.randomBotAccounts;
+    std::vector<uint32> const& accountsList = sPlayerbotAIConfig.RandomBotAccounts;
     if (accountsList.empty())
     {
         LOG_ERROR("playerbots", "SimPopulation seed: no random-bot accounts configured.");
@@ -953,11 +953,11 @@ std::string StatusText()
             << " Seed more characters or lower Sim.RosterTarget.";
     if (chars.size() < cfg.minimumOnline)
         out << "\n WARN: roster is smaller than Sim.MinimumOnline; the online floor cannot be maintained.";
-    if (sPlayerbotAIConfig.randomBotFixedLevel)
+    if (sPlayerbotAIConfig.RandomBotFixedLevel)
         out << "\n WARN: RandomBotFixedLevel=1 (fights leveling)";
-    if (sPlayerbotAIConfig.disableRandomLevels)
+    if (sPlayerbotAIConfig.DisableRandomLevels)
         out << "\n WARN: DisableRandomLevels=1";
-    if (sPlayerbotAIConfig.randomBotXPRate <= 0.0f)
+    if (sPlayerbotAIConfig.RandomBotXPRate <= 0.0f)
         out << "\n WARN: RandomBotXPRate<=0";
     return out.str();
 }
@@ -1064,9 +1064,9 @@ std::string DebugText(std::string const& name)
     if (!bot)
     {
         out << " online=N master=N idle_sec=- zone=- level=- xp_flags "
-            << "FixedLevel=" << (sPlayerbotAIConfig.randomBotFixedLevel ? 1 : 0)
-            << " DisableRandomLevels=" << (sPlayerbotAIConfig.disableRandomLevels ? 1 : 0)
-            << " XPRate=" << sPlayerbotAIConfig.randomBotXPRate << '\n';
+            << "FixedLevel=" << (sPlayerbotAIConfig.RandomBotFixedLevel ? 1 : 0)
+            << " DisableRandomLevels=" << (sPlayerbotAIConfig.DisableRandomLevels ? 1 : 0)
+            << " XPRate=" << sPlayerbotAIConfig.RandomBotXPRate << '\n';
         out << " strategies=-";
         return out.str();
     }
@@ -1083,9 +1083,9 @@ std::string DebugText(std::string const& name)
         << " level=" << uint32(bot->GetLevel())
         << " xp=" << bot->GetUInt32Value(PLAYER_XP)
         << " resting=" << (bot->HasPlayerFlag(PLAYER_FLAGS_RESTING) ? 1 : 0)
-        << " FixedLevel=" << (sPlayerbotAIConfig.randomBotFixedLevel ? 1 : 0)
-        << " DisableRandomLevels=" << (sPlayerbotAIConfig.disableRandomLevels ? 1 : 0)
-        << " XPRate=" << sPlayerbotAIConfig.randomBotXPRate << '\n';
+        << " FixedLevel=" << (sPlayerbotAIConfig.RandomBotFixedLevel ? 1 : 0)
+        << " DisableRandomLevels=" << (sPlayerbotAIConfig.DisableRandomLevels ? 1 : 0)
+        << " XPRate=" << sPlayerbotAIConfig.RandomBotXPRate << '\n';
     out << " strategies=" << JoinStrategies(ai);
     return out.str();
 }

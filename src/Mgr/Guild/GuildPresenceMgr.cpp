@@ -57,11 +57,11 @@ namespace GuildPresenceMgr
 {
 void LoadConfig()
 {
-    cfg.enable = sConfigMgr->GetOption<bool>("AiPlayerbot.GuildPresence.Enable", false);
+    cfg.enable = sConfigMgr->GetOption<bool>("Playerbots.GuildPresence.Enable", false);
     cfg.scanIntervalSec = std::max<uint32>(1,
-        sConfigMgr->GetOption<uint32>("AiPlayerbot.GuildPresence.ScanIntervalSec", 10));
-    cfg.maxLoginsPerScan = sConfigMgr->GetOption<uint32>("AiPlayerbot.GuildPresence.MaxLoginsPerScan", 20);
-    cfg.includeAddClass = sConfigMgr->GetOption<bool>("AiPlayerbot.GuildPresence.IncludeAddClass", true);
+        sConfigMgr->GetOption<uint32>("Playerbots.GuildPresence.ScanIntervalSec", 10));
+    cfg.maxLoginsPerScan = sConfigMgr->GetOption<uint32>("Playerbots.GuildPresence.MaxLoginsPerScan", 20);
+    cfg.includeAddClass = sConfigMgr->GetOption<bool>("Playerbots.GuildPresence.IncludeAddClass", true);
     cfgLoaded = true;
 }
 
@@ -75,12 +75,12 @@ bool IsLoginEnabled()
     EnsureLoaded();
     if (SuppressForcePresence())
         return false;
-    return cfg.enable && sPlayerbotAIConfig.enabled;
+    return cfg.enable && sPlayerbotAIConfig.Enabled;
 }
 
 void EnsureGuildBotsOnline(Player* realPlayer)
 {
-    if (!realPlayer || !realPlayer->GetSession() || realPlayer->GetSession()->IsBot())
+    if (!realPlayer || !realPlayer->GetSession() || realPlayer->GetSession()->IsHeadless())
         return;
 
     if (!IsLoginEnabled())
